@@ -1,0 +1,14 @@
+include CHANGES.txt
+include COPYING.txt
+include INSTALL.txt
+include MANIFEST.in
+include PKG-INFO
+include README.md
+include THANKS.txt
+recursive-include py2.5 *
+recursive-include py2.6 *
+recursive-include py2.7 *
+recursive-include py3.1 *
+recursive-include py3.2 *
+recursive-include py3.3 *
+recursive-include py3.4 *

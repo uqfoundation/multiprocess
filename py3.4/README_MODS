@@ -1,0 +1,44 @@
+cp -rf Python-3.4.3/Modules/_multiprocessing Modules/_multiprocessig
+cp -rf Python-3.4.3/Lib/multiprocessing multiprocessing
+cp -rf Python-3.4.3/Lib/test/*test_multiprocessing*.py tests/
+cp -rf py3.3.6/examples .
+cp -f py3.3.6/*txt .
+cp -f py3.3.6/setup.py .
+cp -rf py3.3.6/doc .
+cp -f py3.3.6/index.html .
+
+# ----------------------------------------------------------------------
+diff Modules/_multiprocessing/semaphore.c Python-3.4.3/Modules/_multiprocessing/semaphore.c
+201c201
+< //ifndef HAVE_SEM_TIMEDWAIT
+---
+> #ifndef HAVE_SEM_TIMEDWAIT
+262c262
+< //endif /* !HAVE_SEM_TIMEDWAIT */
+---
+> #endif /* !HAVE_SEM_TIMEDWAIT */
+
+# ----------------------------------------------------------------------
+diff multiprocessing/__init__.py Python-3.4.3/Lib/multiprocessing/__init__.py
+18,19d17
+< __version__ = '0.70.1'
+< 
+
+diff multiprocessing/reduction.py /Users/mmckerns/src/Python-3.4.3/Lib/multiprocessing/reduction.py
+14,17c14
+< try:
+<     import dill as pickle
+< except ImportError:
+<     import pickle
+---
+> import pickle
+
+diff multiprocessing/spawn.py /Users/mmckerns/src/Python-3.4.3/Lib/multiprocessing/spawn.py
+12,15c12
+< try:
+<     import dill as pickle
+< except ImportError:
+<     import pickle
+---
+> import pickle
+

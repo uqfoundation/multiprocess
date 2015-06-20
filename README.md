@@ -1,6 +1,6 @@
 multiprocess
 ====
-Package for using processes which mimics the threading module (FORK)
+a friendly fork of the multiprocessing module
 
 About Multiprocess
 ----------

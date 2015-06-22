@@ -57,7 +57,7 @@ install a C compiler or fix the error(s) above.
 
 # -*- extra config (setuptools) -*-
 if has_setuptools:
-    extras = dict(install_requires=['dill>=0.2.2'])
+    extras = dict(install_requires=['dill>=0.2.3'])
 else:
     extras = dict()
 
@@ -290,12 +290,12 @@ def run_setup(with_extensions=True):
             'Programming Language :: Python',
             'Programming Language :: C',
             'Programming Language :: Python :: 2',
-#           'Programming Language :: Python :: 2.5',
+            'Programming Language :: Python :: 2.5',
             'Programming Language :: Python :: 2.6',
             'Programming Language :: Python :: 2.7',
             'Programming Language :: Python :: 3',
-#           'Programming Language :: Python :: 3.1',
-#           'Programming Language :: Python :: 3.2',
+            'Programming Language :: Python :: 3.1',
+            'Programming Language :: Python :: 3.2',
             'Programming Language :: Python :: 3.3',
             'Programming Language :: Python :: 3.4',
 #           'Programming Language :: Python :: Implementation :: CPython',

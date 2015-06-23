@@ -32,7 +32,7 @@ or suggestions are highly appreciated.  A list of known issues is maintained
 at http://trac.mystic.cacr.caltech.edu/project/pathos/query, with a public
 ticket list at https://github.com/uqfoundation/pathos/issues.
 
-NOTE: multiprocess installs as multiprocessing, as a drop-in replacement for a portion of the standard library.  A C compiler is required to build the included extension module. For python 3.3 and above, a C compiler is suggested, but not required.
+NOTE: A C compiler is required to build the included extension module. For python 3.3 and above, a C compiler is suggested, but not required.
 
 
 Major Changes
@@ -60,10 +60,10 @@ If you have a new contribution, please submit a pull request.
 
 Examples
 --------
-The `multiprocessing.Process` class follows the API of `threading.Thread`.
+The `multiprocess.Process` class follows the API of `threading.Thread`.
 For example ::
 
-    from multiprocessing import Process, Queue
+    from multiprocess import Process, Queue
 
     def f(q):
         q.put('hello world')
@@ -78,7 +78,7 @@ For example ::
 Synchronization primitives like locks, semaphores and conditions are
 available, for example ::
 
-    >>> from multiprocessing import Condition
+    >>> from multiprocess import Condition
     >>> c = Condition()
     >>> print c
     <Condition(<RLock(None, 0)>), 0>
@@ -90,7 +90,7 @@ available, for example ::
 One can also use a manager to create shared objects either in shared
 memory or in a server process, for example ::
 
-    >>> from multiprocessing import Manager
+    >>> from multiprocess import Manager
     >>> manager = Manager()
     >>> l = manager.list(range(10))
     >>> l.reverse()
@@ -102,7 +102,7 @@ memory or in a server process, for example ::
 Tasks can be offloaded to a pool of worker processes in various ways,
 for example ::
 
-    >>> from multiprocessing import Pool
+    >>> from multiprocess import Pool
     >>> def f(x): return x*x
     ...
     >>> p = Pool(4)
@@ -113,7 +113,7 @@ for example ::
 When `dill` is installed, serialization is extended to most objects,
 for example ::
 
-    >>> from multiprocessing import Pool
+    >>> from multiprocess import Pool
     >>> p = Pool(4)
     >>> print p.map(lambda x: (lambda y:y**2)(x) + x, xrange(10))
     [0, 2, 6, 12, 20, 30, 42, 56, 72, 90]

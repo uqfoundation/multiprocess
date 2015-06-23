@@ -41,7 +41,7 @@
 # SUCH DAMAGE.
 #
 
-__version__ = '0.70.2'
+__version__ = '0.70.3'
 
 __all__ = [
     'Process', 'current_process', 'active_children', 'freeze_support',

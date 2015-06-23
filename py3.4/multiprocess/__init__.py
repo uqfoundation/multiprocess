@@ -15,7 +15,7 @@
 import sys
 from . import context
 
-__version__ = '0.70.2'
+__version__ = '0.70.3'
 
 #
 # Copy stuff from default context

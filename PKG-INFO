@@ -1,6 +1,6 @@
 Metadata-Version: 1.0
 Name: multiprocess
-Version: 0.70.2
+Version: 0.70.3
 Summary: Package for using processes which mimics the threading module
 Home-page: http://developer.berlios.de/projects/pyprocessing
 Author: Mike McKerns

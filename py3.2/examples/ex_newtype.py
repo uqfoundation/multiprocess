@@ -3,8 +3,8 @@
 # `BaseManager`.
 #
 
-from multiprocessing import freeze_support as freezeSupport
-from multiprocessing.managers import BaseManager, BaseProxy
+from multiprocess import freeze_support as freezeSupport
+from multiprocess.managers import BaseManager, BaseProxy
 xrange = range
 
 ##

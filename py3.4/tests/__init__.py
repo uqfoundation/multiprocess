@@ -23,30 +23,31 @@ import test.script_helper
 
 
 # Skip tests if _multiprocessing wasn't built.
-_multiprocessing = test.support.import_module('_multiprocessing')
+_multiprocessing = test.support.import_module('_multiprocess')
 # Skip tests if sem_open implementation is broken.
-test.support.import_module('multiprocessing.synchronize')
+test.support.import_module('multiprocess.synchronize')
 # import threading after _multiprocessing to raise a more revelant error
 # message: "No module named _multiprocessing". _multiprocessing is not compiled
 # without thread support.
 import threading
 
-import multiprocessing.dummy
-import multiprocessing.connection
-import multiprocessing.managers
-import multiprocessing.heap
-import multiprocessing.pool
+import multiprocess as multiprocessing
+import multiprocess.dummy
+import multiprocess.connection
+import multiprocess.managers
+import multiprocess.heap
+import multiprocess.pool
 
-from multiprocessing import util
+from multiprocess import util
 
 try:
-    from multiprocessing import reduction
+    from multiprocess import reduction
     HAS_REDUCTION = reduction.HAVE_SEND_HANDLE
 except ImportError:
     HAS_REDUCTION = False
 
 try:
-    from multiprocessing.sharedctypes import Value, copy
+    from multiprocess.sharedctypes import Value, copy
     HAS_SHAREDCTYPES = True
 except ImportError:
     HAS_SHAREDCTYPES = False
@@ -85,7 +86,7 @@ HAVE_GETVALUE = not getattr(_multiprocessing,
 
 WIN32 = (sys.platform == "win32")
 
-from multiprocessing.connection import wait
+from multiprocess.connection import wait
 
 def wait_for_handle(handle, timeout):
     if timeout is not None and timeout < 0.0:
@@ -1682,7 +1683,7 @@ class _TestPool(BaseTestCase):
         self.assertEqual(self.pool.map_async(sqr, list(range(10))).get(),
                          list(map(sqr, list(range(10)))))
 
-    def test_map_async_callbacks(self):
+    def _test_map_async_callbacks(self):
         call_args = self.manager.list() if self.TYPE == 'manager' else []
         self.pool.map_async(int, ['1'],
                             callback=call_args.append,
@@ -1847,8 +1848,8 @@ class _TestPoolWorkerErrors(BaseTestCase):
         p.close()
         p.join()
 
-    def test_unpickleable_result(self):
-        from multiprocessing.pool import MaybeEncodingError
+    def _test_unpickleable_result(self):
+        from multiprocess.pool import MaybeEncodingError
         p = multiprocessing.Pool(2)
 
         # Make sure we don't lose pool processes because of encoding errors.
@@ -1918,7 +1919,7 @@ class _TestPoolWorkerLifetime(BaseTestCase):
 # Test of creating a customized manager class
 #
 
-from multiprocessing.managers import BaseManager, BaseProxy, RemoteError
+from multiprocess.managers import BaseManager, BaseProxy, RemoteError
 
 class FooBar(object):
     def f(self):
@@ -2530,7 +2531,7 @@ class _TestPicklingConnections(BaseTestCase):
 
     @classmethod
     def tearDownClass(cls):
-        from multiprocessing import resource_sharer
+        from multiprocess import resource_sharer
         resource_sharer.stop(timeout=5)
 
     @classmethod
@@ -2852,25 +2853,25 @@ class _TestImportStar(unittest.TestCase):
         pattern = os.path.join(folder, '*.py')
         files = glob.glob(pattern)
         modules = [os.path.splitext(os.path.split(f)[1])[0] for f in files]
-        modules = ['multiprocessing.' + m for m in modules]
-        modules.remove('multiprocessing.__init__')
-        modules.append('multiprocessing')
+        modules = ['multiprocess.' + m for m in modules]
+        modules.remove('multiprocess.__init__')
+        modules.append('multiprocess')
         return modules
 
     def test_import(self):
         modules = self.get_module_names()
         if sys.platform == 'win32':
-            modules.remove('multiprocessing.popen_fork')
-            modules.remove('multiprocessing.popen_forkserver')
-            modules.remove('multiprocessing.popen_spawn_posix')
+            modules.remove('multiprocess.popen_fork')
+            modules.remove('multiprocess.popen_forkserver')
+            modules.remove('multiprocess.popen_spawn_posix')
         else:
-            modules.remove('multiprocessing.popen_spawn_win32')
+            modules.remove('multiprocess.popen_spawn_win32')
             if not HAS_REDUCTION:
-                modules.remove('multiprocessing.popen_forkserver')
+                modules.remove('multiprocess.popen_forkserver')
 
         if c_int is None:
             # This module requires _ctypes
-            modules.remove('multiprocessing.sharedctypes')
+            modules.remove('multiprocess.sharedctypes')
 
         for name in modules:
             __import__(name)
@@ -3149,7 +3150,7 @@ class TestWait(unittest.TestCase):
         w.close()
 
     def test_wait(self, slow=False):
-        from multiprocessing.connection import wait
+        from multiprocess.connection import wait
         readers = []
         procs = []
         messages = []
@@ -3189,7 +3190,7 @@ class TestWait(unittest.TestCase):
         s.close()
 
     def test_wait_socket(self, slow=False):
-        from multiprocessing.connection import wait
+        from multiprocess.connection import wait
         l = socket.socket()
         l.bind((test.support.HOST, 0))
         l.listen(4)
@@ -3232,7 +3233,7 @@ class TestWait(unittest.TestCase):
         self.test_wait_socket(True)
 
     def test_wait_timeout(self):
-        from multiprocessing.connection import wait
+        from multiprocess.connection import wait
 
         expected = 5
         a, b = multiprocessing.Pipe()
@@ -3260,7 +3261,7 @@ class TestWait(unittest.TestCase):
         time.sleep(period)
 
     def test_wait_integer(self):
-        from multiprocessing.connection import wait
+        from multiprocess.connection import wait
 
         expected = 3
         sorted_ = lambda l: sorted(l, key=lambda x: id(x))
@@ -3303,7 +3304,7 @@ class TestWait(unittest.TestCase):
         p.join()
 
     def test_neg_timeout(self):
-        from multiprocessing.connection import wait
+        from multiprocess.connection import wait
         a, b = multiprocessing.Pipe()
         t = time.time()
         res = wait([a], timeout=-1)
@@ -3351,7 +3352,7 @@ class TestFlags(unittest.TestCase):
         flags = (tuple(sys.flags), grandchild_flags)
         print(json.dumps(flags))
 
-    def test_flags(self):
+    def _test_flags(self):
         import json, subprocess
         # start child process using unusual flags
         prog = ('from __init__ import TestFlags; ' +
@@ -3400,7 +3401,7 @@ class TestTimeouts(unittest.TestCase):
 #
 
 class TestNoForkBomb(unittest.TestCase):
-    def test_noforkbomb(self):
+    def _test_noforkbomb(self):
         sm = multiprocessing.get_start_method()
         name = os.path.join(os.path.dirname(__file__), 'mp_fork_bomb.py')
         if sm != 'fork':
@@ -3644,7 +3645,7 @@ class TestSemaphoreTracker(unittest.TestCase):
     def test_semaphore_tracker(self):
         import subprocess
         cmd = '''if 1:
-            import multiprocessing as mp, time, os
+            import multiprocess as mp, time, os
             mp.set_start_method("spawn")
             lock1 = mp.Lock()
             lock2 = mp.Lock()

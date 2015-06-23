@@ -2,7 +2,7 @@
 from test import support
 # Skip tests if _thread or _multiprocessing wasn't built.
 support.import_module('_thread')
-support.import_module('_multiprocessing')
+support.import_module('_multiprocess')
 
 import importlib
 import importlib.machinery
@@ -19,11 +19,11 @@ from test.script_helper import (
     spawn_python, kill_python)
 
 # Look up which start methods are available to test
-import multiprocessing
+import multiprocess as multiprocessing
 AVAILABLE_START_METHODS = set(multiprocessing.get_all_start_methods())
 
 # Issue #22332: Skip tests if sem_open implementation is broken.
-support.import_module('multiprocessing.synchronize')
+support.import_module('multiprocess.synchronize')
 
 verbose = support.verbose
 
@@ -37,7 +37,7 @@ test_source = """\
 
 import sys
 import time
-from multiprocessing import Pool, set_start_method
+from multiprocess import Pool, set_start_method
 
 # We use this __main__ defined function in the map call below in order to
 # check that multiprocessing in correctly running the unguarded
@@ -78,7 +78,7 @@ if __name__ != "__main__":
 
 import sys
 import time
-from multiprocessing import Pool, set_start_method
+from multiprocess import Pool, set_start_method
 
 start_method = sys.argv[1]
 set_start_method(start_method)

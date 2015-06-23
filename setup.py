@@ -9,7 +9,7 @@ pkgdir = 'py%s.%s' % (pymajor,pyminor)
 if sys.version_info < (2, 5):
     raise ValueError('Versions of Python before 2.5 are not supported')
 elif sys.version_info >= (2, 6):
-    pkgname = 'multiprocessing'
+    pkgname = 'multiprocess'
 else: # (2, 5)
     pkgname = 'processing'  #XXX: oddity, due to lazyness at the moment
 srcdir = '%s/Modules/_%s' % (pkgdir, pkgname)

@@ -22,20 +22,21 @@ import test.support
 
 
 # Skip tests if _multiprocessing wasn't built.
-_multiprocessing = test.support.import_module('_multiprocessing')
+_multiprocessing = test.support.import_module('_multiprocess')
 # Skip tests if sem_open implementation is broken.
-test.support.import_module('multiprocessing.synchronize')
+test.support.import_module('multiprocess.synchronize')
 
-import multiprocessing.dummy
-import multiprocessing.connection
-import multiprocessing.managers
-import multiprocessing.heap
-import multiprocessing.pool
+import multiprocess as multiprocessing
+import multiprocess.dummy
+import multiprocess.connection
+import multiprocess.managers
+import multiprocess.heap
+import multiprocess.pool
 
-from multiprocessing import util
+from multiprocess import util
 
 try:
-    from multiprocessing.sharedctypes import Value, copy
+    from multiprocess.sharedctypes import Value, copy
     HAS_SHAREDCTYPES = True
 except ImportError:
     HAS_SHAREDCTYPES = False
@@ -262,7 +263,7 @@ class _TestProcess(BaseTestCase):
 
     @classmethod
     def _test_recursion(cls, wconn, id):
-        from multiprocessing import forking
+        from multiprocess import forking
         wconn.send(id)
         if len(id) < 2:
             for i in range(2):
@@ -1128,7 +1129,7 @@ class _TestZZZNumberOfObjects(BaseTestCase):
 # Test of creating a customized manager class
 #
 
-from multiprocessing.managers import BaseManager, BaseProxy, RemoteError
+from multiprocess.managers import BaseManager, BaseProxy, RemoteError
 
 class FooBar(object):
     def f(self):
@@ -1746,16 +1747,16 @@ class _TestImportStar(BaseTestCase):
 
     def test_import(self):
         modules = [
-            'multiprocessing', 'multiprocessing.connection',
-            'multiprocessing.heap', 'multiprocessing.managers',
-            'multiprocessing.pool', 'multiprocessing.process',
-            'multiprocessing.reduction',
-            'multiprocessing.synchronize', 'multiprocessing.util'
+            'multiprocess', 'multiprocess.connection',
+            'multiprocess.heap', 'multiprocess.managers',
+            'multiprocess.pool', 'multiprocess.process',
+            'multiprocess.reduction',
+            'multiprocess.synchronize', 'multiprocess.util'
             ]
 
         if c_int is not None:
             # This module requires _ctypes
-            modules.append('multiprocessing.sharedctypes')
+            modules.append('multiprocess.sharedctypes')
 
         for name in modules:
             __import__(name)

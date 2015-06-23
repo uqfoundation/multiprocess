@@ -22,30 +22,31 @@ import test.script_helper
 
 
 # Skip tests if _multiprocessing wasn't built.
-_multiprocessing = test.support.import_module('_multiprocessing')
+_multiprocessing = test.support.import_module('_multiprocess')
 # Skip tests if sem_open implementation is broken.
-test.support.import_module('multiprocessing.synchronize')
+test.support.import_module('multiprocess.synchronize')
 # import threading after _multiprocessing to raise a more revelant error
 # message: "No module named _multiprocessing". _multiprocessing is not compiled
 # without thread support.
 import threading
 
-import multiprocessing.dummy
-import multiprocessing.connection
-import multiprocessing.managers
-import multiprocessing.heap
-import multiprocessing.pool
+import multiprocess as multiprocessing
+import multiprocess.dummy
+import multiprocess.connection
+import multiprocess.managers
+import multiprocess.heap
+import multiprocess.pool
 
-from multiprocessing import util
+from multiprocess import util
 
 try:
-    from multiprocessing import reduction
+    from multiprocess import reduction
     HAS_REDUCTION = True
 except ImportError:
     HAS_REDUCTION = False
 
 try:
-    from multiprocessing.sharedctypes import Value, copy
+    from multiprocess.sharedctypes import Value, copy
     HAS_SHAREDCTYPES = True
 except ImportError:
     HAS_SHAREDCTYPES = False
@@ -299,7 +300,7 @@ class _TestProcess(BaseTestCase):
 
     @classmethod
     def _test_recursion(cls, wconn, id):
-        from multiprocessing import forking
+        from multiprocess import forking
         wconn.send(id)
         if len(id) < 2:
             for i in range(2):
@@ -1246,7 +1247,7 @@ class _TestPoolWorkerErrors(BaseTestCase):
         p.join()
 
     def _test_unpickleable_result(self):
-        from multiprocessing.pool import MaybeEncodingError
+        from multiprocess.pool import MaybeEncodingError
         p = multiprocessing.Pool(2)
 
         # Make sure we don't lose pool processes because of encoding errors.
@@ -1340,7 +1341,7 @@ class _TestZZZNumberOfObjects(BaseTestCase):
 # Test of creating a customized manager class
 #
 
-from multiprocessing.managers import BaseManager, BaseProxy, RemoteError
+from multiprocess.managers import BaseManager, BaseProxy, RemoteError
 
 class FooBar(object):
     def f(self):
@@ -2077,18 +2078,18 @@ class _TestImportStar(BaseTestCase):
 
     def test_import(self):
         modules = [
-            'multiprocessing', 'multiprocessing.connection',
-            'multiprocessing.heap', 'multiprocessing.managers',
-            'multiprocessing.pool', 'multiprocessing.process',
-            'multiprocessing.synchronize', 'multiprocessing.util'
+            'multiprocess', 'multiprocess.connection',
+            'multiprocess.heap', 'multiprocess.managers',
+            'multiprocess.pool', 'multiprocess.process',
+            'multiprocess.synchronize', 'multiprocess.util'
             ]
 
         if HAS_REDUCTION:
-            modules.append('multiprocessing.reduction')
+            modules.append('multiprocess.reduction')
 
         if c_int is not None:
             # This module requires _ctypes
-            modules.append('multiprocessing.sharedctypes')
+            modules.append('multiprocess.sharedctypes')
 
         for name in modules:
             __import__(name)

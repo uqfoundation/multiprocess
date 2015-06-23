@@ -23,19 +23,20 @@ from test import test_support
 
 # Work around broken sem_open implementations
 try:
-    import multiprocessing.synchronize
+    import multiprocess.synchronize
 except ImportError, e:
     from test.test_support import TestSkipped
     raise TestSkipped(e)
 
-import multiprocessing.dummy
-import multiprocessing.connection
-import multiprocessing.managers
-import multiprocessing.heap
-import multiprocessing.pool
-import _multiprocessing
+import multiprocess as multiprocessing
+import multiprocess.dummy
+import multiprocess.connection
+import multiprocess.managers
+import multiprocess.heap
+import multiprocess.pool
+import _multiprocess as _multiprocessing
 
-from multiprocessing import util
+from multiprocess import util
 
 #
 #
@@ -238,7 +239,7 @@ class _TestProcess(BaseTestCase):
         self.assertTrue(p not in self.active_children())
 
     def _test_recursion(self, wconn, id):
-        from multiprocessing import forking
+        from multiprocess import forking
         wconn.send(id)
         if len(id) < 2:
             for i in range(2):
@@ -1072,7 +1073,7 @@ class _TestZZZNumberOfObjects(BaseTestCase):
 # Test of creating a customized manager class
 #
 
-from multiprocessing.managers import BaseManager, BaseProxy, RemoteError
+from multiprocess.managers import BaseManager, BaseProxy, RemoteError
 
 class FooBar(object):
     def f(self):
@@ -1657,11 +1658,11 @@ class _TestImportStar(BaseTestCase):
 
     def test_import(self):
         modules = (
-            'multiprocessing', 'multiprocessing.connection',
-            'multiprocessing.heap', 'multiprocessing.managers',
-            'multiprocessing.pool', 'multiprocessing.process',
-            'multiprocessing.reduction', 'multiprocessing.sharedctypes',
-            'multiprocessing.synchronize', 'multiprocessing.util'
+            'multiprocess', 'multiprocess.connection',
+            'multiprocess.heap', 'multiprocess.managers',
+            'multiprocess.pool', 'multiprocess.process',
+            'multiprocess.reduction', 'multiprocess.sharedctypes',
+            'multiprocess.synchronize', 'multiprocess.util'
             )
 
         for name in modules:

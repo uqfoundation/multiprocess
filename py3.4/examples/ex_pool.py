@@ -2,8 +2,8 @@
 # A test of `processing.Pool` class
 #
 
-from multiprocessing import Pool, TimeoutError
-from multiprocessing import cpu_count as cpuCount, current_process as currentProcess, freeze_support as freezeSupport, active_children as activeChildren
+from multiprocess import Pool, TimeoutError
+from multiprocess import cpu_count as cpuCount, current_process as currentProcess, freeze_support as freezeSupport, active_children as activeChildren
 
 import time, random, sys
 xrange = range

@@ -2,7 +2,7 @@
 # Simple benchmarks for the processing package
 #
 
-import time, sys, multiprocessing as processing, threading, queue as Queue, gc
+import time, sys, multiprocess as processing, threading, queue as Queue, gc
 processing.freezeSupport = processing.freeze_support
 xrange = range
 

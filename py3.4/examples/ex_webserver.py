@@ -12,12 +12,12 @@
 import os
 import sys
 
-from multiprocessing import Process, current_process as currentProcess, freeze_support as freezeSupport
+from multiprocess import Process, current_process as currentProcess, freeze_support as freezeSupport
 from http.server import HTTPServer
 from http.server import SimpleHTTPRequestHandler
 
 if sys.platform == 'win32':
-    import multiprocessing.reduction    # make sockets pickable/inheritable
+    import multiprocess.reduction    # make sockets pickable/inheritable
 
 
 def note(format, *args):

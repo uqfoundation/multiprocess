@@ -78,3 +78,8 @@ diff tests/__init__.py Python-3.2.6/Lib/test/test_multiprocessing.py
 ---
 >     def test_noforkbomb(self):
 
+# ----------------------------------------------------------------------
+REPLACED "from multiprocessing" with "from multiprocess"
+REPLACED "from _multiprocessing" with "from _multiprocess"
+REPLACED "import _multiprocessing" with "import _multiprocess as _multiprocessing"
+REPLACED "multprocessing" with "multiprocess" wherever else relevant...

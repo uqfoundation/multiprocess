@@ -42,3 +42,8 @@ diff multiprocessing/spawn.py /Users/mmckerns/src/Python-3.4.3/Lib/multiprocessi
 ---
 > import pickle
 
+# ----------------------------------------------------------------------
+REPLACED "from multiprocessing" with "from multiprocess"
+REPLACED "from _multiprocessing" with "from _multiprocess"
+REPLACED "import _multiprocessing" with "import _multiprocess as _multiprocessing"
+REPLACED "multprocessing" with "multiprocess" wherever else relevant...

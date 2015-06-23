@@ -11,8 +11,8 @@
 import time
 import random
 
-from multiprocessing import current_process as currentProcess, Process, freeze_support as freezeSupport
-from multiprocessing import Queue
+from multiprocess import current_process as currentProcess, Process, freeze_support as freezeSupport
+from multiprocess import Queue
 
 #
 # Function run by worker processes

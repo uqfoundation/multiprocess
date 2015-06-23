@@ -2,7 +2,7 @@
 # Simple benchmarks for the processing package
 #
 
-import time, sys, multiprocessing as processing, threading, Queue, gc
+import time, sys, multiprocess as processing, threading, Queue, gc
 processing.freezeSupport = processing.freeze_support
 
 if sys.platform == 'win32':

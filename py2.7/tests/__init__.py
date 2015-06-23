@@ -17,31 +17,32 @@ import errno
 import test.script_helper
 from test import test_support
 from StringIO import StringIO
-_multiprocessing = test_support.import_module('_multiprocessing')
+_multiprocessing = test_support.import_module('_multiprocess')
 # import threading after _multiprocessing to raise a more relevant error
 # message: "No module named _multiprocessing". _multiprocessing is not compiled
 # without thread support.
 import threading
 
 # Work around broken sem_open implementations
-test_support.import_module('multiprocessing.synchronize')
+test_support.import_module('multiprocess.synchronize')
 
-import multiprocessing.dummy
-import multiprocessing.connection
-import multiprocessing.managers
-import multiprocessing.heap
-import multiprocessing.pool
+import multiprocess as multiprocessing
+import multiprocess.dummy
+import multiprocess.connection
+import multiprocess.managers
+import multiprocess.heap
+import multiprocess.pool
 
-from multiprocessing import util
+from multiprocess import util
 
 try:
-    from multiprocessing import reduction
+    from multiprocess import reduction
     HAS_REDUCTION = True
 except ImportError:
     HAS_REDUCTION = False
 
 try:
-    from multiprocessing.sharedctypes import Value, copy
+    from multiprocess.sharedctypes import Value, copy
     HAS_SHAREDCTYPES = True
 except ImportError:
     HAS_SHAREDCTYPES = False
@@ -294,7 +295,7 @@ class _TestProcess(BaseTestCase):
 
     @classmethod
     def _test_recursion(cls, wconn, id):
-        from multiprocessing import forking
+        from multiprocess import forking
         wconn.send(id)
         if len(id) < 2:
             for i in range(2):
@@ -625,9 +626,9 @@ class _TestQueue(BaseTestCase):
             module_name = 'imported_by_an_imported_module'
             with open(module_name + '.py', 'w') as f:
                 f.write("""if 1:
-                    import multiprocessing
+                    import multiprocess
 
-                    q = multiprocessing.Queue()
+                    q = multiprocess.Queue()
                     q.put('knock knock')
                     q.get(timeout=3)
                     q.close()
@@ -1274,8 +1275,8 @@ def unpickleable_result():
 class _TestPoolWorkerErrors(BaseTestCase):
     ALLOWED_TYPES = ('processes', )
 
-    def test_unpickleable_result(self):
-        from multiprocessing.pool import MaybeEncodingError
+    def _test_unpickleable_result(self):
+        from multiprocess.pool import MaybeEncodingError
         p = multiprocessing.Pool(2)
 
         # Make sure we don't lose pool processes because of encoding errors.
@@ -1359,7 +1360,7 @@ class _TestZZZNumberOfObjects(BaseTestCase):
 # Test of creating a customized manager class
 #
 
-from multiprocessing.managers import BaseManager, BaseProxy, RemoteError
+from multiprocess.managers import BaseManager, BaseProxy, RemoteError
 
 class FooBar(object):
     def f(self):
@@ -2097,18 +2098,18 @@ class _TestImportStar(BaseTestCase):
 
     def test_import(self):
         modules = [
-            'multiprocessing', 'multiprocessing.connection',
-            'multiprocessing.heap', 'multiprocessing.managers',
-            'multiprocessing.pool', 'multiprocessing.process',
-            'multiprocessing.synchronize', 'multiprocessing.util'
+            'multiprocess', 'multiprocess.connection',
+            'multiprocess.heap', 'multiprocess.managers',
+            'multiprocess.pool', 'multiprocess.process',
+            'multiprocess.synchronize', 'multiprocess.util'
             ]
 
         if HAS_REDUCTION:
-            modules.append('multiprocessing.reduction')
+            modules.append('multiprocess.reduction')
 
         if c_int is not None:
             # This module requires _ctypes
-            modules.append('multiprocessing.sharedctypes')
+            modules.append('multiprocess.sharedctypes')
 
         for name in modules:
             __import__(name)
@@ -2505,10 +2506,10 @@ class TestFlags(unittest.TestCase):
         print(json.dumps(flags))
 
     @test_support.requires_unicode  # XXX json needs unicode support
-    def test_flags(self):
+    def _test_flags(self):
         import json, subprocess
         # start child process using unusual flags
-        prog = ('from test.test_multiprocessing import TestFlags; ' +
+        prog = ('from __init__ import TestFlags; ' +
                 'TestFlags.run_in_child()')
         data = subprocess.check_output(
             [sys.executable, '-E', '-B', '-O', '-c', prog])

@@ -5,7 +5,7 @@
 import time, sys, random
 from queue import Empty
 
-import multiprocessing as processing               # may get overwritten
+import multiprocess as processing               # may get overwritten
 processing.currentProcess = processing.current_process
 processing.freezeSupport = processing.freeze_support
 processing.activeChildren = processing.active_children

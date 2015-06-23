@@ -16,7 +16,7 @@
 # Licensed to PSF under a Contributor Agreement.
 #
 
-__version__ = '0.70.3'
+__version__ = '0.70.4.dev0'
 
 __all__ = [
     'Process', 'current_process', 'active_children', 'freeze_support',

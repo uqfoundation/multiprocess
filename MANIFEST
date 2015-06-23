@@ -1,7 +1,7 @@
 include CHANGES.txt
 include COPYING.txt
 include INSTALL.txt
-include MANIFEST.in
+include MANIFEST
 include PKG-INFO
 include README.md
 include THANKS.txt

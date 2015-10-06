@@ -12,6 +12,15 @@ elif sys.version_info >= (2, 6):
     pkgname = 'multiprocess'
 else: # (2, 5)
     pkgname = 'processing'  #XXX: oddity, due to lazyness at the moment
+# if sys.version is higher than explicitly supported, try the latest version
+ver = float(pkgdir[2:])
+HERE = os.path.dirname(os.path.abspath(__file__))
+while not os.path.exists(os.path.join(HERE,'py%s' % ver)):
+    ver -= 0.1
+if 'py%s' % ver != pkgdir:
+    msg = 'Warning: Python %s is not currently supported, reverting to %s'
+    print(msg % (ver,pkgdir[2:]))
+    pkgdir = 'py%s' % ver
 srcdir = '%s/Modules/_%s' % (pkgdir, pkgname)
 libdir = '%s/%s' % (pkgdir, pkgname)
 
@@ -24,8 +33,6 @@ except ImportError:
 from distutils import sysconfig
 from distutils.errors import CCompilerError, DistutilsExecError, \
                                              DistutilsPlatformError
-
-HERE = os.path.dirname(os.path.abspath(__file__))
 
 ext_errors = (CCompilerError, DistutilsExecError, DistutilsPlatformError)
 if sys.platform == 'win32' and sys.version_info >= (2, 6):

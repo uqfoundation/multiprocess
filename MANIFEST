@@ -12,3 +12,4 @@ recursive-include py3.1 *
 recursive-include py3.2 *
 recursive-include py3.3 *
 recursive-include py3.4 *
+recursive-include py3.5 *

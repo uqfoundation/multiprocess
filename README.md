@@ -42,7 +42,7 @@ Major Changes
 
 Current Release
 ---------------
-This version is multiprocess-0.70.3 (a fork of multiprocessing-0.70a1).
+This version is multiprocess-0.70.4 (a fork of multiprocessing-0.70a1).
 
 The latest released pathos fork of multiprocessing is available from::
     https://pypi.python.org/pypi/multiprocess

@@ -14,7 +14,10 @@ __all__ = [
 import threading
 import sys
 import tempfile
-import _multiprocess as _multiprocessing
+try:
+    import _multiprocess as _multiprocessing
+except ImportError:
+    import _multiprocessing
 
 from time import time as _time
 
@@ -27,11 +30,14 @@ from . import util
 # See issue 3770
 try:
     from _multiprocess import SemLock, sem_unlink
-except (ImportError):
-    raise ImportError("This platform lacks a functioning sem_open" +
-                      " implementation, therefore, the required" +
-                      " synchronization primitives needed will not" +
-                      " function, see issue 3770.")
+except ImportError:
+    try:
+        from _multiprocessing import SemLock, sem_unlink
+    except (ImportError):
+        raise ImportError("This platform lacks a functioning sem_open" +
+                          " implementation, therefore, the required" +
+                          " synchronization primitives needed will not" +
+                          " function, see issue 3770.")
 
 #
 # Constants

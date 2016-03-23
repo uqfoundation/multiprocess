@@ -19,7 +19,10 @@ import errno
 
 from queue import Empty, Full
 
-import _multiprocess as _multiprocessing
+try:
+    import _multiprocess as _multiprocessing
+except ImportError:
+    import _multiprocessing
 
 from . import connection
 from . import context

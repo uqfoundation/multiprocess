@@ -42,7 +42,10 @@ import time
 import tempfile
 import itertools
 
-import _multiprocess as _multiprocessing
+try:
+    import _multiprocess as _multiprocessing
+except ImportError:
+    import _multiprocessing
 from multiprocess import current_process, AuthenticationError
 from multiprocess.util import get_temp_dir, Finalize, sub_debug, debug
 from multiprocess.forking import duplicate, close
@@ -199,7 +202,10 @@ if sys.platform != 'win32':
 
 else:
 
-    from _multiprocess import win32
+    try:
+        from _multiprocess import win32
+    except ImportError:
+        from _multiprocessing import win32
 
     def Pipe(duplex=True):
         '''

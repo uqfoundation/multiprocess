@@ -34,7 +34,10 @@ import multiprocess.connection
 import multiprocess.managers
 import multiprocess.heap
 import multiprocess.pool
-import _multiprocess as _multiprocessing
+try:
+    import _multiprocess as _multiprocessing
+except ImportError:
+    import _multiprocessing
 
 from multiprocess import util
 

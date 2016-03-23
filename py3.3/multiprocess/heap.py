@@ -14,7 +14,10 @@ import sys
 import threading
 import itertools
 
-import _multiprocess as _multiprocessing
+try:
+    import _multiprocess as _multiprocessing
+except ImportError:
+    import _multiprocessing
 from multiprocess.util import Finalize, info
 from multiprocess.forking import assert_spawning
 

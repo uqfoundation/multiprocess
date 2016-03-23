@@ -14,7 +14,10 @@ import sys
 import socket
 import threading
 
-import _multiprocess as _multiprocessing
+try:
+    import _multiprocess as _multiprocessing
+except ImportError:
+    import _multiprocessing
 from multiprocess import current_process
 from multiprocess.forking import Popen, duplicate, close, ForkingPickler
 from multiprocess.util import register_after_fork, debug, sub_debug
@@ -34,7 +37,10 @@ if not(sys.platform == 'win32' or hasattr(_multiprocessing, 'recvfd')):
 
 if sys.platform == 'win32':
     import _subprocess
-    from _multiprocess import win32
+    try:
+        from _multiprocess import win32
+    except ImportError:
+        from _multiprocessing import win32
 
     def send_handle(conn, handle, destination_pid):
         process_handle = win32.OpenProcess(

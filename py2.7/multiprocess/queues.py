@@ -43,7 +43,10 @@ import atexit
 import weakref
 
 from Queue import Empty, Full
-import _multiprocess as _multiprocessing
+try:
+    import _multiprocess as _multiprocessing
+except ImportError:
+    import _multiprocessing
 from . import Pipe
 from .synchronize import Lock, BoundedSemaphore, Semaphore, Condition
 from .util import debug, info, Finalize, register_after_fork, is_exiting

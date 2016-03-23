@@ -14,7 +14,10 @@ import sys
 import threading
 import itertools
 
-import _multiprocess as _multiprocessing
+try:
+    import _multiprocess as _multiprocessing
+except ImportError:
+    import _multiprocessing
 from multiprocess.util import Finalize, info
 from multiprocess.forking import assert_spawning
 
@@ -26,7 +29,10 @@ __all__ = ['BufferWrapper']
 
 if sys.platform == 'win32':
 
-    from _multiprocess import win32
+    try:
+        from _multiprocess import win32
+    except ImportError:
+        from _multiprocessing import win32
 
     class Arena(object):
 

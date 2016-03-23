@@ -190,7 +190,10 @@ else:
     import _subprocess
     import time
 
-    from _multiprocess import win32, Connection, PipeConnection
+    try:
+        from _multiprocess import win32, Connection, PipeConnection
+    except ImportError:
+        from _multiprocessing import win32, Connection, PipeConnection
     from .util import Finalize
 
     try:

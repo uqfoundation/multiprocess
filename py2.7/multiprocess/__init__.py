@@ -81,7 +81,10 @@ class AuthenticationError(ProcessError):
     pass
 
 # This is down here because _multiprocessing uses BufferTooShort
-import _multiprocess as _multiprocessing
+try:
+    import _multiprocess as _multiprocessing
+except ImportError:
+    import _multiprocessing
 
 #
 # Definitions not depending on native semaphores

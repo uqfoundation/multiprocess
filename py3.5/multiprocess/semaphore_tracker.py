@@ -16,7 +16,10 @@ import signal
 import sys
 import threading
 import warnings
-import _multiprocess as _multiprocessing
+try:
+    import _multiprocess as _multiprocessing
+except ImportError:
+    import _multiprocessing
 
 from . import spawn
 from . import util

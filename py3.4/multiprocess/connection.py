@@ -18,7 +18,10 @@ import time
 import tempfile
 import itertools
 
-import _multiprocess as _multiprocessing
+try:
+    import _multiprocess as _multiprocessing
+except ImportError:
+    import _multiprocessing
 
 from . import reduction
 from . import util

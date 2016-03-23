@@ -189,7 +189,10 @@ else:
         from dill import dump, load, DEFAULT_PROTOCOL as HIGHEST_PROTOCOL
     except ImportError:
         from pickle import dump, load, HIGHEST_PROTOCOL
-    from _multiprocess import win32, Connection, PipeConnection
+    try:
+        from _multiprocess import win32, Connection, PipeConnection
+    except ImportError:
+        from _multiprocessing import win32, Connection, PipeConnection
     from .util import Finalize
 
     def dump(obj, file, protocol=None):

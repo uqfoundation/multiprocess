@@ -16,7 +16,10 @@ import sys
 
 from time import time as _time, sleep as _sleep
 
-import _multiprocess as _multiprocessing
+try:
+    import _multiprocess as _multiprocessing
+except ImportError:
+    import _multiprocessing
 from multiprocess.process import current_process
 from multiprocess.util import Finalize, register_after_fork, debug
 from multiprocess.forking import assert_spawning, Popen
@@ -26,11 +29,14 @@ from multiprocess.forking import assert_spawning, Popen
 # See issue 3770
 try:
     from _multiprocess import SemLock
-except (ImportError):
-    raise ImportError("This platform lacks a functioning sem_open" +
-                      " implementation, therefore, the required" +
-                      " synchronization primitives needed will not" +
-                      " function, see issue 3770.")
+except ImportError:
+    try:
+        from _multiprocessing import SemLock
+    except (ImportError):
+        raise ImportError("This platform lacks a functioning sem_open" +
+                          " implementation, therefore, the required" +
+                          " synchronization primitives needed will not" +
+                          " function, see issue 3770.")
 
 #
 # Constants

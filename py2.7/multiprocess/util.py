@@ -38,7 +38,10 @@ import weakref
 import atexit
 import threading        # we want threading to install it's
                         # cleanup function before multiprocessing does
-from subprocess import _args_from_interpreter_flags
+try:
+    from subprocess import _args_from_interpreter_flags
+except ImportError:
+    _args_from_interpreter_flags = lambda :[]
 
 from multiprocess.process import current_process, active_children
 

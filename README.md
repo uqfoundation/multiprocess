@@ -1,6 +1,6 @@
 multiprocess
 ====
-a friendly fork of the multiprocessing module
+better multiprocessing and multithreading in python
 
 About Multiprocess
 ----------

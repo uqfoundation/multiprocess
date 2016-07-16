@@ -199,7 +199,7 @@ else:
         multiprocessing_srcs.append('%s/semaphore.c' % srcdir)
 
 long_description = '''
-`Multiprocessing` is a package for the Python language which supports the
+`multiprocessing` is a package for the Python language which supports the
 spawning of processes using the API of the standard library's
 `threading` module. `multiprocessing` has been distributed in the standard
 library since python 2.6.
@@ -280,11 +280,10 @@ def run_setup(with_extensions=True):
         long_description=long_description,
         packages=packages,
         ext_modules=extensions,
-        author='R Oudkerk',
-        author_email='roudkerk at users.berlios.de',
-        url='http://developer.berlios.de/projects/pyprocessing',
+        author='Mike McKerns',
         maintainer='Mike McKerns',
-        maintainer_email='mmckerns@caltech.edu',
+        maintainer_email='mmckerns@uqfoundation.org',
+        url='http://www.cacr.caltech.edu/~mmckerns',
         download_url='http://dev.danse.us/packages/',
         zip_safe=False,
         license='BSD',

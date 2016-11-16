@@ -198,26 +198,132 @@ else:
     if macros.get('HAVE_SEM_OPEN', False):
         multiprocessing_srcs.append('%s/semaphore.c' % srcdir)
 
-long_description = '''
-`multiprocessing` is a package for the Python language which supports the
+long_description = \
+'''-----------------------------------------------------------------
+multiprocess: better multiprocessing and multithreading in python
+-----------------------------------------------------------------
+
+About Multiprocess
+====================
+
+multiprocess is a fork of multiprocessing, and is developed as part of pathos: 
+https://github.com/uqfoundation/pathos
+
+`Multiprocessing` is a package for the Python language which supports the
 spawning of processes using the API of the standard library's
 `threading` module. `multiprocessing` has been distributed in the standard
 library since python 2.6.
 
 Features:
 
-* Objects can be transferred between processes using pipes or
-  multi-producer/multi-consumer queues.
+    - Objects can be transferred between processes using pipes or multi-producer/multi-consumer queues.
+    - Objects can be shared between processes using a server process or (for simple data) shared memory.
+    - Equivalents of all the synchronization primitives in `threading` are available.
+    - A `Pool` class makes it easy to submit tasks to a pool of worker processes.
 
-* Objects can be shared between processes using a server process or
-  (for simple data) shared memory.
 
-* Equivalents of all the synchronization primitives in `threading`
-  are available.
+Pathos is a python framework for heterogeneous computing.
+Pathos is in active development, so any user feedback, bug reports, comments,
+or suggestions are highly appreciated.  A list of known issues is maintained at http://trac.mystic.cacr.caltech.edu/project/pathos/query, with a public ticket list at https://github.com/uqfoundation/pathos/issues.
 
-* A `Pool` class makes it easy to submit tasks to a pool of worker
-  processes.
+NOTE: A C compiler is required to build the included extension module. For python 3.3 and above, a C compiler is suggested, but not required.
 
+
+Major Changes
+==============
+
+    - enhanced serialization, using dill
+
+
+Current Release
+===============
+
+This version is multiprocess-0.70.4 (a fork of multiprocessing-0.70a1).
+
+The latest released pathos fork of multiprocessing is available from::
+
+    https://pypi.python.org/pypi/multiprocess
+
+Multiprocessing is distributed under a BSD license.
+
+
+Development Version
+===================
+
+You can get the latest development version with all the shiny new features at::
+
+    https://github.com/uqfoundation
+
+If you have a new contribution, please submit a pull request.
+
+
+Installation
+============
+
+Multiprocess is packaged to install from source, so you must
+download the tarball, unzip, and run the installer::
+
+    [download]
+    $ tar -xvzf multiprocess-0.70.4.tgz
+    $ cd multiprocess-0.70.4
+    $ python setup.py build
+    $ python setup.py install
+
+You will be warned of any missing dependencies and/or settings
+after you run the "build" step above.
+
+Alternately, multiprocess can be installed with pip or easy_install::
+
+    $ pip install multiprocess
+
+NOTE: A C compiler is required to build the included extension module. For python 3.3 and above, a C compiler is suggested, but not required.
+
+
+Requirements
+============
+
+Multiprocess requires::
+
+    - python2, version >= 2.5  *or*  python3, version >= 3.1
+
+Optional requirements::
+
+    - setuptools, version >= 0.6
+    - dill, version >= 0.2.5
+
+
+More Information
+================
+
+Probably the best way to get started is to look at the examples that are
+provided within multiprocess.  See the examples directory for a set of
+example scripts.  Please feel free to submit a ticket on github, or ask
+a question on stackoverflow (@Mike McKerns).
+
+Pathos is an active research tool. There are a growing number of publications
+and presentations that discuss real-world examples and new features of pathos
+in greater detail than presented in the user's guide.  If you would like to
+share how you use pathos in your work, please post a link or send an email
+(to mmckerns at uqfoundation dot org).
+
+
+Citation
+========
+
+If you use pathos to do research that leads to publication, we ask that you
+acknowledge use of pathos by citing the following in your publication::
+
+    M.M. McKerns, L. Strand, T. Sullivan, A. Fang, M.A.G. Aivazis,
+    "Building a framework for predictive science", Proceedings of
+    the 10th Python in Science Conference, 2011;
+    http://arxiv.org/pdf/1202.1056
+
+    Michael McKerns and Michael Aivazis,
+    "pathos: a framework for heterogeneous computing", 2010- ;
+    http://trac.mystic.cacr.caltech.edu/project/pathos
+
+Please see http://trac.mystic.cacr.caltech.edu/project/pathos or
+http://arxiv.org/pdf/1202.1056 for further information.
 '''
 #long_description = open(os.path.join(HERE, 'README.md')).read()
 #long_description += """
@@ -275,15 +381,14 @@ def run_setup(with_extensions=True):
     config = dict(
         name='multiprocess',
         version=meta['version'],
-        description=('Package for using processes which mimics ' +
-                     'the threading module'),
+        description=('better multiprocessing and multithreading in python'),
         long_description=long_description,
         packages=packages,
         ext_modules=extensions,
         author='Mike McKerns',
         maintainer='Mike McKerns',
-        maintainer_email='mmckerns@uqfoundation.org',
-        url='http://www.cacr.caltech.edu/~mmckerns',
+        maintainer_email='mmckerns at uqfoundation dot org',
+        url='http://github.com/uqfoundation',
         download_url='http://dev.danse.us/packages/',
         zip_safe=False,
         license='BSD',
@@ -293,26 +398,12 @@ def run_setup(with_extensions=True):
         classifiers=[
             'Development Status :: 5 - Production/Stable',
             'Intended Audience :: Developers',
-            'Programming Language :: Python',
-            'Programming Language :: C',
+            'Intended Audience :: Science/Research',
+            'License :: OSI Approved :: BSD License',
             'Programming Language :: Python :: 2',
-            'Programming Language :: Python :: 2.5',
-            'Programming Language :: Python :: 2.6',
-            'Programming Language :: Python :: 2.7',
             'Programming Language :: Python :: 3',
-            'Programming Language :: Python :: 3.1',
-            'Programming Language :: Python :: 3.2',
-            'Programming Language :: Python :: 3.3',
-            'Programming Language :: Python :: 3.4',
-            'Programming Language :: Python :: 3.5',
-#           'Programming Language :: Python :: Implementation :: CPython',
-#           'Programming Language :: Python :: Implementation :: Jython',
-#           'Programming Language :: Python :: Implementation :: PyPy',
-#           'Operating System :: Microsoft :: Windows',
-#           'Operating System :: POSIX',
-#           'License :: OSI Approved :: BSD License',
-#           'Topic :: Software Development :: Libraries :: Python Modules',
-#           'Topic :: System :: Distributed Computing',
+            'Topic :: Scientific/Engineering',
+            'Topic :: Software Development',
         ],
         **extras
     )

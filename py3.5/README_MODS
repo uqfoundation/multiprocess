@@ -1,6 +1,6 @@
-cp -rf Python-3.4.3/Modules/_multiprocessing Modules/_multiprocessig
-cp -rf Python-3.4.3/Lib/multiprocessing multiprocessing
-cp -rf Python-3.4.3/Lib/test/*test_multiprocessing*.py tests/
+cp -rf Python-3.5.0/Modules/_multiprocessing Modules/_multiprocessig
+cp -rf Python-3.5.0/Lib/multiprocessing multiprocessing
+cp -rf Python-3.5.0/Lib/test/*test_multiprocessing*.py tests/
 cp -rf py3.4.3/examples .
 cp -f py3.4.3/*txt .
 cp -f py3.4.3/setup.py .
@@ -8,7 +8,7 @@ cp -rf py3.4.3/doc .
 cp -f py3.4.3/index.html .
 
 # ----------------------------------------------------------------------
-diff Modules/_multiprocessing/semaphore.c Python-3.4.3/Modules/_multiprocessing/semaphore.c
+diff Modules/_multiprocessing/semaphore.c Python-3.5.0/Modules/_multiprocessing/semaphore.c
 201c201
 < //ifndef HAVE_SEM_TIMEDWAIT
 ---
@@ -19,12 +19,12 @@ diff Modules/_multiprocessing/semaphore.c Python-3.4.3/Modules/_multiprocessing/
 > #endif /* !HAVE_SEM_TIMEDWAIT */
 
 # ----------------------------------------------------------------------
-diff multiprocessing/__init__.py Python-3.4.3/Lib/multiprocessing/__init__.py
+diff multiprocessing/__init__.py Python-3.5.0/Lib/multiprocessing/__init__.py
 18,19d17
 < __version__ = '0.70.1'
 < 
 
-diff multiprocessing/reduction.py /Users/mmckerns/src/Python-3.4.3/Lib/multiprocessing/reduction.py
+diff multiprocessing/reduction.py /Users/mmckerns/src/Python-3.5.0/Lib/multiprocessing/reduction.py
 14,17c14
 < try:
 <     import dill as pickle
@@ -33,7 +33,7 @@ diff multiprocessing/reduction.py /Users/mmckerns/src/Python-3.4.3/Lib/multiproc
 ---
 > import pickle
 
-diff multiprocessing/spawn.py /Users/mmckerns/src/Python-3.4.3/Lib/multiprocessing/spawn.py
+diff multiprocessing/spawn.py /Users/mmckerns/src/Python-3.5.0/Lib/multiprocessing/spawn.py
 12,15c12
 < try:
 <     import dill as pickle
@@ -47,3 +47,74 @@ REPLACED "from multiprocessing" with "from multiprocess"
 REPLACED "from _multiprocessing" with "from _multiprocess"
 REPLACED "import _multiprocessing" with "import _multiprocess as _multiprocessing"
 REPLACED "multprocessing" with "multiprocess" wherever else relevant...
+
+# ----------------------------------------------------------------------
+diff /Users/mmckerns/src/Python-3.5.0/Lib/multiprocessing/connection.py /Users/mmckerns/src/Python-3.5.2/Lib/multiprocessing/connection.py
+400c400
+<             # Issue #<E2><80><AF>20540: concatenate before sending, to avoid delays due
+---
+>             # Issue #20540: concatenate before sending, to avoid delays due
+Common subdirectories: /Users/mmckerns/src/Python-3.5.0/Lib/multiprocessing/dummy and /Users/mmckerns/src/Python-3.5.2/Lib/multiprocessing/dummy
+
+diff /Users/mmckerns/src/Python-3.5.0/Lib/multiprocessing/forkserver.py /Users/mmckerns/src/Python-3.5.2/Lib/multiprocessing/forkserver.py
+150,156c150
+<     # close sys.stdin
+<     if sys.stdin is not None:
+<         try:
+<             sys.stdin.close()
+<             sys.stdin = open(os.devnull)
+<         except (OSError, ValueError):
+<             pass
+---
+>     util._close_stdin()
+
+diff /Users/mmckerns/src/Python-3.5.0/Lib/multiprocessing/managers.py /Users/mmckerns/src/Python-3.5.2/Lib/multiprocessing/managers.py
+845c845
+<     Return an proxy type whose methods are given by `exposed`
+---
+>     Return a proxy type whose methods are given by `exposed`
+
+diff /Users/mmckerns/src/Python-3.5.0/Lib/multiprocessing/process.py /Users/mmckerns/src/Python-3.5.2/Lib/multiprocessing/process.py
+237,242c237
+<             if sys.stdin is not None:
+<                 try:
+<                     sys.stdin.close()
+<                     sys.stdin = open(os.devnull)
+<                 except (OSError, ValueError):
+<                     pass
+---
+>             util._close_stdin()
+
+diff /Users/mmckerns/src/Python-3.5.0/Lib/multiprocessing/spawn.py /Users/mmckerns/src/Python-3.5.2/Lib/multiprocessing/spawn.py
+94c94
+<     Run code specifed by data received over pipe
+---
+>     Run code specified by data received over pipe
+
+diff /Users/mmckerns/src/Python-3.5.0/Lib/multiprocessing/util.py /Users/mmckerns/src/Python-3.5.2/Lib/multiprocessing/util.py
+11a12
+> import sys
+358a360,381
+> #
+> # Close sys.stdin and replace stdin with os.devnull
+> #
+> 
+> def _close_stdin():
+>     if sys.stdin is None:
+>         return
+> 
+>     try:
+>         sys.stdin.close()
+>     except (OSError, ValueError):
+>         pass
+> 
+>     try:
+>         fd = os.open(os.devnull, os.O_RDONLY)
+>         try:
+>             sys.stdin = open(fd, closefd=False)
+>         except:
+>             os.close(fd)
+>             raise
+>     except (OSError, ValueError):
+>         pass
+

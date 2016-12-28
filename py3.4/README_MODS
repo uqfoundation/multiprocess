@@ -47,3 +47,108 @@ REPLACED "from multiprocessing" with "from multiprocess"
 REPLACED "from _multiprocessing" with "from _multiprocess"
 REPLACED "import _multiprocessing" with "import _multiprocess as _multiprocessing"
 REPLACED "multprocessing" with "multiprocess" wherever else relevant...
+
+# ----------------------------------------------------------------------
+diff Python-3.4.5/Lib/multiprocessing/connection.py Python-3.4.3/Lib/multiprocessing/connection.py
+472,473c472,473
+<         listener = self._listener
+<         if listener is not None:
+---
+>         if self._listener is not None:
+>             self._listener.close()
+475d474
+<             listener.close()
+613,619c612,614
+<         try:
+<             self._socket.close()
+<         finally:
+<             unlink = self._unlink
+<             if unlink is not None:
+<                 self._unlink = None
+<                 unlink()
+---
+>         self._socket.close()
+>         if self._unlink is not None:
+>             self._unlink()
+852c847
+<                         ov, err = None, e.winerror
+---
+>                         err = e.winerror
+861,870c856
+<                         # in the pipe, but it HAS NOT been consumed...
+<                         if ov and sys.getwindowsversion()[:2] >= (6, 2):
+<                             # ... except on Windows 8 and later, where
+<                             # the message HAS been consumed.
+<                             try:
+<                                 _, err = ov.GetOverlappedResult(False)
+<                             except OSError as e:
+<                                 err = e.winerror
+<                             if not err and hasattr(o, '_got_empty_message'):
+<                                 o._got_empty_message = True
+---
+>                         # in the pipe, but it HAS NOT been consumed.
+
+diff Python-3.4.5/Lib/multiprocessing/pool.py Python-3.4.3/Lib/multiprocessing/pool.py
+377d376
+<             task = None
+379,383c378,385
+<             try:
+<                 for i, task in enumerate(taskseq):
+<                     if thread._state:
+<                         util.debug('task handler found thread._state != RUN')
+<                         break
+---
+>             for i, task in enumerate(taskseq):
+>                 if thread._state:
+>                     util.debug('task handler found thread._state != RUN')
+>                     break
+>                 try:
+>                     put(task)
+>                 except Exception as e:
+>                     job, ind = task[:2]
+385,401c387,390
+<                         put(task)
+<                     except Exception as e:
+<                         job, ind = task[:2]
+<                         try:
+<                             cache[job]._set(ind, (False, e))
+<                         except KeyError:
+<                             pass
+<                 else:
+<                     if set_length:
+<                         util.debug('doing set_length()')
+<                         set_length(i+1)
+<                     continue
+<                 break
+<             except Exception as ex:
+<                 job, ind = task[:2] if task else (0, 0)
+<                 if job in cache:
+<                     cache[job]._set(ind + 1, (False, ex))
+---
+>                         cache[job]._set(ind, (False, e))
+>                     except KeyError:
+>                         pass
+>             else:
+404a394,395
+>                 continue
+>             break
+
+diff Python-3.4.5/Lib/multiprocessing/queues.py Python-3.4.3/Lib/multiprocessing/queues.py
+38,39c38
+<             # Can raise ImportError (see issues #3770 and #23400)
+<             from .synchronize import SEM_VALUE_MAX as maxsize
+---
+>             maxsize = _multiprocessing.SemLock.SEM_VALUE_MAX
+136,142c135,137
+<         try:
+<             self._reader.close()
+<         finally:
+<             close = self._close
+<             if close:
+<                 self._close = None
+<                 close()
+---
+>         self._reader.close()
+>         if self._close:
+>             self._close()
+

@@ -472,9 +472,10 @@ class Listener(object):
         '''
         Close the bound socket or named pipe of `self`.
         '''
-        if self._listener is not None:
-            self._listener.close()
+        listener = self._listener
+        if listener is not None:
             self._listener = None
+            listener.close()
 
     address = property(lambda self: self._listener._address)
     last_accepted = property(lambda self: self._listener._last_accepted)
@@ -612,9 +613,13 @@ class SocketListener(object):
         return Connection(s.detach())
 
     def close(self):
-        self._socket.close()
-        if self._unlink is not None:
-            self._unlink()
+        try:
+            self._socket.close()
+        finally:
+            unlink = self._unlink
+            if unlink is not None:
+                self._unlink = None
+                unlink()
 
 
 def SocketClient(address):
@@ -847,7 +852,7 @@ if sys.platform == 'win32':
                     try:
                         ov, err = _winapi.ReadFile(fileno(), 0, True)
                     except OSError as e:
-                        err = e.winerror
+                        ov, err = None, e.winerror
                         if err not in _ready_errors:
                             raise
                     if err == _winapi.ERROR_IO_PENDING:
@@ -856,7 +861,16 @@ if sys.platform == 'win32':
                     else:
                         # If o.fileno() is an overlapped pipe handle and
                         # err == 0 then there is a zero length message
-                        # in the pipe, but it HAS NOT been consumed.
+                        # in the pipe, but it HAS NOT been consumed...
+                        if ov and sys.getwindowsversion()[:2] >= (6, 2):
+                            # ... except on Windows 8 and later, where
+                            # the message HAS been consumed.
+                            try:
+                                _, err = ov.GetOverlappedResult(False)
+                            except OSError as e:
+                                err = e.winerror
+                            if not err and hasattr(o, '_got_empty_message'):
+                                o._got_empty_message = True
                         ready_objects.add(o)
                         timeout = 0
 

@@ -89,3 +89,72 @@ REPLACED "from multiprocessing" with "from multiprocess"
 REPLACED "from _multiprocessing" with "from _multiprocess"
 REPLACED "import _multiprocessing" with "import _multiprocess as _multiprocessing"
 REPLACED "multprocessing" with "multiprocess" wherever else relevant...
+
+# ----------------------------------------------------------------------
+diff Python-2.7.10/Modules/_multiprocessing/connection.h Python-2.7.13/Modules/_multiprocessing/connection.h
+22,23c22,23
+<     PyErr_SetString(PyExc_IOError, "connection is write-only"); \
+<     return NULL; \
+---
+>         PyErr_SetString(PyExc_IOError, "connection is write-only"); \
+>         return NULL; \
+28,29c28,29
+<     PyErr_SetString(PyExc_IOError, "connection is read-only"); \
+<     return NULL; \
+---
+>         PyErr_SetString(PyExc_IOError, "connection is read-only"); \
+>         return NULL; \
+
+diff Python-2.7.10/Modules/_multiprocessing/semaphore.c Python-2.7.13/Modules/_multiprocessing/semaphore.c
+432c432
+<     static int counter = 0;
+---
+>     int try = 0;
+443c443,453
+<     PyOS_snprintf(buffer, sizeof(buffer), "/mp%ld-%d", (long)getpid(), counter++);
+---
+>     /* Create a semaphore with a unique name. The bytes returned by
+>      * _PyOS_URandom() are treated as unsigned long to ensure that the filename
+>      * is valid (no special characters). */
+>     do {
+>         unsigned long suffix;
+>         _PyOS_URandom((char *)&suffix, sizeof(suffix));
+>         PyOS_snprintf(buffer, sizeof(buffer), "/mp%ld-%lu", (long)getpid(),
+>                       suffix);
+>         SEM_CLEAR_ERROR();
+>         handle = SEM_CREATE(buffer, value, maxvalue);
+>     } while ((handle == SEM_FAILED) && (errno == EEXIST) && (++try < 100));
+445,446d454
+<     SEM_CLEAR_ERROR();
+<     handle = SEM_CREATE(buffer, value, maxvalue);
+
+diff Python-2.7.10/Lib/multiprocessing/forking.py Python-2.7.13/Lib/multiprocessing/forking.py
+472a473,478
+>         # XXX (ncoghlan): The following code makes several bogus
+>         # assumptions regarding the relationship between __file__
+>         # and a module's real name. See PEP 302 and issue #10845
+>         # The problem is resolved properly in Python 3.4+, as
+>         # described in issue #19946
+> 
+478c484,492
+<         if main_name != 'ipython':
+---
+>         if main_name == '__main__':
+>             # For directory and zipfile execution, we assume an implicit
+>             # "if __name__ == '__main__':" around the module, and don't
+>             # rerun the main module code in spawned processes
+>             main_module = sys.modules['__main__']
+>             main_module.__file__ = main_path
+>         elif main_name != 'ipython':
+>             # Main modules not actually called __main__.py may
+>             # contain additional code that should still be executed
+
+diff Python-2.7.10/Lib/multiprocessing/managers.py Python-2.7.13/Lib/multiprocessing/managers.py
+290c290
+<                     send(('#UNSERIALIZABLE', repr(msg)))
+---
+>                     send(('#UNSERIALIZABLE', format_exc()))
+887c887
+<     Return an proxy type whose methods are given by `exposed`
+---
+>     Return a proxy type whose methods are given by `exposed`

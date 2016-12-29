@@ -28,7 +28,8 @@ try:
     from setuptools import setup, Extension, find_packages
     has_setuptools = True
 except ImportError:
-    from distutils.core import setup, Extension, find_packages  # noqa
+    from distutils.core import setup, Extension  # noqa
+    find_packages = lambda **kwds: [pkgname, pkgname+'.dummy']
     has_setuptools = False
 from distutils import sysconfig
 from distutils.errors import CCompilerError, DistutilsExecError, \

@@ -1,0 +1,148 @@
+cp -rf Python-3.6.0/Modules/_multiprocessing Modules/_multiprocessig
+cp -rf Python-3.6.0/Lib/multiprocessing multiprocessing
+cp -rf Python-3.6.0/Lib/test/*test_multiprocessing*.py tests/
+cp -rf py3.5/examples .
+cp -f py3.5/setup.py .
+cp -rf py3.5/doc .
+cp -f py3.5/index.html .
+
+# ----------------------------------------------------------------------
+diff Modules/_multiprocess/multiprocess.c Python-3.6.0/Modules/_multiprocessing/multiprocessing.c 
+10c10
+< #include "multiprocess.h"
+---
+> #include "multiprocessing.h"
+144c144
+<     "_multiprocess",
+---
+>     "_multiprocessing",
+156c156
+< PyInit__multiprocess(void)
+---
+> PyInit__multiprocessing(void)
+
+diff Modules/_multiprocess/semaphore.c Python-3.6.0/Modules/_multiprocessing/semaphore.c      
+10c10
+< #include "multiprocess.h"
+---
+> #include "multiprocessing.h"
+201c201
+< // ifndef HAVE_SEM_TIMEDWAIT
+---
+> #ifndef HAVE_SEM_TIMEDWAIT
+262c262
+< // endif /* !HAVE_SEM_TIMEDWAIT */
+---
+> #endif /* !HAVE_SEM_TIMEDWAIT */
+616c616
+<     /* tp_name           */ "_multiprocess.SemLock",
+---
+>     /* tp_name           */ "_multiprocessing.SemLock",
+
+diff multiprocess/__init__.py Python-3.6.0/Lib/multiprocessing/__init__.py
+18,19d17
+< __version__ = '0.70.5.dev0'
+< 
+
+diff multiprocess/connection.py Python-3.6.0/Lib/multiprocessing/connection.py
+21,24c21
+< try:
+<     import _multiprocess as _multiprocessing
+< except ImportError:
+<     import _multiprocessing
+---
+> import _multiprocessing
+
+diff multiprocess/forkserver.py Python-3.6.0/Lib/multiprocessing/forkserver.py
+95c95
+<             cmd = ('from multiprocess.forkserver import main; ' +
+---
+>             cmd = ('from multiprocessing.forkserver import main; ' +
+
+diff multiprocess/popen_fork.py Python-3.6.0/Lib/multiprocessing/popen_fork.py
+47c47
+<                 from multiprocess.connection import wait
+---
+>                 from multiprocessing.connection import wait
+
+diff multiprocess/popen_forkserver.py Python-3.6.0/Lib/multiprocessing/popen_forkserver.py
+60c60
+<             from multiprocess.connection import wait
+---
+>             from multiprocessing.connection import wait
+
+diff multiprocess/queues.py Python-3.6.0/Lib/multiprocessing/queues.py
+22,25c22
+< try:
+<     import _multiprocess as _multiprocessing
+< except ImportError:
+<     import _multiprocessing
+---
+> import _multiprocessing
+
+diff multiprocess/reduction.py Python-3.6.0/Lib/multiprocessing/reduction.py
+14,17c14
+< try:
+<     import dill as pickle
+< except ImportError:
+<     import pickle
+---
+> import pickle
+
+diff multiprocess/semaphore_tracker.py Python-3.6.0/Lib/multiprocessing/semaphore_tracker.py
+19,22c19
+< try:
+<     import _multiprocess as _multiprocessing
+< except ImportError:
+<     import _multiprocessing
+---
+> import _multiprocessing
+53c50
+<             cmd = 'from multiprocess.semaphore_tracker import main;main(%d)'
+---
+>             cmd = 'from multiprocessing.semaphore_tracker import main;main(%d)'
+
+diff multiprocess/spawn.py Python-3.6.0/Lib/multiprocessing/spawn.py
+89c86
+<         prog = 'from multiprocess.spawn import spawn_main; spawn_main(%s)'
+---
+>         prog = 'from multiprocessing.spawn import spawn_main; spawn_main(%s)'
+
+diff multiprocess/synchronize.py Python-3.6.0/Lib/multiprocessing/synchronize.py
+17,20c17
+< try:
+<     import _multiprocess as _multiprocessing
+< except ImportError:
+<     import _multiprocessing
+---
+> import _multiprocessing
+32,40c29,34
+<     from _multiprocess import SemLock, sem_unlink
+< except ImportError:
+<     try:
+<         from _multiprocessing import SemLock, sem_unlink
+<     except (ImportError):
+<         raise ImportError("This platform lacks a functioning sem_open" +
+<                           " implementation, therefore, the required" +
+<                           " synchronization primitives needed will not" +
+<                           " function, see issue 3770.")
+---
+>     from _multiprocessing import SemLock, sem_unlink
+> except (ImportError):
+>     raise ImportError("This platform lacks a functioning sem_open" +
+>                       " implementation, therefore, the required" +
+>                       " synchronization primitives needed will not" +
+>                       " function, see issue 3770.")
+
+diff multiprocess/util.py Python-3.6.0/Lib/multiprocessing/util.py
+38c38
+< LOGGER_NAME = 'multiprocess'
+---
+> LOGGER_NAME = 'multiprocessing'
+
+# ----------------------------------------------------------------------
+REPLACED "from multiprocessing" with "from multiprocess"
+REPLACED "from _multiprocessing" with "from _multiprocess"
+REPLACED "import _multiprocessing" with "import _multiprocess as _multiprocessing"
+REPLACED "multprocessing" with "multiprocess" wherever else relevant...
+

@@ -626,12 +626,13 @@ class _TestQueue(BaseTestCase):
             module_name = 'imported_by_an_imported_module'
             with open(module_name + '.py', 'w') as f:
                 f.write("""if 1:
-                    import multiprocess
+                    import multiprocess as multiprocessing
 
-                    q = multiprocess.Queue()
+                    q = multiprocessing.Queue()
                     q.put('knock knock')
                     q.get(timeout=3)
                     q.close()
+                    del q
                 """)
 
             with test_support.DirsOnSysPath(os.getcwd()):

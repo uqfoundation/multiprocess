@@ -239,7 +239,7 @@ Major Changes
 Current Release
 ===============
 
-This version is multiprocess-0.70.5 (a fork of multiprocessing-0.70a1).
+This version is multiprocess-0.70.6 (a fork of multiprocessing-0.70a1).
 
 The latest released pathos fork of multiprocessing is available from::
 
@@ -265,8 +265,8 @@ Multiprocess is packaged to install from source, so you must
 download the tarball, unzip, and run the installer::
 
     [download]
-    $ tar -xvzf multiprocess-0.70.5.tgz
-    $ cd multiprocess-0.70.5
+    $ tar -xvzf multiprocess-0.70.6.tgz
+    $ cd multiprocess-0.70.6
     $ python setup.py build
     $ python setup.py install
 

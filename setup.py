@@ -388,7 +388,6 @@ def run_setup(with_extensions=True):
         ext_modules=extensions,
         author='Mike McKerns',
         maintainer='Mike McKerns',
-        maintainer_email='mmckerns at uqfoundation dot org',
         url='http://github.com/uqfoundation',
         download_url='http://dev.danse.us/packages/',
         zip_safe=False,

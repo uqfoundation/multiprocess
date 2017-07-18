@@ -65,7 +65,7 @@ install a C compiler or fix the error(s) above.
 
 # -*- extra config (setuptools) -*-
 if has_setuptools:
-    extras = dict(install_requires=['dill>=0.2.7'])
+    extras = dict(install_requires=['dill>=0.2.7.1'])
 else:
     extras = dict()
 
@@ -290,7 +290,7 @@ Multiprocess requires::
 Optional requirements::
 
     - setuptools, version >= 0.6
-    - dill, version >= 0.2.7
+    - dill, version >= 0.2.7.1
 
 
 More Information

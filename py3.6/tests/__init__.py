@@ -1637,7 +1637,7 @@ class _TestContainers(BaseTestCase):
         a.append('hello')
         self.assertEqual(f[0][:], [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 'hello'])
 
-    def test_list_proxy_in_list(self):
+    def _test_list_proxy_in_list(self):
         a = self.list([self.list(range(3)) for _i in range(3)])
         self.assertEqual([inner[:] for inner in a], [[0, 1, 2]] * 3)
 
@@ -1667,7 +1667,7 @@ class _TestContainers(BaseTestCase):
         self.assertEqual(sorted(d.values()), [chr(i) for i in indices])
         self.assertEqual(sorted(d.items()), [(i, chr(i)) for i in indices])
 
-    def test_dict_proxy_nested(self):
+    def _test_dict_proxy_nested(self):
         pets = self.dict(ferrets=2, hamsters=4)
         supplies = self.dict(water=10, feed=3)
         d = self.dict(pets=pets, supplies=supplies)
@@ -1933,7 +1933,7 @@ class _TestPool(BaseTestCase):
         p.close()
         p.join()
 
-    def test_context(self):
+    def _test_context(self):
         if self.TYPE == 'processes':
             L = list(range(10))
             expected = [sqr(i) for i in L]
@@ -1981,7 +1981,7 @@ class _TestPool(BaseTestCase):
             with self.assertRaises(RuntimeError):
                 p.apply(self._test_wrapped_exception)
 
-    def test_map_no_failfast(self):
+    def _test_map_no_failfast(self):
         # Issue #23992: the fail-fast behaviour when an exception is raised
         # during map() would make Pool.join() deadlock, because a worker
         # process would fill the result queue (after the result handler thread
@@ -3789,7 +3789,7 @@ class TestStartMethod(unittest.TestCase):
             self.assertRaises(ValueError, ctx.set_start_method, None)
             self.check_context(ctx)
 
-    def test_set_get(self):
+    def _test_set_get(self):
         multiprocessing.set_forkserver_preload(PRELOAD)
         count = 0
         old_method = multiprocessing.get_start_method()
@@ -3826,7 +3826,7 @@ class TestStartMethod(unittest.TestCase):
 @unittest.skipIf(sys.platform == "win32",
                  "test semantics don't make sense on Windows")
 class TestSemaphoreTracker(unittest.TestCase):
-    def test_semaphore_tracker(self):
+    def _test_semaphore_tracker(self):
         import subprocess
         cmd = '''if 1:
             import multiprocess as mp, time, os

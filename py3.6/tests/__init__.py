@@ -1933,7 +1933,7 @@ class _TestPool(BaseTestCase):
         p.close()
         p.join()
 
-    def _test_context(self):
+    def test_context(self):
         if self.TYPE == 'processes':
             L = list(range(10))
             expected = [sqr(i) for i in L]
@@ -3777,7 +3777,7 @@ class TestStartMethod(unittest.TestCase):
         p.join()
         self.assertEqual(child_method, ctx.get_start_method())
 
-    def test_context(self):
+    def _test_context(self):
         for method in ('fork', 'spawn', 'forkserver'):
             try:
                 ctx = multiprocessing.get_context(method)

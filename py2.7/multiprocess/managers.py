@@ -484,8 +484,7 @@ class BaseManager(object):
         self._Listener, self._Client = listener_client[serializer]
 
     def __reduce__(self):
-        return type(self).from_address, \
-               (self._address, self._authkey, self._serializer)
+        return type(self), (self._address, self._authkey, self._serializer)
 
     def get_server(self):
         '''

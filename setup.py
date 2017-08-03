@@ -225,7 +225,7 @@ Features:
 
 Pathos is a python framework for heterogeneous computing.
 Pathos is in active development, so any user feedback, bug reports, comments,
-or suggestions are highly appreciated.  A list of known issues is maintained at http://trac.mystic.cacr.caltech.edu/project/pathos/query, with a public ticket list at https://github.com/uqfoundation/pathos/issues.
+or suggestions are highly appreciated.  A list of known issues is maintained at http://trac.mystic.cacr.caltech.edu/project/pathos/query.html, with a public ticket list at https://github.com/uqfoundation/pathos/issues.
 
 NOTE: A C compiler is required to build the included extension module. For python 3.3 and above, a C compiler is suggested, but not required.
 
@@ -243,7 +243,7 @@ This version is multiprocess-0.70.6 (a fork of multiprocessing-0.70a1).
 
 The latest released pathos fork of multiprocessing is available from::
 
-    https://pypi.python.org/pypi/multiprocess
+    https://pypi.org/project/multiprocess
 
 Multiprocessing is distributed under a BSD license.
 
@@ -388,8 +388,8 @@ def run_setup(with_extensions=True):
         ext_modules=extensions,
         author='Mike McKerns',
         maintainer='Mike McKerns',
-        url='http://github.com/uqfoundation',
-        download_url='http://dev.danse.us/packages/',
+        url='https://pypi.org/project/multiprocess',
+        download_url='https://github.com/uqfoundation/multiprocess/releases/download/multiprocess-%s/multiprocess-%s.tar.gz' % (stable_version, stable_version),
         zip_safe=False,
         license='BSD',
         package_dir={'' : pkgdir}, #XXX: {pkgname+'.tests' : 'tests'} ?

@@ -29,7 +29,7 @@ Features:
 `pathos` is a python framework for heterogeneous computing.
 `pathos` is in active development, so any user feedback, bug reports, comments,
 or suggestions are highly appreciated.  A list of known issues is maintained
-at http://trac.mystic.cacr.caltech.edu/project/pathos/query, with a public
+at http://trac.mystic.cacr.caltech.edu/project/pathos/query.html, with a public
 ticket list at https://github.com/uqfoundation/pathos/issues.
 
 NOTE: A C compiler is required to build the included extension module. For python 3.3 and above, a C compiler is suggested, but not required.
@@ -45,7 +45,7 @@ Current Release
 This version a fork of `multiprocessing-0.70a1`.
 
 The latest released `pathos` fork of `multiprocessing` is available from::
-    https://pypi.python.org/pypi/multiprocess
+    https://pypi.org/project/multiprocess
 
 `multiprocessing` is distributed under a BSD license.
 

@@ -4,6 +4,7 @@ import re
 import os
 import sys
 import glob
+stable_version = '0.70.6'
 pymajor,pyminor = sys.version_info[:2]
 pkgdir = 'py%s.%s' % (pymajor,pyminor)
 if sys.version_info < (2, 5):
@@ -239,7 +240,7 @@ Major Changes
 Current Release
 ===============
 
-This version is multiprocess-0.70.6 (a fork of multiprocessing-0.70a1).
+This version is multiprocess-%(relver)s (a fork of multiprocessing-0.70a1).
 
 The latest released pathos fork of multiprocessing is available from::
 
@@ -265,8 +266,8 @@ Multiprocess is packaged to install from source, so you must
 download the tarball, unzip, and run the installer::
 
     [download]
-    $ tar -xvzf multiprocess-0.70.6.tgz
-    $ cd multiprocess-0.70.6
+    $ tar -xvzf multiprocess-%(relver)s.tgz
+    $ cd multiprocess-%(relver)s
     $ python setup.py build
     $ python setup.py install
 
@@ -325,7 +326,7 @@ acknowledge use of pathos by citing the following in your publication::
 
 Please see http://trac.mystic.cacr.caltech.edu/project/pathos or
 http://arxiv.org/pdf/1202.1056 for further information.
-'''
+''' % {'relver': stable_version}
 #long_description = open(os.path.join(HERE, 'README.md')).read()
 #long_description += """
 #

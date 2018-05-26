@@ -4,11 +4,11 @@ better multiprocessing and multithreading in python
 
 About Multiprocess
 ------------------
-`multiprocess` is a fork of `multiprocessing`, and is developed as part of `pathos`: https://github.com/uqfoundation/pathos
+``multiprocess`` is a fork of ``multiprocessing``, and is developed as part of ``pathos``: https://github.com/uqfoundation/pathos
 
-`multiprocessing` is a package for the Python language which supports the
+``multiprocessing`` is a package for the Python language which supports the
 spawning of processes using the API of the standard library's
-`threading` module. `multiprocessing` has been distributed in the standard
+``threading`` module. ``multiprocessing`` has been distributed in the standard
 library since python 2.6.
 
 Features:
@@ -19,35 +19,35 @@ Features:
 * Objects can be shared between processes using a server process or
   (for simple data) shared memory.
 
-* Equivalents of all the synchronization primitives in `threading`
+* Equivalents of all the synchronization primitives in ``threading``
   are available.
 
-* A `Pool` class makes it easy to submit tasks to a pool of worker
+* A ``Pool`` class makes it easy to submit tasks to a pool of worker
   processes.
 
 
-`pathos` is a python framework for heterogeneous computing.
-`pathos` is in active development, so any user feedback, bug reports, comments,
+``multiprocess`` is part of ``pathos``, a python framework for heterogeneous computing.
+``multiprocess`` is in active development, so any user feedback, bug reports, comments,
 or suggestions are highly appreciated.  A list of known issues is maintained
 at http://trac.mystic.cacr.caltech.edu/project/pathos/query.html, with a public
-ticket list at https://github.com/uqfoundation/pathos/issues.
+ticket list at https://github.com/uqfoundation/multiprocess/issues.
 
 NOTE: A C compiler is required to build the included extension module. For python 3.3 and above, a C compiler is suggested, but not required.
 
 
 Major Changes
 -------------
-* enhanced serialization, using `dill`
+* enhanced serialization, using ``dill``
 
 
 Current Release
 ---------------
-This version a fork of `multiprocessing-0.70a1`.
+This version a fork of ``multiprocessing-0.70a1``.
 
-The latest released `pathos` fork of `multiprocessing` is available from::
+The latest released version of ``multiprocess`` is available from::
     https://pypi.org/project/multiprocess
 
-`multiprocessing` is distributed under a BSD license.
+``multiprocessing`` is distributed under a BSD license.
 
 
 Development Version
@@ -60,7 +60,7 @@ If you have a new contribution, please submit a pull request.
 
 Examples
 --------
-The `multiprocess.Process` class follows the API of `threading.Thread`.
+The ``multiprocess.Process`` class follows the API of ``threading.Thread``.
 For example ::
 
     from multiprocess import Process, Queue
@@ -110,7 +110,7 @@ for example ::
     >>> print (result.get(timeout=1))
     [0, 1, 4, 9, 16, 25, 36, 49, 64, 81]
 
-When `dill` is installed, serialization is extended to most objects,
+When ``dill`` is installed, serialization is extended to most objects,
 for example ::
 
     >>> from multiprocess import Pool
@@ -121,22 +121,19 @@ for example ::
 
 More Information
 ----------------
-Probably the best way to get started is to look at the examples that are
-provided within `multiprocess`.  See the examples directory for a set of
-example scripts.  Please feel free to submit a ticket on github, or ask
-a question on stackoverflow (@Mike McKerns).
-
-`pathos` is an active research tool. There are a growing number of publications
-and presentations that discuss real-world examples and new features of `pathos`
-in greater detail than presented in the user's guide.  If you would like to
-share how you use `pathos` in your work, please post a link or send an email
-(to mmckerns at uqfoundation dot org).
+Probably the best way to get started is to look at the documentation at
+http://multiprocess.rtfd.io. See ``multiprocess.examples`` for a set of example
+scripts. You can also run the test suite with ``python -m multiprocess.tests``.
+Please feel free to submit a ticket on github, or ask a question on
+stackoverflow (**@Mike McKerns**).  If you would like to share how you use
+``multiprocess`` in your work, please post send an email
+(to **mmckerns at uqfoundation dot org**).
 
 
 Citation
 --------
-If you use `pathos` to do research that leads to publication, we ask that you
-acknowledge use of `pathos` by citing the following in your publication::
+If you use ``multiprocess`` to do research that leads to publication, we ask that you
+acknowledge use of ``multiprocess`` by citing the following in your publication::
 
     M.M. McKerns, L. Strand, T. Sullivan, A. Fang, M.A.G. Aivazis,
     "Building a framework for predictive science", Proceedings of
@@ -149,3 +146,4 @@ acknowledge use of `pathos` by citing the following in your publication::
 
 Please see http://trac.mystic.cacr.caltech.edu/project/pathos or
 http://arxiv.org/pdf/1202.1056 for further information.
+

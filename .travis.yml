@@ -37,4 +37,4 @@ install:
     - python setup.py build && python setup.py install
 
 script:
-    - for test in py$TRAVIS_PYTHON_VERSION/tests/*.py; do if [[ $test != *"main"* ]]; then echo $test ; python $test > /dev/null ; fi; done
+    - for test in py$TRAVIS_PYTHON_VERSION/multiprocess/tests/*.py; do if [[ $test != *"main"* ]]; then echo $test ; python $test > /dev/null ; fi; done

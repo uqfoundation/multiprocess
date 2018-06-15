@@ -146,13 +146,13 @@ REPLACED "from _multiprocessing" with "from _multiprocess"
 REPLACED "import _multiprocessing" with "import _multiprocess as _multiprocessing"
 REPLACED "multprocessing" with "multiprocess" wherever else relevant...
 # ----------------------------------------------------------------------
-diff /Users/mmckerns/src/Python-3.6.0/Lib/multiprocessing/context.py /Users/mmckerns/src/Python-3.6.6rc1/Lib/multiprocessing/context.py
+diff Python-3.6.0/Lib/multiprocessing/context.py Python-3.6.6rc1/Lib/multiprocessing/context.py
 199c199
 <     def set_start_method(self, method=None):
 ---
 >     def set_start_method(self, method, force=False):
-Common subdirectories: /Users/mmckerns/src/Python-3.6.0/Lib/multiprocessing/dummy and /Users/mmckerns/src/Python-3.6.6rc1/Lib/multiprocessing/dummy
-diff /Users/mmckerns/src/Python-3.6.0/Lib/multiprocessing/forkserver.py /Users/mmckerns/src/Python-3.6.6rc1/Lib/multiprocessing/forkserver.py
+Common subdirectories: Python-3.6.0/Lib/multiprocessing/dummy and Python-3.6.6rc1/Lib/multiprocessing/dummy
+diff Python-3.6.0/Lib/multiprocessing/forkserver.py Python-3.6.6rc1/Lib/multiprocessing/forkserver.py
 35a36
 >         self._forkserver_pid = None
 92,93c93,103
@@ -200,7 +200,7 @@ diff /Users/mmckerns/src/Python-3.6.0/Lib/multiprocessing/forkserver.py /Users/m
 ---
 >     for sig, val in handlers.items():
 >         signal.signal(sig, val)
-diff /Users/mmckerns/src/Python-3.6.0/Lib/multiprocessing/pool.py /Users/mmckerns/src/Python-3.6.6rc1/Lib/multiprocessing/pool.py
+diff Python-3.6.0/Lib/multiprocessing/pool.py Python-3.6.6rc1/Lib/multiprocessing/pool.py
 121c121
 <             if wrap_exception:
 ---
@@ -318,13 +318,13 @@ diff /Users/mmckerns/src/Python-3.6.0/Lib/multiprocessing/pool.py /Users/mmckern
 >             task = job = obj = None
 463a499
 >             task = job = obj = None
-diff /Users/mmckerns/src/Python-3.6.0/Lib/multiprocessing/popen_fork.py /Users/mmckerns/src/Python-3.6.6rc1/Lib/multiprocessing/popen_fork.py
+diff Python-3.6.0/Lib/multiprocessing/popen_fork.py Python-3.6.6rc1/Lib/multiprocessing/popen_fork.py
 17,18c17
 <         sys.stdout.flush()
 <         sys.stderr.flush()
 ---
 >         util._flush_std_streams()
-diff /Users/mmckerns/src/Python-3.6.0/Lib/multiprocessing/process.py /Users/mmckerns/src/Python-3.6.6rc1/Lib/multiprocessing/process.py
+diff Python-3.6.0/Lib/multiprocessing/process.py Python-3.6.6rc1/Lib/multiprocessing/process.py
 106a107,109
 >         # Avoid a refcycle if the target function holds an indirect
 >         # reference to the process object (see bpo-30775)
@@ -347,7 +347,7 @@ diff /Users/mmckerns/src/Python-3.6.0/Lib/multiprocessing/process.py /Users/mmck
 <             sys.stderr.flush()
 ---
 >             util._flush_std_streams()
-diff /Users/mmckerns/src/Python-3.6.0/Lib/multiprocessing/queues.py /Users/mmckerns/src/Python-3.6.6rc1/Lib/multiprocessing/queues.py
+diff Python-3.6.0/Lib/multiprocessing/queues.py Python-3.6.6rc1/Lib/multiprocessing/queues.py
 104c104
 <                     if timeout < 0 or not self._poll(timeout):
 ---
@@ -393,7 +393,7 @@ diff /Users/mmckerns/src/Python-3.6.0/Lib/multiprocessing/queues.py /Users/mmcke
 <                 pass
 339a331
 >         self._poll = self._reader.poll
-diff /Users/mmckerns/src/Python-3.6.0/Lib/multiprocessing/semaphore_tracker.py /Users/mmckerns/src/Python-3.6.6rc1/Lib/multiprocessing/semaphore_tracker.py
+diff Python-3.6.0/Lib/multiprocessing/semaphore_tracker.py Python-3.6.6rc1/Lib/multiprocessing/semaphore_tracker.py
 31a32
 >         self._pid = None
 43,44c44,57
@@ -420,12 +420,12 @@ diff /Users/mmckerns/src/Python-3.6.0/Lib/multiprocessing/semaphore_tracker.py /
 >                 pid = util.spawnv_passfds(exe, args, fds_to_pass)
 63a77
 >                 self._pid = pid
-diff /Users/mmckerns/src/Python-3.6.0/Lib/multiprocessing/spawn.py /Users/mmckerns/src/Python-3.6.6rc1/Lib/multiprocessing/spawn.py
+diff Python-3.6.0/Lib/multiprocessing/spawn.py Python-3.6.6rc1/Lib/multiprocessing/spawn.py
 220c220
 <         set_start_method(data['start_method'])
 ---
 >         set_start_method(data['start_method'], force=True)
-diff /Users/mmckerns/src/Python-3.6.0/Lib/multiprocessing/util.py /Users/mmckerns/src/Python-3.6.6rc1/Lib/multiprocessing/util.py
+diff Python-3.6.0/Lib/multiprocessing/util.py Python-3.6.6rc1/Lib/multiprocessing/util.py
 244c244
 <         f = lambda p : p[0][0] is not None
 ---

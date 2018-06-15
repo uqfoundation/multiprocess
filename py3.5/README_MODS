@@ -24,7 +24,7 @@ diff multiprocessing/__init__.py Python-3.5.0/Lib/multiprocessing/__init__.py
 < __version__ = '0.70.1'
 < 
 
-diff multiprocessing/reduction.py /Users/mmckerns/src/Python-3.5.0/Lib/multiprocessing/reduction.py
+diff multiprocessing/reduction.py Python-3.5.0/Lib/multiprocessing/reduction.py
 14,17c14
 < try:
 <     import dill as pickle
@@ -33,7 +33,7 @@ diff multiprocessing/reduction.py /Users/mmckerns/src/Python-3.5.0/Lib/multiproc
 ---
 > import pickle
 
-diff multiprocessing/spawn.py /Users/mmckerns/src/Python-3.5.0/Lib/multiprocessing/spawn.py
+diff multiprocessing/spawn.py Python-3.5.0/Lib/multiprocessing/spawn.py
 12,15c12
 < try:
 <     import dill as pickle
@@ -49,14 +49,14 @@ REPLACED "import _multiprocessing" with "import _multiprocess as _multiprocessin
 REPLACED "multprocessing" with "multiprocess" wherever else relevant...
 
 # ----------------------------------------------------------------------
-diff /Users/mmckerns/src/Python-3.5.0/Lib/multiprocessing/connection.py /Users/mmckerns/src/Python-3.5.2/Lib/multiprocessing/connection.py
+diff Python-3.5.0/Lib/multiprocessing/connection.py Python-3.5.2/Lib/multiprocessing/connection.py
 400c400
 <             # Issue #<E2><80><AF>20540: concatenate before sending, to avoid delays due
 ---
 >             # Issue #20540: concatenate before sending, to avoid delays due
-Common subdirectories: /Users/mmckerns/src/Python-3.5.0/Lib/multiprocessing/dummy and /Users/mmckerns/src/Python-3.5.2/Lib/multiprocessing/dummy
+Common subdirectories: Python-3.5.0/Lib/multiprocessing/dummy and Python-3.5.2/Lib/multiprocessing/dummy
 
-diff /Users/mmckerns/src/Python-3.5.0/Lib/multiprocessing/forkserver.py /Users/mmckerns/src/Python-3.5.2/Lib/multiprocessing/forkserver.py
+diff Python-3.5.0/Lib/multiprocessing/forkserver.py Python-3.5.2/Lib/multiprocessing/forkserver.py
 150,156c150
 <     # close sys.stdin
 <     if sys.stdin is not None:
@@ -68,13 +68,13 @@ diff /Users/mmckerns/src/Python-3.5.0/Lib/multiprocessing/forkserver.py /Users/m
 ---
 >     util._close_stdin()
 
-diff /Users/mmckerns/src/Python-3.5.0/Lib/multiprocessing/managers.py /Users/mmckerns/src/Python-3.5.2/Lib/multiprocessing/managers.py
+diff Python-3.5.0/Lib/multiprocessing/managers.py Python-3.5.2/Lib/multiprocessing/managers.py
 845c845
 <     Return an proxy type whose methods are given by `exposed`
 ---
 >     Return a proxy type whose methods are given by `exposed`
 
-diff /Users/mmckerns/src/Python-3.5.0/Lib/multiprocessing/process.py /Users/mmckerns/src/Python-3.5.2/Lib/multiprocessing/process.py
+diff Python-3.5.0/Lib/multiprocessing/process.py Python-3.5.2/Lib/multiprocessing/process.py
 237,242c237
 <             if sys.stdin is not None:
 <                 try:
@@ -85,13 +85,13 @@ diff /Users/mmckerns/src/Python-3.5.0/Lib/multiprocessing/process.py /Users/mmck
 ---
 >             util._close_stdin()
 
-diff /Users/mmckerns/src/Python-3.5.0/Lib/multiprocessing/spawn.py /Users/mmckerns/src/Python-3.5.2/Lib/multiprocessing/spawn.py
+diff Python-3.5.0/Lib/multiprocessing/spawn.py Python-3.5.2/Lib/multiprocessing/spawn.py
 94c94
 <     Run code specifed by data received over pipe
 ---
 >     Run code specified by data received over pipe
 
-diff /Users/mmckerns/src/Python-3.5.0/Lib/multiprocessing/util.py /Users/mmckerns/src/Python-3.5.2/Lib/multiprocessing/util.py
+diff Python-3.5.0/Lib/multiprocessing/util.py Python-3.5.2/Lib/multiprocessing/util.py
 11a12
 > import sys
 358a360,381
@@ -119,18 +119,18 @@ diff /Users/mmckerns/src/Python-3.5.0/Lib/multiprocessing/util.py /Users/mmckern
 >         pass
 
 # ----------------------------------------------------------------------
-diff /Users/mmckerns/src/Python-3.5.2/Modules/_multiprocessing/semaphore.c /Users/mmckerns/src/Python-3.5.5/Modules/_multiprocessing/semaphore.c
+diff Python-3.5.2/Modules/_multiprocessing/semaphore.c Python-3.5.5/Modules/_multiprocessing/semaphore.c
 116a117,119
 >     else {
 >         sigint_event = NULL;
 >     }
-diff /Users/mmckerns/src/Python-3.5.2/Lib/multiprocessing/context.py /Users/mmckerns/src/Python-3.5.5/Lib/multiprocessing/context.py
+diff Python-3.5.2/Lib/multiprocessing/context.py Python-3.5.5/Lib/multiprocessing/context.py
 198c198
 <     def set_start_method(self, method=None):
 ---
 >     def set_start_method(self, method, force=False):
-Common subdirectories: /Users/mmckerns/src/Python-3.5.2/Lib/multiprocessing/dummy and /Users/mmckerns/src/Python-3.5.5/Lib/multiprocessing/dummy
-diff /Users/mmckerns/src/Python-3.5.2/Lib/multiprocessing/forkserver.py /Users/mmckerns/src/Python-3.5.5/Lib/multiprocessing/forkserver.py
+Common subdirectories: Python-3.5.2/Lib/multiprocessing/dummy and Python-3.5.5/Lib/multiprocessing/dummy
+diff Python-3.5.2/Lib/multiprocessing/forkserver.py Python-3.5.5/Lib/multiprocessing/forkserver.py
 152,153c152,160
 <     # ignoring SIGCHLD means no need to reap zombie processes
 <     handler = signal.signal(signal.SIGCHLD, signal.SIG_IGN)
@@ -159,12 +159,12 @@ diff /Users/mmckerns/src/Python-3.5.2/Lib/multiprocessing/forkserver.py /Users/m
 ---
 >     for sig, val in handlers.items():
 >         signal.signal(sig, val)
-diff /Users/mmckerns/src/Python-3.5.2/Lib/multiprocessing/managers.py /Users/mmckerns/src/Python-3.5.5/Lib/multiprocessing/managers.py
+diff Python-3.5.2/Lib/multiprocessing/managers.py Python-3.5.5/Lib/multiprocessing/managers.py
 278c278
 <                     send(('#UNSERIALIZABLE', repr(msg)))
 ---
 >                     send(('#UNSERIALIZABLE', format_exc()))
-diff /Users/mmckerns/src/Python-3.5.2/Lib/multiprocessing/pool.py /Users/mmckerns/src/Python-3.5.5/Lib/multiprocessing/pool.py
+diff Python-3.5.2/Lib/multiprocessing/pool.py Python-3.5.5/Lib/multiprocessing/pool.py
 121c121
 <             if wrap_exception:
 ---
@@ -282,12 +282,12 @@ diff /Users/mmckerns/src/Python-3.5.2/Lib/multiprocessing/pool.py /Users/mmckern
 >             task = job = obj = None
 463a499
 >             task = job = obj = None
-diff /Users/mmckerns/src/Python-3.5.2/Lib/multiprocessing/process.py /Users/mmckerns/src/Python-3.5.5/Lib/multiprocessing/process.py
+diff Python-3.5.2/Lib/multiprocessing/process.py Python-3.5.5/Lib/multiprocessing/process.py
 106a107,109
 >         # Avoid a refcycle if the target function holds an indirect
 >         # reference to the process object (see bpo-30775)
 >         del self._target, self._args, self._kwargs
-diff /Users/mmckerns/src/Python-3.5.2/Lib/multiprocessing/queues.py /Users/mmckerns/src/Python-3.5.5/Lib/multiprocessing/queues.py
+diff Python-3.5.2/Lib/multiprocessing/queues.py Python-3.5.5/Lib/multiprocessing/queues.py
 172,179c172
 <         # On process exit we will wait for data to be flushed to pipe.
 <         #
@@ -329,12 +329,12 @@ diff /Users/mmckerns/src/Python-3.5.2/Lib/multiprocessing/queues.py /Users/mmcke
 <                 pass
 339a331
 >         self._poll = self._reader.poll
-diff /Users/mmckerns/src/Python-3.5.2/Lib/multiprocessing/spawn.py /Users/mmckerns/src/Python-3.5.5/Lib/multiprocessing/spawn.py
+diff Python-3.5.2/Lib/multiprocessing/spawn.py Python-3.5.5/Lib/multiprocessing/spawn.py
 221c221
 <         set_start_method(data['start_method'])
 ---
 >         set_start_method(data['start_method'], force=True)
-diff /Users/mmckerns/src/Python-3.5.2/Lib/multiprocessing/util.py /Users/mmckerns/src/Python-3.5.5/Lib/multiprocessing/util.py
+diff Python-3.5.2/Lib/multiprocessing/util.py Python-3.5.5/Lib/multiprocessing/util.py
 244c244
 <         f = lambda p : p[0][0] is not None
 ---

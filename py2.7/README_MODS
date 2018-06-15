@@ -159,13 +159,13 @@ diff Python-2.7.10/Lib/multiprocessing/managers.py Python-2.7.13/Lib/multiproces
 ---
 >     Return a proxy type whose methods are given by `exposed`
 # ----------------------------------------------------------------------
-diff /Users/mmckerns/src/Python-2.7.13/Lib/multiprocessing/forking.py /Users/mmckerns/src/Python-2.7.15/Lib/multiprocessing/forking.py
+diff Python-2.7.13/Lib/multiprocessing/forking.py Python-2.7.15/Lib/multiprocessing/forking.py
 408c408,409
 <         if not WINEXE and not WINSERVICE:
 ---
 >         if not WINEXE and not WINSERVICE and \
 >            not d['sys_argv'][0].lower().endswith('pythonservice.exe'):
-diff /Users/mmckerns/src/Python-2.7.13/Lib/multiprocessing/pool.py /Users/mmckerns/src/Python-2.7.15/Lib/multiprocessing/pool.py
+diff Python-2.7.13/Lib/multiprocessing/pool.py Python-2.7.15/Lib/multiprocessing/pool.py
 89c89
 <     assert maxtasks is None or (type(maxtasks) == int and maxtasks > 0)
 ---
@@ -182,7 +182,7 @@ diff /Users/mmckerns/src/Python-2.7.13/Lib/multiprocessing/pool.py /Users/mmcker
 >             task = job = obj = None
 423a428
 >             task = job = obj = None
-diff /Users/mmckerns/src/Python-2.7.13/Lib/multiprocessing/process.py /Users/mmckerns/src/Python-2.7.15/Lib/multiprocessing/process.py
+diff Python-2.7.13/Lib/multiprocessing/process.py Python-2.7.15/Lib/multiprocessing/process.py
 130a131,133
 >         # Avoid a refcycle if the target function holds an indirect
 >         # reference to the process object (see bpo-30775)
@@ -210,7 +210,7 @@ diff /Users/mmckerns/src/Python-2.7.13/Lib/multiprocessing/process.py /Users/mmc
 ---
 >             elif isinstance(e.args[0], (int, long)):
 >                 exitcode = int(e.args[0])
-diff /Users/mmckerns/src/Python-2.7.13/Lib/multiprocessing/queues.py /Users/mmckerns/src/Python-2.7.15/Lib/multiprocessing/queues.py
+diff Python-2.7.13/Lib/multiprocessing/queues.py Python-2.7.15/Lib/multiprocessing/queues.py
 131c131
 <                     if timeout < 0 or not self._poll(timeout):
 ---
@@ -239,7 +239,7 @@ diff /Users/mmckerns/src/Python-2.7.13/Lib/multiprocessing/queues.py /Users/mmck
 284,285d283
 <             except Exception:
 <                 pass
-diff /Users/mmckerns/src/Python-2.7.13/Lib/multiprocessing/util.py /Users/mmckerns/src/Python-2.7.15/Lib/multiprocessing/util.py
+diff Python-2.7.13/Lib/multiprocessing/util.py Python-2.7.15/Lib/multiprocessing/util.py
 177c177
 <         assert exitpriority is None or type(exitpriority) is int
 ---

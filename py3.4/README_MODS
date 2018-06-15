@@ -24,7 +24,7 @@ diff multiprocessing/__init__.py Python-3.4.3/Lib/multiprocessing/__init__.py
 < __version__ = '0.70.1'
 < 
 
-diff multiprocessing/reduction.py /Users/mmckerns/src/Python-3.4.3/Lib/multiprocessing/reduction.py
+diff multiprocessing/reduction.py Python-3.4.3/Lib/multiprocessing/reduction.py
 14,17c14
 < try:
 <     import dill as pickle
@@ -33,7 +33,7 @@ diff multiprocessing/reduction.py /Users/mmckerns/src/Python-3.4.3/Lib/multiproc
 ---
 > import pickle
 
-diff multiprocessing/spawn.py /Users/mmckerns/src/Python-3.4.3/Lib/multiprocessing/spawn.py
+diff multiprocessing/spawn.py Python-3.4.3/Lib/multiprocessing/spawn.py
 12,15c12
 < try:
 <     import dill as pickle

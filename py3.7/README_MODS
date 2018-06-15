@@ -1,0 +1,170 @@
+cp -rf py3.6/examples .
+cp -rf py3.6/doc .
+cp -f py3.6/index.html .
+cp -rf Python-3.7.0rc1/Modules/_multiprocessing Modules/_multiprocess
+cp -rf Python-3.7.0rc1/Lib/multiprocessing multiprocess
+cp -rf Python-3.7.0rc1/Lib/test/*test_multiprocessing*.py multiprocess/tests/
+
+# ----------------------------------------------------------------------
+diff Modules/_multiprocess/semaphore.c Python-3.7.0rc1/Modules/_multiprocessing/semaphore.c 
+10c10
+< #include "multiprocess.h"
+---
+> #include "multiprocessing.h"
+204c204
+< // ifndef HAVE_SEM_TIMEDWAIT
+---
+> #ifndef HAVE_SEM_TIMEDWAIT
+265c265
+< // endif /* !HAVE_SEM_TIMEDWAIT */
+---
+> #endif /* !HAVE_SEM_TIMEDWAIT */
+629c629
+<     /* tp_name           */ "_multiprocess.SemLock",
+---
+>     /* tp_name           */ "_multiprocessing.SemLock",
+diff Modules/_multiprocess/multiprocess.c Python-3.7.0rc1/Modules/_multiprocessing/multiprocessing.c
+10c10
+< #include "multiprocess.h"
+---
+> #include "multiprocessing.h"
+144c144
+<     "_multiprocess",
+---
+>     "_multiprocessing",
+156c156
+< PyInit__multiprocess(void)
+---
+> PyInit__multiprocessing(void)
+diff Modules/_multiprocess/multiprocess.h Python-3.7.0rc1/Modules/_multiprocessing/multiprocessing.h
+1,2c1,2
+< #ifndef MULTIPROCESS_H
+< #define MULTIPROCESS_H
+---
+> #ifndef MULTIPROCESSING_H
+> #define MULTIPROCESSING_H
+103c103
+< #endif /* MULTIPROCESS_H */
+---
+> #endif /* MULTIPROCESSING_H */
+diff multiprocess/__init__.py Python-3.7.0rc1/Lib/multiprocessing/__init__.py
+18,19d17
+< __version__ = '0.70.6.dev0'
+< 
+diff multiprocess/connection.py Python-3.7.0rc1/Lib/multiprocessing/connection.py
+21,24c21
+< try:
+<     import _multiprocess as _multiprocessing
+< except ImportError:
+<     import _multiprocessing
+---
+> import _multiprocessing
+Common subdirectories: multiprocess/dummy and Python-3.7.0rc1/Lib/multiprocessing/dummy
+diff multiprocess/forkserver.py Python-3.7.0rc1/Lib/multiprocessing/forkserver.py
+106c106
+<             cmd = ('from multiprocess.forkserver import main; ' +
+---
+>             cmd = ('from multiprocessing.forkserver import main; ' +
+diff multiprocess/managers.py Python-3.7.0rc1/Lib/multiprocessing/managers.py
+464c464
+< listener_client = { #XXX: register dill?
+---
+> listener_client = {
+1176c1176
+<     The `multiprocess.Manager()` function creates started instances of
+---
+>     The `multiprocessing.Manager()` function creates started instances of
+diff multiprocess/popen_fork.py Python-3.7.0rc1/Lib/multiprocessing/popen_fork.py
+44c44
+<                 from multiprocess.connection import wait
+---
+>                 from multiprocessing.connection import wait
+diff multiprocess/popen_forkserver.py Python-3.7.0rc1/Lib/multiprocessing/popen_forkserver.py
+59c59
+<             from multiprocess.connection import wait
+---
+>             from multiprocessing.connection import wait
+diff multiprocess/queues.py Python-3.7.0rc1/Lib/multiprocessing/queues.py
+22,25c22
+< try:
+<     import _multiprocess as _multiprocessing
+< except ImportError:
+<     import _multiprocessing
+---
+> import _multiprocessing
+diff multiprocess/reduction.py Python-3.7.0rc1/Lib/multiprocessing/reduction.py
+15,18c15
+< try:
+<     import dill as pickle
+< except ImportError:
+<     import pickle
+---
+> import pickle
+37c34
+<     '''Pickler subclass used by multiprocess.'''
+---
+>     '''Pickler subclass used by multiprocessing.'''
+253c250
+<     used in multiprocess.'''
+---
+>     used in multiprocessing.'''
+diff multiprocess/semaphore_tracker.py Python-3.7.0rc1/Lib/multiprocessing/semaphore_tracker.py
+19,22c19
+< try: 
+<     import _multiprocess as _multiprocessing
+< except ImportError:
+<     import _multiprocessing
+---
+> import _multiprocessing
+66c63
+<             cmd = 'from multiprocess.semaphore_tracker import main;main(%d)'
+---
+>             cmd = 'from multiprocessing.semaphore_tracker import main;main(%d)'
+diff multiprocess/spawn.py Python-3.7.0rc1/Lib/multiprocessing/spawn.py
+86c86
+<         prog = 'from multiprocess.spawn import spawn_main; spawn_main(%s)'
+---
+>         prog = 'from multiprocessing.spawn import spawn_main; spawn_main(%s)'
+diff multiprocess/synchronize.py Python-3.7.0rc1/Lib/multiprocessing/synchronize.py
+17,20c17
+< try: 
+<     import _multiprocess as _multiprocessing
+< except ImportError:
+<     import _multiprocessing
+---
+> import _multiprocessing
+32,40c29,34
+<     from _multiprocess import SemLock, sem_unlink
+< except ImportError:
+<     try:
+<         from _multiprocessing import SemLock, sem_unlink
+<     except (ImportError):
+<         raise ImportError("This platform lacks a functioning sem_open" +
+<                           " implementation, therefore, the required" +
+<                           " synchronization primitives needed will not" +
+<                           " function, see issue 3770.")
+---
+>     from _multiprocessing import SemLock, sem_unlink
+> except (ImportError):
+>     raise ImportError("This platform lacks a functioning sem_open" +
+>                       " implementation, therefore, the required" +
+>                       " synchronization primitives needed will not" +
+>                       " function, see issue 3770.")
+Only in multiprocess: tests
+diff multiprocess/util.py Python-3.7.0rc1/Lib/multiprocessing/util.py
+38c38
+< LOGGER_NAME = 'multiprocess'
+---
+> LOGGER_NAME = 'multiprocessing'
+62c62
+<     Returns logger used by multiprocess
+---
+>     Returns logger used by multiprocessing
+# ----------------------------------------------------------------------
+REPLACED "MULTIPROCESSING" with "MULTIPROCESS"
+REPLACED "from multiprocessing" with "from multiprocess"
+REPLACED "from _multiprocessing" with "from _multiprocess"
+REPLACED "import _multiprocessing" with "import _multiprocess as _multiprocessing"
+REPLACED "multprocessing" with "multiprocess" wherever else relevant...
+REPLACED "import pickle" with "import dill as pickle"
+

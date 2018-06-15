@@ -1,6 +1,6 @@
-cp -rf Python-3.3.6/Modules/_multiprocessing Modules/_multiprocessig
-cp -rf Python-3.3.6/Lib/multiprocessing multiprocessing
-cp -rf Python-3.3.6/Lib/test/test_multiprocessing.py tests/__init__.py
+cp -rf Python-3.3.7/Modules/_multiprocessing Modules/_multiprocessing
+cp -rf Python-3.3.7/Lib/multiprocessing multiprocessing
+cp -rf Python-3.3.7/Lib/test/test_multiprocessing.py tests/__init__.py
 cp -rf py2.7.10/examples .
 cp -f py2.7.10/*txt .
 cp -f py2.7.10/setup.py .
@@ -11,7 +11,7 @@ cp -f py2.7.10/index.html .
 CHANGES to examples:
   updated to python3 from python2 (mostly print, xrange, and Errors)
 
-diff Modules/_multiprocessing/semaphore.c Python-3.3.6/Modules/_multiprocessing/semaphore.c
+diff Modules/_multiprocessing/semaphore.c Python-3.3.7/Modules/_multiprocessing/semaphore.c
 200c200
 < //ifndef HAVE_SEM_TIMEDWAIT
 ---
@@ -34,13 +34,13 @@ dude@hilbert>$ diff setup.py py2.7.10/setup.py
 ---
 >                 define_macros=macros.items(),
 
-diff multiprocessing/__init__.py Python-3.3.6/Lib/multiprocessing/__init__.py
+diff multiprocessing/__init__.py Python-3.3.7/Lib/multiprocessing/__init__.py
 19c19
 < __version__ = '0.70.1'
 ---
 > __version__ = '0.70a1'
 
-diff multiprocessing/connection.py Python-3.3.6/Lib/multiprocessing/connection.py
+diff multiprocessing/connection.py Python-3.3.7/Lib/multiprocessing/connection.py
 15,20c15
 < try:
 <     import dill as pickle
@@ -55,7 +55,7 @@ diff multiprocessing/connection.py Python-3.3.6/Lib/multiprocessing/connection.p
 ---
 >         ForkingPickler(buf, pickle.HIGHEST_PROTOCOL).dump(obj)
 
-diff multiprocessing/forking.py Python-3.3.6/Lib/multiprocessing/forking.py
+diff multiprocessing/forking.py Python-3.3.7/Lib/multiprocessing/forking.py
 34,37c34
 < try:
 <     from dill import Pickler
@@ -71,7 +71,7 @@ diff multiprocessing/forking.py Python-3.3.6/Lib/multiprocessing/forking.py
 ---
 >     from pickle import load, HIGHEST_PROTOCOL
 
-diff tests/__init__.py Python-3.3.6/Lib/test/test_multiprocessing.py
+diff tests/__init__.py Python-3.3.7/Lib/test/test_multiprocessing.py
 446c446
 <             self.assertIn("__init__.py", err)
 ---

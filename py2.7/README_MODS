@@ -1,4 +1,4 @@
-cp -rf Python-2.7.10/Modules/_multiprocessing Modules/_multiprocessig
+cp -rf Python-2.7.10/Modules/_multiprocessing Modules/_multiprocessing
 cp -rf Python-2.7.10/Lib/multiprocessing multiprocessing
 cp -rf Python-2.7.10/Lib/test/test_multiprocessing.py tests/__init__.py
 cp -rf py2.5.6/examples .
@@ -158,3 +158,94 @@ diff Python-2.7.10/Lib/multiprocessing/managers.py Python-2.7.13/Lib/multiproces
 <     Return an proxy type whose methods are given by `exposed`
 ---
 >     Return a proxy type whose methods are given by `exposed`
+# ----------------------------------------------------------------------
+diff /Users/mmckerns/src/Python-2.7.13/Lib/multiprocessing/forking.py /Users/mmckerns/src/Python-2.7.15/Lib/multiprocessing/forking.py
+408c408,409
+<         if not WINEXE and not WINSERVICE:
+---
+>         if not WINEXE and not WINSERVICE and \
+>            not d['sys_argv'][0].lower().endswith('pythonservice.exe'):
+diff /Users/mmckerns/src/Python-2.7.13/Lib/multiprocessing/pool.py /Users/mmckerns/src/Python-2.7.15/Lib/multiprocessing/pool.py
+89c89
+<     assert maxtasks is None or (type(maxtasks) == int and maxtasks > 0)
+---
+>     assert maxtasks is None or (type(maxtasks) in (int, long) and maxtasks > 0)
+122a123,124
+> 
+>         task = job = result = func = args = kwds = None
+364a367,368
+>             finally:
+>                 task = taskseq = job = None
+368d371
+< 
+407a411
+>             task = job = obj = None
+423a428
+>             task = job = obj = None
+diff /Users/mmckerns/src/Python-2.7.13/Lib/multiprocessing/process.py /Users/mmckerns/src/Python-2.7.15/Lib/multiprocessing/process.py
+130a131,133
+>         # Avoid a refcycle if the target function holds an indirect
+>         # reference to the process object (see bpo-30775)
+>         del self._target, self._args, self._kwargs
+155a159
+> 
+158,159c162,168
+<         self._popen.poll()
+<         return self._popen.returncode is None
+---
+> 
+>         returncode = self._popen.poll()
+>         if returncode is None:
+>             return True
+>         else:
+>             _current_process._children.discard(self)
+>             return False
+230c239
+<         if type(status) is int:
+---
+>         if type(status) in (int, long):
+265,266c274,275
+<             elif isinstance(e.args[0], int):
+<                 exitcode = e.args[0]
+---
+>             elif isinstance(e.args[0], (int, long)):
+>                 exitcode = int(e.args[0])
+diff /Users/mmckerns/src/Python-2.7.13/Lib/multiprocessing/queues.py /Users/mmckerns/src/Python-2.7.15/Lib/multiprocessing/queues.py
+131c131
+<                     if timeout < 0 or not self._poll(timeout):
+---
+>                     if not self._poll(timeout):
+247,248c247,248
+<         try:
+<             while 1:
+---
+>         while 1:
+>             try:
+273,278c273,277
+<         except Exception, e:
+<             # Since this runs in a daemon thread the resources it uses
+<             # may be become unusable while the process is cleaning up.
+<             # We ignore errors which happen after the process has
+<             # started to cleanup.
+<             try:
+---
+>             except Exception as e:
+>                 # Since this runs in a daemon thread the resources it uses
+>                 # may be become unusable while the process is cleaning up.
+>                 # We ignore errors which happen after the process has
+>                 # started to cleanup.
+280a280
+>                     return
+284,285d283
+<             except Exception:
+<                 pass
+diff /Users/mmckerns/src/Python-2.7.13/Lib/multiprocessing/util.py /Users/mmckerns/src/Python-2.7.15/Lib/multiprocessing/util.py
+177c177
+<         assert exitpriority is None or type(exitpriority) is int
+---
+>         assert exitpriority is None or type(exitpriority) in (int, long)
+267a268,270
+>     # Careful: _finalizer_registry may be mutated while this function
+>     # is running (either by a GC run or by another thread).
+> 
+

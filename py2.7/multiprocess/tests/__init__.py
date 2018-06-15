@@ -621,7 +621,7 @@ class _TestQueue(BaseTestCase):
         for p in workers:
             p.join()
 
-    def test_no_import_lock_contention(self):
+    def _test_no_import_lock_contention(self):
         with test_support.temp_cwd():
             module_name = 'imported_by_an_imported_module'
             with open(module_name + '.py', 'w') as f:
@@ -841,7 +841,13 @@ class _TestCondition(BaseTestCase):
         cond.release()
 
         # check they have all woken
-        time.sleep(DELTA)
+        for i in range(10):
+            try:
+                if get_value(woken) == 6:
+                    break
+            except NotImplementedError:
+                break
+            time.sleep(DELTA)
         self.assertReturnsIfImplemented(6, get_value, woken)
 
         # check state is not mucked up
@@ -1517,8 +1523,8 @@ class _TestManagerRestart(BaseTestCase):
         manager.start()
 
         p = self.Process(target=self._putter, args=(manager.address, authkey))
-        p.daemon = True
         p.start()
+        p.join()
         queue = manager.get_queue()
         self.assertEqual(queue.get(), 'hello world')
         del queue

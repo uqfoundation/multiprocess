@@ -1,4 +1,4 @@
-cp -rf Python-3.4.3/Modules/_multiprocessing Modules/_multiprocessig
+cp -rf Python-3.4.3/Modules/_multiprocessing Modules/_multiprocessing
 cp -rf Python-3.4.3/Lib/multiprocessing multiprocessing
 cp -rf Python-3.4.3/Lib/test/*test_multiprocessing*.py tests/
 cp -rf py3.3.6/examples .
@@ -49,7 +49,7 @@ REPLACED "import _multiprocessing" with "import _multiprocess as _multiprocessin
 REPLACED "multprocessing" with "multiprocess" wherever else relevant...
 
 # ----------------------------------------------------------------------
-diff Python-3.4.5/Lib/multiprocessing/connection.py Python-3.4.3/Lib/multiprocessing/connection.py
+diff Python-3.4.8/Lib/multiprocessing/connection.py Python-3.4.3/Lib/multiprocessing/connection.py
 472,473c472,473
 <         listener = self._listener
 <         if listener is not None:
@@ -88,7 +88,7 @@ diff Python-3.4.5/Lib/multiprocessing/connection.py Python-3.4.3/Lib/multiproces
 ---
 >                         # in the pipe, but it HAS NOT been consumed.
 
-diff Python-3.4.5/Lib/multiprocessing/pool.py Python-3.4.3/Lib/multiprocessing/pool.py
+diff Python-3.4.8/Lib/multiprocessing/pool.py Python-3.4.3/Lib/multiprocessing/pool.py
 377d376
 <             task = None
 379,383c378,385
@@ -133,7 +133,7 @@ diff Python-3.4.5/Lib/multiprocessing/pool.py Python-3.4.3/Lib/multiprocessing/p
 >                 continue
 >             break
 
-diff Python-3.4.5/Lib/multiprocessing/queues.py Python-3.4.3/Lib/multiprocessing/queues.py
+diff Python-3.4.8/Lib/multiprocessing/queues.py Python-3.4.3/Lib/multiprocessing/queues.py
 38,39c38
 <             # Can raise ImportError (see issues #3770 and #23400)
 <             from .synchronize import SEM_VALUE_MAX as maxsize

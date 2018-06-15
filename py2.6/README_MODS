@@ -1,4 +1,4 @@
-cp -rf Python-2.6.9/Modules/_multiprocessing Modules/_multiprocessig
+cp -rf Python-2.6.9/Modules/_multiprocessing Modules/_multiprocessing
 cp -rf Python-2.6.9/Lib/multiprocessing multiprocessing
 cp -rf Python-2.6.9/Lib/test/test_multiprocessing.py tests/__init__.py
 cp -rf py2.7.10/examples .

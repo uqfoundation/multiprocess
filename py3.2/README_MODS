@@ -1,4 +1,4 @@
-cp -rf Python-3.2.6/Modules/_multiprocessing Modules/_multiprocessig
+cp -rf Python-3.2.6/Modules/_multiprocessing Modules/_multiprocessing
 cp -rf Python-3.2.6/Lib/multiprocessing multiprocessing
 cp -rf Python-3.2.6/Lib/test/test_multiprocessing.py tests/__init__.py
 cp -rf py3.3.6/examples .

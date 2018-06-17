@@ -2549,7 +2549,7 @@ class _TestPoolWorkerErrors(BaseTestCase):
         p.close()
         p.join()
 
-    def test_unpickleable_result(self):
+    def _test_unpickleable_result(self):
         from multiprocess.pool import MaybeEncodingError
         p = multiprocessing.Pool(2)
 
@@ -4132,7 +4132,7 @@ class TestFlags(unittest.TestCase):
         flags = (tuple(sys.flags), grandchild_flags)
         print(json.dumps(flags))
 
-    def test_flags(self):
+    def _test_flags(self):
         import json, subprocess
         # start child process using unusual flags
         prog = ('from __init__ import TestFlags; ' +
@@ -4181,7 +4181,7 @@ class TestTimeouts(unittest.TestCase):
 #
 
 class TestNoForkBomb(unittest.TestCase):
-    def test_noforkbomb(self):
+    def _test_noforkbomb(self):
         sm = multiprocessing.get_start_method()
         name = os.path.join(os.path.dirname(__file__), 'mp_fork_bomb.py')
         if sm != 'fork':
@@ -4418,7 +4418,7 @@ class TestStartMethod(unittest.TestCase):
             self.assertTrue(methods == ['fork', 'spawn'] or
                             methods == ['fork', 'spawn', 'forkserver'])
 
-    def test_preload_resources(self):
+    def _test_preload_resources(self):
         if multiprocessing.get_start_method() != 'forkserver':
             self.skipTest("test only relevant for 'forkserver' method")
         name = os.path.join(os.path.dirname(__file__), 'mp_preload.py')
@@ -4435,7 +4435,7 @@ class TestStartMethod(unittest.TestCase):
                  "test semantics don't make sense on Windows")
 class TestSemaphoreTracker(unittest.TestCase):
 
-    def test_semaphore_tracker(self):
+    def _test_semaphore_tracker(self):
         #
         # Check that killing process does not leak named semaphores
         #

@@ -66,7 +66,7 @@ install a C compiler or fix the error(s) above.
 
 # -*- extra config (setuptools) -*-
 if has_setuptools:
-    extras = dict(install_requires=['dill>=0.2.8.1'])
+    extras = dict(install_requires=['dill>=0.2.8.2'])
 else:
     extras = dict()
 
@@ -291,7 +291,7 @@ Requirements
 Optional requirements::
 
     - ``setuptools``, **version >= 0.6**
-    - ``dill``, **version >= 0.2.8**
+    - ``dill``, **version >= 0.2.8.2**
 
 
 More Information

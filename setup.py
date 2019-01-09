@@ -287,11 +287,11 @@ Requirements
 ``multiprocess`` requires::
 
     - ``python``, **version >= 2.5** or **version >= 3.1**
+    - ``dill``, **version >= 0.2.8.2**
 
 Optional requirements::
 
     - ``setuptools``, **version >= 0.6**
-    - ``dill``, **version >= 0.2.8.2**
 
 
 More Information

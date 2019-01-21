@@ -278,7 +278,7 @@ Alternately, ``multiprocess`` can be installed with ``pip`` or ``easy_install``:
 
     $ pip install multiprocess
 
-NOTE: A C compiler is required to build the included extension module. For python 3.3 and above, a C compiler is suggested, but not required.
+NOTE: A C compiler is required to build the included extension module from source. For python 3.3 and above, a C compiler is suggested, but not required. Binary installs do not require a C compiler.
 
 
 Requirements

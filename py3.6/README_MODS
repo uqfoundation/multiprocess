@@ -606,4 +606,3 @@ diff Python-3.6.6rc1/Lib/test/test_multiprocessing_main_handling.py Python-3.6.8
 >     dt = time.monotonic() - start_time
 >     if dt > 60.0:
 >         raise RuntimeError("Timed out waiting for results (%.1f sec)" % dt)
-

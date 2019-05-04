@@ -382,5 +382,3 @@ diff Python-2.7.15/Lib/test/test_multiprocessing.py Python-2.7.16/Lib/test/test_
 <     with test_support.check_py3k_warnings(
 ---
 >     with support.check_py3k_warnings(
-
-

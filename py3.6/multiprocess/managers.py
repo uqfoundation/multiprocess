@@ -19,7 +19,7 @@ import threading
 import array
 import queue
 
-from time import time as _time
+import time
 from traceback import format_exc
 
 from . import connection
@@ -1006,13 +1006,13 @@ class ConditionProxy(AcquirerProxy):
         if result:
             return result
         if timeout is not None:
-            endtime = _time() + timeout
+            endtime = getattr(time,'monotonic',time.time)() + timeout
         else:
             endtime = None
             waittime = None
         while not result:
             if endtime is not None:
-                waittime = endtime - _time()
+                waittime = endtime - getattr(time,'monotonic',time.time)()
                 if waittime <= 0:
                     break
             self.wait(waittime)
@@ -1095,10 +1095,13 @@ class ListProxy(BaseListProxy):
 
 
 DictProxy = MakeProxyType('DictProxy', (
-    '__contains__', '__delitem__', '__getitem__', '__len__',
+    '__contains__', '__delitem__', '__getitem__', '__iter__', '__len__',
     '__setitem__', 'clear', 'copy', 'get', 'has_key', 'items',
     'keys', 'pop', 'popitem', 'setdefault', 'update', 'values'
     ))
+DictProxy._method_to_typeid_ = {
+    '__iter__': 'Iterator',
+    }
 
 
 ArrayProxy = MakeProxyType('ArrayProxy', (

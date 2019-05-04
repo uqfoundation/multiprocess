@@ -18,8 +18,7 @@ try:
     import _multiprocess as _multiprocessing
 except ImportError:
     import _multiprocessing
-
-from time import time as _time
+import time
 
 from . import context
 from . import process
@@ -319,13 +318,13 @@ class Condition(object):
         if result:
             return result
         if timeout is not None:
-            endtime = _time() + timeout
+            endtime = getattr(time,'monotonic',time.time)() + timeout
         else:
             endtime = None
             waittime = None
         while not result:
             if endtime is not None:
-                waittime = endtime - _time()
+                waittime = endtime - getattr(time,'monotonic',time.time)()
                 if waittime <= 0:
                     break
             self.wait(waittime)

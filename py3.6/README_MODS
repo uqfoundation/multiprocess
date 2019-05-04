@@ -483,4 +483,127 @@ diff Python-3.6.0/Lib/multiprocessing/util.py Python-3.6.6rc1/Lib/multiprocessin
 <     passfds = sorted(passfds)
 ---
 >     passfds = tuple(sorted(map(int, passfds)))
+# ----------------------------------------------------------------------
+diff Python-3.6.6rc1/Modules/_multiprocessing/semaphore.c Python-3.6.8/Modules/_multiprocessing/semaphore.c
+442,443c442,444
+<         if (name_copy == NULL)
+<             goto failure;
+---
+>         if (name_copy == NULL) {
+>             return PyErr_NoMemory();
+>         }
+466c467,469
+<     _PyMp_SetError(NULL, MP_STANDARD_ERROR);
+---
+>     if (!PyErr_Occurred()) {
+>         _PyMp_SetError(NULL, MP_STANDARD_ERROR);
+>     }
+diff Python-3.6.6rc1/Lib/multiprocessing/connection.py Python-3.6.8/Lib/multiprocessing/connection.py
+60c60
+<     return time.time() + timeout
+---
+>     return time.monotonic() + timeout
+63c63
+<     return time.time() > t
+---
+>     return time.monotonic() > t
+908c908
+<                 deadline = time.time() + timeout
+---
+>                 deadline = time.monotonic() + timeout
+916c916
+<                         timeout = deadline - time.time()
+---
+>                         timeout = deadline - time.monotonic()
+Common subdirectories: Python-3.6.6rc1/Lib/multiprocessing/dummy and Python-3.6.8/Lib/multiprocessing/dummy
+diff Python-3.6.6rc1/Lib/multiprocessing/managers.py Python-3.6.8/Lib/multiprocessing/managers.py
+20a21
+> import time
+22d22
+< from time import time as _time
+1009c1009
+<             endtime = _time() + timeout
+---
+>             endtime = time.monotonic() + timeout
+1015c1015
+<                 waittime = endtime - _time()
+---
+>                 waittime = endtime - time.monotonic()
+1098c1098
+<     '__contains__', '__delitem__', '__getitem__', '__len__',
+---
+>     '__contains__', '__delitem__', '__getitem__', '__iter__', '__len__',
+1101a1102,1104
+> DictProxy._method_to_typeid_ = {
+>     '__iter__': 'Iterator',
+>     }
+diff Python-3.6.6rc1/Lib/multiprocessing/queues.py Python-3.6.8/Lib/multiprocessing/queues.py
+98c98
+<                 deadline = time.time() + timeout
+---
+>                 deadline = time.monotonic() + timeout
+103c103
+<                     timeout = deadline - time.time()
+---
+>                     timeout = deadline - time.monotonic()
+diff Python-3.6.6rc1/Lib/multiprocessing/reduction.py Python-3.6.8/Lib/multiprocessing/reduction.py
+153c153
+<         msg, ancdata, flags, addr = sock.recvmsg(1, socket.CMSG_LEN(bytes_size))
+---
+>         msg, ancdata, flags, addr = sock.recvmsg(1, socket.CMSG_SPACE(bytes_size))
+diff Python-3.6.6rc1/Lib/multiprocessing/synchronize.py Python-3.6.8/Lib/multiprocessing/synchronize.py
+18,19c18
+< 
+< from time import time as _time
+---
+> import time
+316c315
+<             endtime = _time() + timeout
+---
+>             endtime = time.monotonic() + timeout
+322c321
+<                 waittime = endtime - _time()
+---
+>                 waittime = endtime - time.monotonic()
+diff Python-3.6.6rc1/Lib/test/test_multiprocessing_fork.py Python-3.6.8/Lib/test/test_multiprocessing_fork.py 
+3a4
+> import sys
+8a10,14
+> if sys.platform == "win32":
+>     raise unittest.SkipTest("fork is not available on Windows")
+> 
+> if sys.platform == 'darwin':
+>     raise unittest.SkipTest("test may crash on macOS (bpo-33725)")
+diff Python-3.6.6rc1/Lib/test/test_multiprocessing_forkserver.py Python-3.6.8/Lib/test/test_multiprocessing_forkserver.py 
+3a4
+> import sys
+8a10,12
+> if sys.platform == "win32":
+>     raise unittest.SkipTest("forkserver is not available on Windows")
+> 
+diff Python-3.6.6rc1/Lib/test/test_multiprocessing_main_handling.py Python-3.6.8/Lib/test/test_multiprocessing_main_handling.py 
+61c61
+<     deadline = time.time() + 10 # up to 10 s to report the results
+---
+>     start_time = time.monotonic()
+64,65c64,67
+<         if time.time() > deadline:
+<             raise RuntimeError("Timed out waiting for results")
+---
+>         # up to 1 min to report the results
+>         dt = time.monotonic() - start_time
+>         if dt > 60.0:
+>             raise RuntimeError("Timed out waiting for results (%.1f sec)" % dt)
+89c91
+< deadline = time.time() + 10 # up to 10 s to report the results
+---
+> start_time = time.monotonic()
+92,93c94,97
+<     if time.time() > deadline:
+<         raise RuntimeError("Timed out waiting for results")
+---
+>     # up to 1 min to report the results
+>     dt = time.monotonic() - start_time
+>     if dt > 60.0:
+>         raise RuntimeError("Timed out waiting for results (%.1f sec)" % dt)
 

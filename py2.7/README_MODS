@@ -248,4 +248,139 @@ diff Python-2.7.13/Lib/multiprocessing/util.py Python-2.7.15/Lib/multiprocessing
 >     # Careful: _finalizer_registry may be mutated while this function
 >     # is running (either by a GC run or by another thread).
 > 
+# ----------------------------------------------------------------------
+diff Python-2.7.15/Lib/multiprocessing/managers.py Python-2.7.16/Lib/multiprocessing/managers.py
+1062c1062
+<     '__contains__', '__delitem__', '__getitem__', '__len__',
+---
+>     '__contains__', '__delitem__', '__getitem__', '__iter__', '__len__',
+1065a1066,1068
+> DictProxy._method_to_typeid_ = {
+>     '__iter__': 'Iterator',
+>     }
+diff Python-2.7.15/Lib/test/test_multiprocessing.py Python-2.7.16/Lib/test/test_multiprocessing.py 
+19c19
+< from test import test_support
+---
+> from test import support
+21c21
+< _multiprocessing = test_support.import_module('_multiprocessing')
+---
+> _multiprocessing = support.import_module('_multiprocessing')
+28c28
+< test_support.import_module('multiprocessing.synchronize')
+---
+> support.import_module('multiprocessing.synchronize')
+344,345c344,345
+<         testfn = test_support.TESTFN
+<         self.addCleanup(test_support.unlink, testfn)
+---
+>         testfn = support.TESTFN
+>         self.addCleanup(support.unlink, testfn)
+643c643
+<         with test_support.temp_cwd():
+---
+>         with support.temp_cwd():
+655c655
+<             with test_support.DirsOnSysPath(os.getcwd()):
+---
+>             with support.DirsOnSysPath(os.getcwd()):
+1137a1138,1147
+>     def test_list_iter(self):
+>         a = self.list(range(10))
+>         it = iter(a)
+>         self.assertEqual(list(it), range(10))
+>         self.assertEqual(list(it), [])  # exhausted
+>         # list modified during iteration
+>         it = iter(a)
+>         a[0] = 100
+>         self.assertEqual(next(it), 100)
+> 
+1147a1158,1170
+>     def test_dict_iter(self):
+>         d = self.dict()
+>         indices = range(65, 70)
+>         for i in indices:
+>             d[i] = chr(i)
+>         it = iter(d)
+>         self.assertEqual(list(it), indices)
+>         self.assertEqual(list(it), [])  # exhausted
+>         # dictionary changed size during iteration
+>         it = iter(d)
+>         d.clear()
+>         self.assertRaises(RuntimeError, next, it)
+> 
+1263,1264c1286,1287
+<         it = self.pool.imap_unordered(sqr, range(1000))
+<         self.assertEqual(sorted(it), map(sqr, range(1000)))
+---
+>         it = self.pool.imap_unordered(sqr, range(100))
+>         self.assertEqual(sorted(it), map(sqr, range(100)))
+1266c1289
+<         it = self.pool.imap_unordered(sqr, range(1000), chunksize=53)
+---
+>         it = self.pool.imap_unordered(sqr, range(1000), chunksize=100)
+1520c1543
+<     if test_support.have_unicode:
+---
+>     if support.have_unicode:
+1522,1523c1545,1546
+<         uvalue = test_support.u(r'\u043f\u0440\u0438\u0432\u0456\u0442 '
+<                                 r'\u0441\u0432\u0456\u0442')
+---
+>         uvalue = support.u(r'\u043f\u0440\u0438\u0432\u0456\u0442 '
+>                            r'\u0441\u0432\u0456\u0442')
+1541c1564
+<             address=(test.test_support.HOST, 0), authkey=authkey, serializer=SERIALIZER
+---
+>             address=(test.support.HOST, 0), authkey=authkey, serializer=SERIALIZER
+1578c1601
+<             address=(test.test_support.HOST, 0), authkey=authkey, serializer=SERIALIZER)
+---
+>             address=(test.support.HOST, 0), authkey=authkey, serializer=SERIALIZER)
+1789c1812
+<         with open(test_support.TESTFN, "wb") as f:
+---
+>         with open(support.TESTFN, "wb") as f:
+1795c1818
+<         with open(test_support.TESTFN, "rb") as f:
+---
+>         with open(support.TESTFN, "rb") as f:
+1814c1837
+<         with open(test_support.TESTFN, "wb") as f:
+---
+>         with open(support.TESTFN, "wb") as f:
+1827c1850
+<         with open(test_support.TESTFN, "rb") as f:
+---
+>         with open(support.TESTFN, "rb") as f:
+2210c2233
+<             with test_support.start_threads(threads):
+---
+>             with support.start_threads(threads):
+2638c2661
+<     @test_support.requires_unicode  # XXX json needs unicode support
+---
+>     @support.requires_unicode  # XXX json needs unicode support
+2683a2707,2709
+>     # Sending CONN_MAX_SIZE bytes into a multiprocessing pipe must block
+>     CONN_MAX_SIZE = max(support.PIPE_MAX_SIZE, support.SOCK_MAX_SIZE)
+> 
+2692c2718
+<         conn.send_bytes(b'x'*(1024*1024))   # sending 1 MB should block
+---
+>         conn.send_bytes(b'x' * cls.CONN_MAX_SIZE)
+2711c2737
+<             self.assertEqual(conn.recv_bytes(), b'x'*(1024*1024))
+---
+>             self.assertEqual(conn.recv_bytes(), b'x' * self.CONN_MAX_SIZE)
+2768c2794
+<         from test.test_support import run_unittest as run
+---
+>         from test.support import run_unittest as run
+2793c2819
+<     with test_support.check_py3k_warnings(
+---
+>     with support.check_py3k_warnings(
+
 

@@ -6,6 +6,69 @@ cp -rf Python-3.7.0rc1/Lib/multiprocessing multiprocess
 cp -rf Python-3.7.0rc1/Lib/test/*test_multiprocessing*.py multiprocess/tests/
 
 # ----------------------------------------------------------------------
+diff ../Python-3.7.0rc1/Lib/test/test_multiprocessing_fork.py Python-3.7.3/Lib/test/test_multiprocessing_fork.py 
+3a4
+> import sys
+8a10,14
+> if sys.platform == "win32":
+>     raise unittest.SkipTest("fork is not available on Windows")
+> 
+> if sys.platform == 'darwin':
+>     raise unittest.SkipTest("test may crash on macOS (bpo-33725)")
+diff ../Python-3.7.0rc1/Lib/test/test_multiprocessing_forkserver.py Python-3.7.3/Lib/test/test_multiprocessing_forkserver.py 
+3a4
+> import sys
+8a10,12
+> if sys.platform == "win32":
+>     raise unittest.SkipTest("forkserver is not available on Windows")
+> 
+diff ../Python-3.7.0rc1/Lib/test/test_multiprocessing_main_handling.py Python-3.7.3/Lib/test/test_multiprocessing_main_handling.py 
+57d56
+<     p = Pool(5)
+59,64c58,67
+<     p.map_async(f, [1, 2, 3], callback=results.extend)
+<     deadline = time.time() + 60 # up to 60 s to report the results
+<     while not results:
+<         time.sleep(0.05)
+<         if time.time() > deadline:
+<             raise RuntimeError("Timed out waiting for results")
+---
+>     with Pool(5) as pool:
+>         pool.map_async(f, [1, 2, 3], callback=results.extend)
+>         start_time = time.monotonic()
+>         while not results:
+>             time.sleep(0.05)
+>             # up to 1 min to report the results
+>             dt = time.monotonic() - start_time
+>             if dt > 60.0:
+>                 raise RuntimeError("Timed out waiting for results (%.1f sec)" % dt)
+> 
+66a70,71
+> 
+>     pool.join()
+85d89
+< p = Pool(5)
+87,92c91,100
+< p.map_async(int, [1, 4, 9], callback=results.extend)
+< deadline = time.time() + 10 # up to 10 s to report the results
+< while not results:
+<     time.sleep(0.05)
+<     if time.time() > deadline:
+<         raise RuntimeError("Timed out waiting for results")
+---
+> with Pool(5) as pool:
+>     pool.map_async(int, [1, 4, 9], callback=results.extend)
+>     start_time = time.monotonic()
+>     while not results:
+>         time.sleep(0.05)
+>         # up to 1 min to report the results
+>         dt = time.monotonic() - start_time
+>         if dt > 60.0:
+>             raise RuntimeError("Timed out waiting for results (%.1f sec)" % dt)
+> 
+94a103,104
+> 
+> pool.join()
 diff Modules/_multiprocess/semaphore.c Python-3.7.0rc1/Modules/_multiprocessing/semaphore.c 
 10c10
 < #include "multiprocess.h"
@@ -167,4 +230,171 @@ REPLACED "from _multiprocessing" with "from _multiprocess"
 REPLACED "import _multiprocessing" with "import _multiprocess as _multiprocessing"
 REPLACED "multprocessing" with "multiprocess" wherever else relevant...
 REPLACED "import pickle" with "import dill as pickle"
+# ----------------------------------------------------------------------
+diff Python-3.7.0rc1/Modules/_multiprocessing/semaphore.c Python-3.7.3/Modules/_multiprocessing/semaphore.c
+452,453c452,454
+<         if (name_copy == NULL)
+<             goto failure;
+---
+>         if (name_copy == NULL) {
+>             return PyErr_NoMemory();
+>         }
+476c477,479
+<     _PyMp_SetError(NULL, MP_STANDARD_ERROR);
+---
+>     if (!PyErr_Occurred()) {
+>         _PyMp_SetError(NULL, MP_STANDARD_ERROR);
+>     }
+diff Python-3.7.0rc1/Lib/multiprocessing/managers.py Python-3.7.3/Lib/multiprocessing/managers.py
+20a21
+> import time
+22d22
+< from time import time as _time
+1048c1048
+<             endtime = _time() + timeout
+---
+>             endtime = time.monotonic() + timeout
+1054c1054
+<                 waittime = endtime - _time()
+---
+>                 waittime = endtime - time.monotonic()
+1137,1138c1137,1138
+<     '__contains__', '__delitem__', '__getitem__', '__len__',
+<     '__setitem__', 'clear', 'copy', 'get', 'has_key', 'items',
+---
+>     '__contains__', '__delitem__', '__getitem__', '__iter__', '__len__',
+>     '__setitem__', 'clear', 'copy', 'get', 'items',
+1140a1141,1143
+> DictProxy._method_to_typeid_ = {
+>     '__iter__': 'Iterator',
+>     }
+diff Python-3.7.0rc1/Lib/multiprocessing/popen_spawn_win32.py Python-3.7.3/Lib/multiprocessing/popen_spawn_win32.py
+20a21,33
+> 
+> def _path_eq(p1, p2):
+>     return p1 == p2 or os.path.normcase(p1) == os.path.normcase(p2)
+> 
+> WINENV = (hasattr(sys, '_base_executable') and
+>           not _path_eq(sys.executable, sys._base_executable))
+> 
+> 
+> def _close_handles(*handles):
+>     for handle in handles:
+>         _winapi.CloseHandle(handle)
+> 
+> 
+42a56,66
+>         python_exe = spawn.get_executable()
+> 
+>         # bpo-35797: When running in a venv, we bypass the redirect
+>         # executor and launch our base Python.
+>         if WINENV and _path_eq(python_exe, sys.executable):
+>             python_exe = sys._base_executable
+>             env = os.environ.copy()
+>             env["__PYVENV_LAUNCHER__"] = sys.executable
+>         else:
+>             env = None
+> 
+47,48c71,72
+<                     spawn.get_executable(), cmd,
+<                     None, None, False, 0, None, None, None)
+---
+>                     python_exe, cmd,
+>                     env, None, False, 0, None, None, None)
+diff Python-3.7.0rc1/Lib/multiprocessing/queues.py Python-3.7.3/Lib/multiprocessing/queues.py
+98c98
+<                 deadline = time.time() + timeout
+---
+>                 deadline = time.monotonic() + timeout
+103c103
+<                     timeout = deadline - time.time()
+---
+>                     timeout = deadline - time.monotonic()
+diff Python-3.7.0rc1/Lib/multiprocessing/reduction.py Python-3.7.3/Lib/multiprocessing/reduction.py
+153c153
+<         msg, ancdata, flags, addr = sock.recvmsg(1, socket.CMSG_LEN(bytes_size))
+---
+>         msg, ancdata, flags, addr = sock.recvmsg(1, socket.CMSG_SPACE(bytes_size))
+diff Python-3.7.0rc1/Lib/multiprocessing/spawn.py Python-3.7.3/Lib/multiprocessing/spawn.py
+33c33
+<     WINEXE = (sys.platform == 'win32' and getattr(sys, 'frozen', False))
+---
+>     WINEXE = getattr(sys, 'frozen', False)
+diff Python-3.7.0rc1/Lib/multiprocessing/synchronize.py Python-3.7.3/Lib/multiprocessing/synchronize.py
+18,19c18
+< 
+< from time import time as _time
+---
+> import time
+305c304
+<             endtime = _time() + timeout
+---
+>             endtime = time.monotonic() + timeout
+311c310
+<                 waittime = endtime - _time()
+---
+>                 waittime = endtime - time.monotonic()
+diff Python-3.7.0rc1/Lib/test/test_multiprocessing_fork.py Python-3.7.3/Lib/test/test_multiprocessing_fork.py 
+3a4
+> import sys
+8a10,14
+> if sys.platform == "win32":
+>     raise unittest.SkipTest("fork is not available on Windows")
+> 
+> if sys.platform == 'darwin':
+>     raise unittest.SkipTest("test may crash on macOS (bpo-33725)")
+diff Python-3.7.0rc1/Lib/test/test_multiprocessing_forkserver.py Python-3.7.3/Lib/test/test_multiprocessing_forkserver.py 
+3a4
+> import sys
+8a10,12
+> if sys.platform == "win32":
+>     raise unittest.SkipTest("forkserver is not available on Windows")
+> 
+diff Python-3.7.0rc1/Lib/test/test_multiprocessing_main_handling.py Python-3.7.3/Lib/test/test_multiprocessing_main_handling.py 
+57d56
+<     p = Pool(5)
+59,64c58,67
+<     p.map_async(f, [1, 2, 3], callback=results.extend)
+<     deadline = time.time() + 60 # up to 60 s to report the results
+<     while not results:
+<         time.sleep(0.05)
+<         if time.time() > deadline:
+<             raise RuntimeError("Timed out waiting for results")
+---
+>     with Pool(5) as pool:
+>         pool.map_async(f, [1, 2, 3], callback=results.extend)
+>         start_time = time.monotonic()
+>         while not results:
+>             time.sleep(0.05)
+>             # up to 1 min to report the results
+>             dt = time.monotonic() - start_time
+>             if dt > 60.0:
+>                 raise RuntimeError("Timed out waiting for results (%.1f sec)" % dt)
+> 
+66a70,71
+> 
+>     pool.join()
+85d89
+< p = Pool(5)
+87,92c91,100
+< p.map_async(int, [1, 4, 9], callback=results.extend)
+< deadline = time.time() + 10 # up to 10 s to report the results
+< while not results:
+<     time.sleep(0.05)
+<     if time.time() > deadline:
+<         raise RuntimeError("Timed out waiting for results")
+---
+> with Pool(5) as pool:
+>     pool.map_async(int, [1, 4, 9], callback=results.extend)
+>     start_time = time.monotonic()
+>     while not results:
+>         time.sleep(0.05)
+>         # up to 1 min to report the results
+>         dt = time.monotonic() - start_time
+>         if dt > 60.0:
+>             raise RuntimeError("Timed out waiting for results (%.1f sec)" % dt)
+> 
+94a103,104
+> 
+> pool.join()
 

@@ -98,12 +98,12 @@ class Queue(object):
             self._sem.release()
         else:
             if block:
-                deadline = time.time() + timeout
+                deadline = getattr(time,'monotonic',time.time)() + timeout
             if not self._rlock.acquire(block, timeout):
                 raise Empty
             try:
                 if block:
-                    timeout = deadline - time.time()
+                    timeout = deadline - getattr(time,'monotonic',time.time)()
                     if not self._poll(timeout):
                         raise Empty
                 elif not self._poll():

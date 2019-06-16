@@ -3419,7 +3419,7 @@ class TestFlags(unittest.TestCase):
     def _test_flags(self):
         import json, subprocess
         # start child process using unusual flags
-        prog = ('from __init__ import TestFlags; ' +
+        prog = ('from multiprocess.tests import TestFlags; ' +
                 'TestFlags.run_in_child()')
         data = subprocess.check_output(
             [sys.executable, '-E', '-S', '-O', '-c', prog])

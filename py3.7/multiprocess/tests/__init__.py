@@ -158,11 +158,11 @@ class TimingWrapper(object):
         self.elapsed = None
 
     def __call__(self, *args, **kwds):
-        t = time.time()
+        t = getattr(time,'monotonic',time.time)()
         try:
             return self.func(*args, **kwds)
         finally:
-            self.elapsed = time.time() - t
+            self.elapsed = getattr(time,'monotonic',time.time)() - t
 
 #
 # Base class for test cases
@@ -1034,9 +1034,9 @@ class _TestQueue(BaseTestCase):
 
     def test_timeout(self):
         q = multiprocessing.Queue()
-        start = time.time()
+        start = getattr(time,'monotonic',time.time)()
         self.assertRaises(pyqueue.Empty, q.get, True, 0.200)
-        delta = time.time() - start
+        delta = getattr(time,'monotonic',time.time)() - start
         # Tolerate a delta of 30 ms because of the bad clock resolution on
         # Windows (usually 15.6 ms)
         self.assertGreaterEqual(delta, 0.170)
@@ -1431,9 +1431,9 @@ class _TestCondition(BaseTestCase):
         sem.release()
         with cond:
             expected = 0.1
-            dt = time.time()
+            dt = getattr(time,'monotonic',time.time)()
             result = cond.wait_for(lambda : state.value==4, timeout=expected)
-            dt = time.time() - dt
+            dt = getattr(time,'monotonic',time.time)() - dt
             # borrow logic in assertTimeout() from test/lock_tests.py
             if not result and expected * 0.6 < dt < expected * 10.0:
                 success.value = True
@@ -2499,7 +2499,7 @@ class _TestPool(BaseTestCase):
         # process would fill the result queue (after the result handler thread
         # terminated, hence not draining it anymore).
 
-        t_start = time.time()
+        t_start = getattr(time,'monotonic',time.time)()
 
         with self.assertRaises(ValueError):
             with self.Pool(2) as p:
@@ -2511,7 +2511,7 @@ class _TestPool(BaseTestCase):
                     p.join()
 
         # check that we indeed waited for all jobs
-        self.assertGreater(time.time() - t_start, 0.9)
+        self.assertGreater(getattr(time,'monotonic',time.time)() - t_start, 0.9)
 
     def test_release_task_refs(self):
         # Issue #29861: task arguments and results should not be kept
@@ -4021,9 +4021,9 @@ class TestWait(unittest.TestCase):
         expected = 5
         a, b = multiprocessing.Pipe()
 
-        start = time.time()
+        start = getattr(time,'monotonic',time.time)()
         res = wait([a, b], expected)
-        delta = time.time() - start
+        delta = getattr(time,'monotonic',time.time)() - start
 
         self.assertEqual(res, [])
         self.assertLess(delta, expected * 2)
@@ -4031,9 +4031,9 @@ class TestWait(unittest.TestCase):
 
         b.send(None)
 
-        start = time.time()
+        start = getattr(time,'monotonic',time.time)()
         res = wait([a, b], 20)
-        delta = time.time() - start
+        delta = getattr(time,'monotonic',time.time)() - start
 
         self.assertEqual(res, [a])
         self.assertLess(delta, 0.4)
@@ -4057,9 +4057,9 @@ class TestWait(unittest.TestCase):
         self.assertIsInstance(p.sentinel, int)
         self.assertTrue(sem.acquire(timeout=20))
 
-        start = time.time()
+        start = getattr(time,'monotonic',time.time)()
         res = wait([a, p.sentinel, b], expected + 20)
-        delta = time.time() - start
+        delta = getattr(time,'monotonic',time.time)() - start
 
         self.assertEqual(res, [p.sentinel])
         self.assertLess(delta, expected + 2)
@@ -4067,18 +4067,18 @@ class TestWait(unittest.TestCase):
 
         a.send(None)
 
-        start = time.time()
+        start = getattr(time,'monotonic',time.time)()
         res = wait([a, p.sentinel, b], 20)
-        delta = time.time() - start
+        delta = getattr(time,'monotonic',time.time)() - start
 
         self.assertEqual(sorted_(res), sorted_([p.sentinel, b]))
         self.assertLess(delta, 0.4)
 
         b.send(None)
 
-        start = time.time()
+        start = getattr(time,'monotonic',time.time)()
         res = wait([a, p.sentinel, b], 20)
-        delta = time.time() - start
+        delta = getattr(time,'monotonic',time.time)() - start
 
         self.assertEqual(sorted_(res), sorted_([a, p.sentinel, b]))
         self.assertLess(delta, 0.4)
@@ -4089,9 +4089,9 @@ class TestWait(unittest.TestCase):
     def test_neg_timeout(self):
         from multiprocess.connection import wait
         a, b = multiprocessing.Pipe()
-        t = time.time()
+        t = getattr(time,'monotonic',time.time)()
         res = wait([a], timeout=-1)
-        t = time.time() - t
+        t = getattr(time,'monotonic',time.time)() - t
         self.assertEqual(res, [])
         self.assertLess(t, 1)
         a.close()
@@ -4138,7 +4138,7 @@ class TestFlags(unittest.TestCase):
     def _test_flags(self):
         import json, subprocess
         # start child process using unusual flags
-        prog = ('from __init__ import TestFlags; ' +
+        prog = ('from multiprocess.tests import TestFlags; ' +
                 'TestFlags.run_in_child()')
         data = subprocess.check_output(
             [sys.executable, '-E', '-S', '-O', '-c', prog])
@@ -4631,12 +4631,12 @@ class ManagerMixin(BaseMixin):
         # only the manager process should be returned by active_children()
         # but this can take a bit on slow machines, so wait a few seconds
         # if there are other children too (see #17395)
-        start_time = time.monotonic()
+        start_time = getattr(time,'monotonic',time.time)()
         t = 0.01
         while len(multiprocessing.active_children()) > 1:
             time.sleep(t)
             t *= 2
-            dt = time.monotonic() - start_time
+            dt = getattr(time,'monotonic',time.time)() - start_time
             if dt >= 5.0:
                 test.support.environment_altered = True
                 print("Warning -- multiprocess.Manager still has %s active "

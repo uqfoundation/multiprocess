@@ -1,0 +1,523 @@
+cp -rf py3.7/examples .
+cp -rf py3.7/doc .
+cp -f py3.7/index.html .
+cp -rf py3.7/Modules/_multiprocess/* Modules/_multiprocess
+cp -f Python-3.8.0b1/Modules/multiprocessing/posixshmem.c Modules/_multiprocess
+cp -rf Python-3.8.0b1/Modules/multiprocessing/clinic Modules/_multiprocess
+cp -f Python-3.8.0b1/Lib/multiprocessing/* multiprocess
+cp -rf py3.7/multiprocess/dummy multiprocess
+cp -f Python-3.8.0b1/Lib/test/*test_multiprocessing*.py multiprocess/tests
+
+# ----------------------------------------------------------------------
+diff Python-3.7.3/Modules/_multiprocessing/semaphore.c Python-3.8.0b1/Modules/_multiprocessing/semaphore.c
+144c144
+<                      "value %d", res);
+---
+>                      "value %u", res);
+524c524
+< semlock_count(SemLockObject *self)
+---
+> semlock_count(SemLockObject *self, PyObject *Py_UNUSED(ignored))
+530c530
+< semlock_ismine(SemLockObject *self)
+---
+> semlock_ismine(SemLockObject *self, PyObject *Py_UNUSED(ignored))
+537c537
+< semlock_getvalue(SemLockObject *self)
+---
+> semlock_getvalue(SemLockObject *self, PyObject *Py_UNUSED(ignored))
+555c555
+< semlock_iszero(SemLockObject *self)
+---
+> semlock_iszero(SemLockObject *self, PyObject *Py_UNUSED(ignored))
+576c576
+< semlock_afterfork(SemLockObject *self)
+---
+> semlock_afterfork(SemLockObject *self, PyObject *Py_UNUSED(ignored))
+587c587
+<     {"acquire", (PyCFunction)semlock_acquire, METH_VARARGS | METH_KEYWORDS,
+---
+>     {"acquire", (PyCFunction)(void(*)(void))semlock_acquire, METH_VARARGS | METH_KEYWORDS,
+591c591
+<     {"__enter__", (PyCFunction)semlock_acquire, METH_VARARGS | METH_KEYWORDS,
+---
+>     {"__enter__", (PyCFunction)(void(*)(void))semlock_acquire, METH_VARARGS | METH_KEYWORDS,
+636c636
+<     /* tp_print          */ 0,
+---
+>     /* tp_vectorcall_offset */ 0,
+639c639
+<     /* tp_reserved       */ 0,
+---
+>     /* tp_as_async       */ 0,
+diff Python-3.7.3/Lib/multiprocessing/dummy/__init__.py Python-3.8.0b1/Lib/multiprocessing/dummy/__init__.py
+83c83
+<     def __init__(self, **kwds):
+---
+>     def __init__(self, /, **kwds):
+diff /Users/mmckerns/src/Python-3.8.0b1/Lib/multiprocessing/__init__.py py3.8/multiprocess/__init__.py
+17a18,19
+> __version__ = '0.70.8.dev0'
+> 
+diff /Users/mmckerns/src/Python-3.8.0b1/Lib/multiprocessing/connection.py py3.8/multiprocess/connection.py
+21c21,24
+< import _multiprocessing
+---
+> try:
+>     import _multiprocess as _multiprocessing
+> except ImportError:
+>     import _multiprocessing
+60c63
+<     return time.monotonic() + timeout
+---
+>     return getattr(time,'monotonic',time.time)() + timeout
+63c66
+<     return time.monotonic() > t
+---
+>     return getattr(time,'monotonic',time.time)() > t
+927c930
+<                 deadline = time.monotonic() + timeout
+---
+>                 deadline = getattr(time,'monotonic',time.time)() + timeout
+935c938
+<                         timeout = deadline - time.monotonic()
+---
+>                         timeout = deadline - getattr(time,'monotonic',time.time)()
+Common subdirectories: /Users/mmckerns/src/Python-3.8.0b1/Lib/multiprocessing/dummy and py3.8/multiprocess/dummy
+diff /Users/mmckerns/src/Python-3.8.0b1/Lib/multiprocessing/forkserver.py py3.8/multiprocess/forkserver.py
+106c106
+<             cmd = ('from multiprocessing.forkserver import main; ' +
+---
+>             cmd = ('from multiprocess.forkserver import main; ' +
+diff /Users/mmckerns/src/Python-3.8.0b1/Lib/multiprocessing/managers.py py3.8/multiprocess/managers.py
+500c500
+< listener_client = {
+---
+> listener_client = { #XXX: register dill?
+1087c1087
+<             endtime = time.monotonic() + timeout
+---
+>             endtime = getattr(time,'monotonic',time.time)() + timeout
+1093c1093
+<                 waittime = endtime - time.monotonic()
+---
+>                 waittime = endtime - getattr(time,'monotonic',time.time)()
+1177c1177
+<     '__setitem__', 'clear', 'copy', 'get', 'items',
+---
+>     '__setitem__', 'clear', 'copy', 'get', 'has_key', 'items',
+1218c1218
+<     The `multiprocessing.Manager()` function creates started instances of
+---
+>     The `multiprocess.Manager()` function creates started instances of
+diff /Users/mmckerns/src/Python-3.8.0b1/Lib/multiprocessing/popen_fork.py py3.8/multiprocess/popen_fork.py
+43c43
+<                 from multiprocessing.connection import wait
+---
+>                 from multiprocess.connection import wait
+diff /Users/mmckerns/src/Python-3.8.0b1/Lib/multiprocessing/popen_forkserver.py py3.8/multiprocess/popen_forkserver.py
+63c63
+<             from multiprocessing.connection import wait
+---
+>             from multiprocess.connection import wait
+diff /Users/mmckerns/src/Python-3.8.0b1/Lib/multiprocessing/queues.py py3.8/multiprocess/queues.py
+22c22,25
+< import _multiprocessing
+---
+> try:
+>     import _multiprocess as _multiprocessing
+> except ImportError:
+>     import _multiprocessing
+101c104
+<                 deadline = time.monotonic() + timeout
+---
+>                 deadline = getattr(time,'monotonic',time.time)() + timeout
+106c109
+<                     timeout = deadline - time.monotonic()
+---
+>                     timeout = deadline - getattr(time,'monotonic',time.time)()
+diff /Users/mmckerns/src/Python-3.8.0b1/Lib/multiprocessing/reduction.py py3.8/multiprocess/reduction.py
+15c15,18
+< import pickle
+---
+> try:
+>     import dill as pickle
+> except ImportError:
+>     import pickle
+34c37
+<     '''Pickler subclass used by multiprocessing.'''
+---
+>     '''Pickler subclass used by multiprocess.'''
+254c257
+<     used in multiprocessing.'''
+---
+>     used in multiprocess.'''
+diff /Users/mmckerns/src/Python-3.8.0b1/Lib/multiprocessing/resource_tracker.py py3.8/multiprocess/resource_tracker.py
+37c37,40
+<     import _multiprocessing
+---
+>     try: 
+>         import _multiprocess as _multiprocessing
+>     except ImportError:
+>         import _multiprocessing
+91c94
+<             cmd = 'from multiprocessing.resource_tracker import main;main(%d)'
+---
+>             cmd = 'from multiprocess.resource_tracker import main;main(%d)'
+diff /Users/mmckerns/src/Python-3.8.0b1/Lib/multiprocessing/spawn.py py3.8/multiprocess/spawn.py
+86c86
+<         prog = 'from multiprocessing.spawn import spawn_main; spawn_main(%s)'
+---
+>         prog = 'from multiprocess.spawn import spawn_main; spawn_main(%s)'
+diff /Users/mmckerns/src/Python-3.8.0b1/Lib/multiprocessing/synchronize.py py3.8/multiprocess/synchronize.py
+17c17,20
+< import _multiprocessing
+---
+> try: 
+>     import _multiprocess as _multiprocessing
+> except ImportError:
+>     import _multiprocessing
+28,33c31,39
+<     from _multiprocessing import SemLock, sem_unlink
+< except (ImportError):
+<     raise ImportError("This platform lacks a functioning sem_open" +
+<                       " implementation, therefore, the required" +
+<                       " synchronization primitives needed will not" +
+<                       " function, see issue 3770.")
+---
+>     from _multiprocess import SemLock, sem_unlink
+> except ImportError:
+>     try:
+>         from _multiprocessing import SemLock, sem_unlink
+>     except (ImportError):
+>         raise ImportError("This platform lacks a functioning sem_open" +
+>                           " implementation, therefore, the required" +
+>                           " synchronization primitives needed will not" +
+>                           " function, see issue 3770.")
+304c310
+<             endtime = time.monotonic() + timeout
+---
+>             endtime = getattr(time,'monotonic',time.time)() + timeout
+310c316
+<                 waittime = endtime - time.monotonic()
+---
+>                 waittime = endtime - getattr(time,'monotonic',time.time)()
+Only in py3.8/multiprocess: tests
+diff /Users/mmckerns/src/Python-3.8.0b1/Lib/multiprocessing/util.py py3.8/multiprocess/util.py
+38c38
+< LOGGER_NAME = 'multiprocessing'
+---
+> LOGGER_NAME = 'multiprocess'
+62c62
+<     Returns logger used by multiprocessing
+---
+>     Returns logger used by multiprocess
+diff Python-3.8.0b1/Lib/test/_test_multiprocessing.py ~/dev/svn/pathos/multiprocess/py3.8/multiprocess/tests/__init__.py       
+23c23
+< import pickle
+---
+> import pickle #XXX: use dill?
+32c32
+< _multiprocessing = test.support.import_module('_multiprocessing')
+---
+> _multiprocessing = test.support.import_module('_multiprocess')
+34c34
+< test.support.import_module('multiprocessing.synchronize')
+---
+> test.support.import_module('multiprocess.synchronize')
+37,42c37,43
+< import multiprocessing.connection
+< import multiprocessing.dummy
+< import multiprocessing.heap
+< import multiprocessing.managers
+< import multiprocessing.pool
+< import multiprocessing.queues
+---
+> import multiprocess as multiprocessing
+> import multiprocess.connection
+> import multiprocess.dummy
+> import multiprocess.heap
+> import multiprocess.managers
+> import multiprocess.pool
+> import multiprocess.queues
+44c45
+< from multiprocessing import util
+---
+> from multiprocess import util
+47c48
+<     from multiprocessing import reduction
+---
+>     from multiprocess import reduction
+53c54
+<     from multiprocessing.sharedctypes import Value, copy
+---
+>     from multiprocess.sharedctypes import Value, copy
+59c60
+<     from multiprocessing import shared_memory
+---
+>     from multiprocess import shared_memory
+93c94
+<     from multiprocessing import resource_tracker
+---
+>     from multiprocess import resource_tracker
+121c122
+< from multiprocessing.connection import wait
+---
+> from multiprocess.connection import wait
+134c135
+< PRELOAD = ['__main__', 'test.test_multiprocessing_forkserver']
+---
+> PRELOAD = ['__main__', 'test_multiprocessing_forkserver']
+173c174
+<         t = time.monotonic()
+---
+>         t = getattr(time,'monotonic',time.time)()
+177c178
+<             self.elapsed = time.monotonic() - t
+---
+>             self.elapsed = getattr(time,'monotonic',time.time)() - t
+289c290
+<         from multiprocessing.process import parent_process
+---
+>         from multiprocess.process import parent_process
+325c326
+<         from multiprocessing.process import parent_process
+---
+>         from multiprocess.process import parent_process
+470a472
+>     @unittest.skipIf(True, "fails with is_dill(obj, child=True)")
+722c724
+<         from multiprocessing.forkserver import _forkserver
+---
+>         from multiprocess.forkserver import _forkserver
+811c813
+<             self.assertIn("test_multiprocessing.py", err)
+---
+>             self.assertIn("__init__.py", err)
+1092c1094
+<                     import multiprocessing
+---
+>                     import multiprocess as multiprocessing
+1110c1112
+<         start = time.monotonic()
+---
+>         start = getattr(time,'monotonic',time.time)()
+1112c1114
+<         delta = time.monotonic() - start
+---
+>         delta = getattr(time,'monotonic',time.time)() - start
+1516c1518
+<             dt = time.monotonic()
+---
+>             dt = getattr(time,'monotonic',time.time)()
+1518c1520
+<             dt = time.monotonic() - dt
+---
+>             dt = getattr(time,'monotonic',time.time)() - dt
+1987c1989
+<             self.skipTest("requires multiprocessing.sharedctypes")
+---
+>             self.skipTest("requires multiprocess.sharedctypes")
+2553a2556
+>     @unittest.skipIf(True, "fails with is_dill(obj, child=True)")
+2595a2599
+>     @unittest.skipIf(True, "fails with is_dill(obj, child=True)")
+2609c2613
+<         t_start = time.monotonic()
+---
+>         t_start = getattr(time,'monotonic',time.time)()
+2621c2625
+<         self.assertGreater(time.monotonic() - t_start, 0.9)
+---
+>         self.assertGreater(getattr(time,'monotonic',time.time)() - t_start, 0.9)
+2693,2694c2697,2698
+<     def test_unpickleable_result(self):
+<         from multiprocessing.pool import MaybeEncodingError
+---
+>     def _test_unpickleable_result(self):
+>         from multiprocess.pool import MaybeEncodingError
+2764c2768
+< from multiprocessing.managers import BaseManager, BaseProxy, RemoteError
+---
+> from multiprocess.managers import BaseManager, BaseProxy, RemoteError
+3390c3394
+<         from multiprocessing import resource_sharer
+---
+>         from multiprocess import resource_sharer
+3832c3836
+<             from multiprocessing.managers import SharedMemoryManager
+---
+>             from multiprocess.managers import SharedMemoryManager
+3989c3993
+<             from multiprocessing import shared_memory
+---
+>             from multiprocess import shared_memory
+4007c4011
+<             deadline = time.monotonic() + 60
+---
+>             deadline = getattr(time,'monotonic',time.time)() + 60
+4009c4013
+<             while time.monotonic() < deadline:
+---
+>             while getattr(time,'monotonic',time.time)() < deadline:
+4161,4163c4165,4167
+<         modules = ['multiprocessing.' + m for m in modules]
+<         modules.remove('multiprocessing.__init__')
+<         modules.append('multiprocessing')
+---
+>         modules = ['multiprocess.' + m for m in modules]
+>         modules.remove('multiprocess.__init__')
+>         modules.append('multiprocess')
+4169,4171c4173,4175
+<             modules.remove('multiprocessing.popen_fork')
+<             modules.remove('multiprocessing.popen_forkserver')
+<             modules.remove('multiprocessing.popen_spawn_posix')
+---
+>             modules.remove('multiprocess.popen_fork')
+>             modules.remove('multiprocess.popen_forkserver')
+>             modules.remove('multiprocess.popen_spawn_posix')
+4173c4177
+<             modules.remove('multiprocessing.popen_spawn_win32')
+---
+>             modules.remove('multiprocess.popen_spawn_win32')
+4175c4179
+<                 modules.remove('multiprocessing.popen_forkserver')
+---
+>                 modules.remove('multiprocess.popen_forkserver')
+4179c4183
+<             modules.remove('multiprocessing.sharedctypes')
+---
+>             modules.remove('multiprocess.sharedctypes')
+4459c4463
+<         from multiprocessing.connection import wait
+---
+>         from multiprocess.connection import wait
+4499c4503
+<         from multiprocessing.connection import wait
+---
+>         from multiprocess.connection import wait
+4540c4544
+<         from multiprocessing.connection import wait
+---
+>         from multiprocess.connection import wait
+4545c4549
+<         start = time.monotonic()
+---
+>         start = getattr(time,'monotonic',time.time)()
+4547c4551
+<         delta = time.monotonic() - start
+---
+>         delta = getattr(time,'monotonic',time.time)() - start
+4555c4559
+<         start = time.monotonic()
+---
+>         start = getattr(time,'monotonic',time.time)()
+4557c4561
+<         delta = time.monotonic() - start
+---
+>         delta = getattr(time,'monotonic',time.time)() - start
+4568c4572
+<         from multiprocessing.connection import wait
+---
+>         from multiprocess.connection import wait
+4581c4585
+<         start = time.monotonic()
+---
+>         start = getattr(time,'monotonic',time.time)()
+4583c4587
+<         delta = time.monotonic() - start
+---
+>         delta = getattr(time,'monotonic',time.time)() - start
+4591c4595
+<         start = time.monotonic()
+---
+>         start = getattr(time,'monotonic',time.time)()
+4593c4597
+<         delta = time.monotonic() - start
+---
+>         delta = getattr(time,'monotonic',time.time)() - start
+4600c4604
+<         start = time.monotonic()
+---
+>         start = getattr(time,'monotonic',time.time)()
+4602c4606
+<         delta = time.monotonic() - start
+---
+>         delta = getattr(time,'monotonic',time.time)() - start
+4611c4615
+<         from multiprocessing.connection import wait
+---
+>         from multiprocess.connection import wait
+4613c4617
+<         t = time.monotonic()
+---
+>         t = getattr(time,'monotonic',time.time)()
+4615c4619
+<         t = time.monotonic() - t
+---
+>         t = getattr(time,'monotonic',time.time)() - t
+4662c4666
+<         prog = ('from test._test_multiprocessing import TestFlags; ' +
+---
+>         prog = ('from __init__ import TestFlags; ' +
+4708c4712
+<     def test_noforkbomb(self):
+---
+>     def _test_noforkbomb(self):
+4837c4841
+<     def test_ignore(self):
+---
+>     def _test_ignore(self):
+4945c4949
+<     def test_preload_resources(self):
+---
+>     def _test_preload_resources(self):
+4962c4966
+<     def test_resource_tracker(self):
+---
+>     def _test_resource_tracker(self):
+4968,4970c4972,4974
+<             import multiprocessing as mp
+<             from multiprocessing import resource_tracker
+<             from multiprocessing.shared_memory import SharedMemory
+---
+>             import multiprocess as mp
+>             from multiprocess import resource_tracker
+>             from multiprocess.shared_memory import SharedMemory
+5030c5034
+<         from multiprocessing.resource_tracker import _resource_tracker
+---
+>         from multiprocess.resource_tracker import _resource_tracker
+5078c5082
+<         from multiprocessing.resource_tracker import _resource_tracker
+---
+>         from multiprocess.resource_tracker import _resource_tracker
+5087c5091
+<         from multiprocessing.resource_tracker import _resource_tracker
+---
+>         from multiprocess.resource_tracker import _resource_tracker
+5231c5235
+<         start_time = time.monotonic()
+---
+>         start_time = getattr(time,'monotonic',time.time)()
+5236c5240
+<             dt = time.monotonic() - start_time
+---
+>             dt = getattr(time,'monotonic',time.time)() - start_time
+5239c5243
+<                 print("Warning -- multiprocessing.Manager still has %s active "
+---
+>                 print("Warning -- multiprocess.Manager still has %s active "
+5510c5514
+<         start_time = time.monotonic()
+---
+>         start_time = getattr(time,'monotonic',time.time)()
+5515c5519
+<             dt = time.monotonic() - start_time
+---
+>             dt = getattr(time,'monotonic',time.time)() - start_time
+5518c5522
+<                 print("Warning -- multiprocessing.Manager still has %s active "
+---
+>                 print("Warning -- multiprocess.Manager still has %s active "
+

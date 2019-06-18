@@ -69,5 +69,5 @@ install:
 
 script:
     - if [ $TRAVIS_PYTHON_VERSION == 'nightly' ]; then export PYVER = '3.8'; else export PYVER = $TRAVIS_PYTHON_VERSION; fi  # point nightly to 3.8
-     -for test in py$PYVER/multiprocess/tests/*.py; do if [[ $test != *"main"* ]]; then echo $test ; python $test > /dev/null ; fi; done
+    - for test in py$PYVER/multiprocess/tests/*.py; do if [[ $test != *"main"* ]]; then echo $test ; python $test > /dev/null ; fi; done
 

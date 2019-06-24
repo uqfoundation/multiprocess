@@ -1,0 +1,23 @@
+[run]
+# source = ppft
+include =
+    */py2.7/multiprocess/*
+    */py3.6/multiprocess/*
+omit = 
+    */examples/*
+    */multiprocess/tests/*
+# timid = true
+# parallel = true
+# concurrency = multiprocessing # thread
+data_file = $TRAVIS_BUILD_DIR/.coverage
+# debug = trace
+
+[report]
+include =
+    */py2.7/multiprocess/*
+    */py3.6/multiprocess/*
+exclude_lines =
+    pragma: no cover
+    if __name__ == .__main__.:
+show_missing = true
+ignore_errors = true

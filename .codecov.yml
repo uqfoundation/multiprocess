@@ -1,0 +1,2 @@
+fixes:
+  - "*/site-packages/multiprocess-*py3.6*/multiprocess::py3.6/multiprocess"

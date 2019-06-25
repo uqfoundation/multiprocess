@@ -103,16 +103,17 @@ install:
 
 script:
     - if [[ $PYVERSION == "nightly" ]] || [[ $PYVERSION == "3.8-dev" ]]; then $PYVERSION="3.8"; else PYVERSION=$TRAVIS_PYTHON_VERSION ; fi
-#   - cd py$PYVERSION
-#   - cp ../.coveragerc .coveragerc
-    - for test in py$PYVERSION/multiprocess/tests/__init__.py; do echo $test ; if [[ $COVERAGE == "true" ]]; then coverage run -a $test > /dev/null; else python $test > /dev/null; fi ; done
-    - for test in py$PYVERSION/multiprocess/tests/*.py; do if [[ $test != "__"* ]]; then echo $test ; if [[ $COVERAGE == "true" ]]; then coverage run -a $test > /dev/null; else python $test > /dev/null; fi ; fi; done
-#   - cd ..
+    - cd py$PYVERSION
+    - cp ../.coveragerc .coveragerc
+    - for test in multiprocess/tests/__init__.py; do echo $test ; if [[ $COVERAGE == "true" ]]; then coverage run -a $test > /dev/null; else python $test > /dev/null; fi ; done
+    - for test in multiprocess/tests/*.py; do if [[ $test != "__"* ]]; then echo $test ; if [[ $COVERAGE == "true" ]]; then coverage run -a $test > /dev/null; else python $test > /dev/null; fi ; fi; done
+    - cd ..
 
 after_success:
 #   - cd py$PYVERSION
 #   - cp ../.coveragerc .coveragerc
 #   - if [[ $COVERAGE == "true" ]]; then cat .coverage; else echo ''; fi
-    - if [[ $COVERAGE == "true" ]]; then coverage combine; else echo ''; fi
-    - if [[ $COVERAGE == "true" ]]; then bash <(curl -s https://codecov.io/bash); else echo ''; fi
+#   - if [[ $COVERAGE == "true" ]]; then coverage combine; else echo ''; fi
+    - if [[ $COVERAGE == "true" ]]; then mv py$PYVERSION/.coverage .coverage; else echo ''; fi
+    - if [[ $COVERAGE == "true" ]]; then bash <(curl -s https://codecov.io/bash) -y .codecov.yml; else echo ''; fi
 #   - cd ..

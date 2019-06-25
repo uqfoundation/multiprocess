@@ -13,11 +13,6 @@ omit =
 # data_file = ./.coverage
 debug = trace
 
-[paths]
-source =
-    py3.6
-    */site-packages/multiprocess-*py3.6*
-
 [report]
 include =
     */multiprocess/*

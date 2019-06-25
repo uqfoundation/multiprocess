@@ -2,7 +2,7 @@
 # source = multiprocess
 include =
     */multiprocess/*
-    */_multiprocess/*
+#   */_multiprocess/*
 omit = 
     */examples/*
     */multiprocess/tests/*
@@ -13,10 +13,15 @@ omit =
 # data_file = ./.coverage
 debug = trace
 
+[paths]
+source =
+    py3.6
+    */site-packages/multiprocess-*py3.6*
+
 [report]
 include =
     */multiprocess/*
-    */_multiprocess/*
+#   */_multiprocess/*
 exclude_lines =
     pragma: no cover
     if __name__ == .__main__.:

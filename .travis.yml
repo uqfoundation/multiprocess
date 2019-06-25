@@ -112,5 +112,6 @@ script:
 after_success:
     - cd py$PYVERSION
     - cp ../.coveragerc .coveragerc
+    - if [[ $COVERAGE == "true" ]]; then cat .coverage; else echo ''; fi
     - if [[ $COVERAGE == "true" ]]; then bash <(curl -s https://codecov.io/bash); else echo ''; fi
     - cd ..

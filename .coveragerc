@@ -2,7 +2,7 @@
 # source = multiprocess
 include =
     */multiprocess/*
-#   */_multiprocess/*
+    */_multiprocess/*
 omit = 
     */examples/*
     */multiprocess/tests/*
@@ -11,12 +11,12 @@ omit =
 # concurrency = multiprocessing # thread
 # data_file = $TRAVIS_BUILD_DIR/.coverage
 # data_file = ./.coverage
-debug = trace
+# debug = trace
 
 [report]
 include =
     */multiprocess/*
-#   */_multiprocess/*
+    */_multiprocess/*
 exclude_lines =
     pragma: no cover
     if __name__ == .__main__.:

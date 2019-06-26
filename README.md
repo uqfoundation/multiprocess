@@ -51,6 +51,7 @@ The latest released version of ``multiprocess`` is available from::
 
 
 Development Version
+[![Travis Build Status](https://img.shields.io/travis/uqfoundation/multiprocess.svg?label=build&logo=travis&branch=master)](https://travis-ci.org/uqfoundation/multiprocess)
 -------------------
 You can get the latest development version with all the shiny new features at::
     https://github.com/uqfoundation

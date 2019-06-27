@@ -4,7 +4,7 @@ import re
 import os
 import sys
 import glob
-stable_version = '0.70.8'
+stable_version = '0.70.9'
 pymajor,pyminor = sys.version_info[:2]
 pkgdir = 'py%s.%s' % (pymajor,pyminor)
 if sys.version_info < (2, 5):

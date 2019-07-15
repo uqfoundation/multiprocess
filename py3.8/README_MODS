@@ -520,4 +520,10 @@ diff Python-3.8.0b1/Lib/test/_test_multiprocessing.py ~/dev/svn/pathos/multiproc
 <                 print("Warning -- multiprocessing.Manager still has %s active "
 ---
 >                 print("Warning -- multiprocess.Manager still has %s active "
+diff Python-3.8.0b1/Lib/multiprocessing/popen_spawn_win32.py Python-3.8.0b2/Lib/multiprocessing/popen_spawn_win32.py
+25,26c25
+< WINENV = (hasattr(sys, '_base_executable') and
+<           not _path_eq(sys.executable, sys._base_executable))
+---
+> WINENV = not _path_eq(sys.executable, sys._base_executable)
 

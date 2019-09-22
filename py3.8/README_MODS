@@ -526,4 +526,55 @@ diff Python-3.8.0b1/Lib/multiprocessing/popen_spawn_win32.py Python-3.8.0b2/Lib/
 <           not _path_eq(sys.executable, sys._base_executable))
 ---
 > WINENV = not _path_eq(sys.executable, sys._base_executable)
-
+diff Python-3.8.0b1/Modules/_multiprocessing/clinic/posixshmem.c.h Python-3.8.0b4/Modules/_multiprocessing/clinic/posixshmem.c.h
+38c38
+<         _PyArg_BadArgument("shm_open", 1, "str", args[0]);
+---
+>         _PyArg_BadArgument("shm_open", "argument 'path'", "str", args[0]);
+111c111
+<         _PyArg_BadArgument("shm_unlink", 1, "str", args[0]);
+---
+>         _PyArg_BadArgument("shm_unlink", "argument 'path'", "str", args[0]);
+133c133
+< /*[clinic end generated code: output=be42e23c18677c0f input=a9049054013a1b77]*/
+---
+> /*[clinic end generated code: output=9132861c61d8c2d8 input=a9049054013a1b77]*/
+diff Python-3.8.0b1/Lib/multiprocessing/forkserver.py Python-3.8.0b4/Lib/multiprocessing/forkserver.py
+41a42,60
+>     def _stop(self):
+>         # Method used by unit tests to stop the server
+>         with self._lock:
+>             self._stop_unlocked()
+> 
+>     def _stop_unlocked(self):
+>         if self._forkserver_pid is None:
+>             return
+> 
+>         # close the "alive" file descriptor asks the server to stop
+>         os.close(self._forkserver_alive_fd)
+>         self._forkserver_alive_fd = None
+> 
+>         os.waitpid(self._forkserver_pid, 0)
+>         self._forkserver_pid = None
+> 
+>         os.unlink(self._forkserver_address)
+>         self._forkserver_address = None
+> 
+diff Python-3.8.0b1/Lib/multiprocessing/util.py Python-3.8.0b4/Lib/multiprocessing/util.py
+108a109,117
+> def _remove_temp_dir(rmtree, tempdir):
+>     rmtree(tempdir)
+> 
+>     current_process = process.current_process()
+>     # current_process() can be None if the finalizer is called
+>     # late during Python finalization
+>     if current_process is not None:
+>         current_process._config['tempdir'] = None
+> 
+116c125,128
+<         Finalize(None, shutil.rmtree, args=[tempdir], exitpriority=-100)
+---
+>         # keep a strong reference to shutil.rmtree(), since the finalizer
+>         # can be called late during Python shutdown
+>         Finalize(None, _remove_temp_dir, args=(shutil.rmtree, tempdir),
+>                  exitpriority=-100)

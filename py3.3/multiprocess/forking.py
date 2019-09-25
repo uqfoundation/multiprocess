@@ -39,8 +39,8 @@ from copyreg import dispatch_table
 
 class ForkingPickler(Pickler):
     _extra_reducers = {}
-    def __init__(self, *args):
-        Pickler.__init__(self, *args)
+    def __init__(self, *args, **kwds):
+        Pickler.__init__(self, *args, **kwds)
         self.dispatch_table = dispatch_table.copy()
         self.dispatch_table.update(self._extra_reducers)
     @classmethod
@@ -168,8 +168,8 @@ else:
     except ImportError:
         from pickle import load, HIGHEST_PROTOCOL
 
-    def dump(obj, file, protocol=None):
-        ForkingPickler(file, protocol).dump(obj)
+    def dump(obj, file, protocol=None, *args, **kwds):
+        ForkingPickler(file, protocol, *args, **kwds).dump(obj)
 
     #
     #

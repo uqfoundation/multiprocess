@@ -151,4 +151,5 @@ diff Python-3.4.8/Lib/multiprocessing/queues.py Python-3.4.3/Lib/multiprocessing
 >         self._reader.close()
 >         if self._close:
 >             self._close()
-
+# ----------------------------------------------------------------------
+ADDED *args, **kwds for ForkingPickler in __init__, dump, and dumps

@@ -90,3 +90,4 @@ REPLACED "from multiprocessing" with "from multiprocess"
 REPLACED "from _multiprocessing" with "from _multiprocess"
 REPLACED "import _multiprocessing" with "import _multiprocess as _multiprocessing"
 REPLACED "multprocessing" with "multiprocess" wherever else relevant...
+ADDED *args, **kwds for ForkingPickler in __init__ and dump

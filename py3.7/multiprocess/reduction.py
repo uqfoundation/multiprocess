@@ -38,8 +38,8 @@ class ForkingPickler(pickle.Pickler):
     _extra_reducers = {}
     _copyreg_dispatch_table = copyreg.dispatch_table
 
-    def __init__(self, *args):
-        super().__init__(*args)
+    def __init__(self, *args, **kwds):
+        super().__init__(*args, **kwds)
         self.dispatch_table = self._copyreg_dispatch_table.copy()
         self.dispatch_table.update(self._extra_reducers)
 
@@ -49,18 +49,18 @@ class ForkingPickler(pickle.Pickler):
         cls._extra_reducers[type] = reduce
 
     @classmethod
-    def dumps(cls, obj, protocol=None):
+    def dumps(cls, obj, protocol=None, *args, **kwds):
         buf = io.BytesIO()
-        cls(buf, protocol).dump(obj)
+        cls(buf, protocol, *args, **kwds).dump(obj)
         return buf.getbuffer()
 
     loads = pickle.loads
 
 register = ForkingPickler.register
 
-def dump(obj, file, protocol=None):
+def dump(obj, file, protocol=None, *args, **kwds):
     '''Replacement for pickle.dump() using ForkingPickler.'''
-    ForkingPickler(file, protocol).dump(obj)
+    ForkingPickler(file, protocol, *args, **kwds).dump(obj)
 
 #
 # Platform specific definitions

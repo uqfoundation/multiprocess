@@ -397,4 +397,5 @@ diff Python-3.7.0rc1/Lib/test/test_multiprocessing_main_handling.py Python-3.7.3
 94a103,104
 > 
 > pool.join()
-
+# ----------------------------------------------------------------------
+ADDED *args, **kwds for ForkingPickler in __init__, dump, and dumps

@@ -377,4 +377,5 @@ diff Python-3.5.2/Lib/multiprocessing/util.py Python-3.5.5/Lib/multiprocessing/u
 <     passfds = sorted(passfds)
 ---
 >     passfds = tuple(sorted(map(int, passfds)))
-
+# ----------------------------------------------------------------------
+ADDED *args, **kwds for ForkingPickler in __init__, dump, and dumps

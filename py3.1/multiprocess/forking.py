@@ -61,6 +61,10 @@ except ImportError:
     from pickle import _Pickler as Pickler
 class ForkingPickler(Pickler):
     dispatch = Pickler.dispatch.copy()
+
+    def __init__(self, *args, **kwds):
+        Pickler.__init__(self, *args, **kwds)
+
     @classmethod
     def register(cls, type, reduce):
         def dispatcher(self, obj):
@@ -195,8 +199,8 @@ else:
         from _multiprocessing import win32, Connection, PipeConnection
     from .util import Finalize
 
-    def dump(obj, file, protocol=None):
-        ForkingPickler(file, protocol).dump(obj)
+    def dump(obj, file, protocol=None, *args, **kwds):
+        ForkingPickler(file, protocol, *args, **kwds).dump(obj)
 
     #
     #

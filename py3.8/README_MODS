@@ -578,3 +578,5 @@ diff Python-3.8.0b1/Lib/multiprocessing/util.py Python-3.8.0b4/Lib/multiprocessi
 >         # can be called late during Python shutdown
 >         Finalize(None, _remove_temp_dir, args=(shutil.rmtree, tempdir),
 >                  exitpriority=-100)
+# ----------------------------------------------------------------------
+ADDED *args, **kwds for ForkingPickler in __init__, dump, and dumps

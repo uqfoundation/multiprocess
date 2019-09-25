@@ -36,6 +36,9 @@ except ImportError:
 class ForkingPickler(Pickler):
     dispatch = Pickler.dispatch.copy()
 
+    def __init__(self, *args, **kwds):
+        Pickler.__init__(self, *args, **kwds)
+
     @classmethod
     def register(cls, type, reduce):
         def dispatcher(self, obj):
@@ -165,8 +168,8 @@ else:
     except ImportError:
         from pickle import load, HIGHEST_PROTOCOL
 
-    def dump(obj, file, protocol=None):
-        ForkingPickler(file, protocol).dump(obj)
+    def dump(obj, file, protocol=None, *args, **kwds):
+        ForkingPickler(file, protocol, *args, **kwds).dump(obj)
 
     #
     #

@@ -44,6 +44,7 @@ if sys.platform == 'win32' and sys.version_info >= (2, 6):
 is_jython = sys.platform.startswith('java')
 is_pypy = hasattr(sys, 'pypy_version_info')
 is_py3k = sys.version_info[0] == 3
+lt_py33 = sys.version_info < (3, 3)
 
 BUILD_WARNING = """
 
@@ -186,7 +187,7 @@ if sys.platform == 'win32':
         '%s/%s.c' % (srcdir, pkgname),
         '%s/semaphore.c' % srcdir,
     ]
-    if sys.version_info < (3, 3):
+    if lt_py33:
         multiprocessing_srcs += [
             '%s/pipe_connection.c' % srcdir,
             '%s/socket_connection.c' % srcdir,
@@ -194,7 +195,7 @@ if sys.platform == 'win32':
         ]
 else:
     multiprocessing_srcs = [ '%s/%s.c' % (srcdir, pkgname) ]
-    if sys.version_info < (3, 3):
+    if lt_py33:
         multiprocessing_srcs.append('%s/socket_connection.c' % srcdir)
 
     if macros.get('HAVE_SEM_OPEN', False):
@@ -337,9 +338,9 @@ http://arxiv.org/pdf/1202.1056 for further information.
 #    long_description = long_description.encode('ascii', 'replace')
 
 # -*- Installation Requires -*-
-py_version = sys.version_info
-is_jython = sys.platform.startswith('java')
-is_pypy = hasattr(sys, 'pypy_version_info')
+#py_version = sys.version_info
+#is_jython = sys.platform.startswith('java')
+#is_pypy = hasattr(sys, 'pypy_version_info')
 
 #def strip_comments(l):
 #    return l.split('#', 1)[0].strip()
@@ -408,7 +409,7 @@ def run_setup(with_extensions=True):
     setup(**config)
 
 try:
-    run_setup(not (is_jython or is_pypy))# or is_py3k))
+    run_setup(not (is_jython or is_pypy) and lt_py33)
 except BaseException:
     if _is_build_command(sys.argv):
         import traceback

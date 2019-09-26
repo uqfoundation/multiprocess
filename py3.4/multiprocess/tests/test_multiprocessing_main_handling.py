@@ -2,7 +2,7 @@
 from test import support
 # Skip tests if _thread or _multiprocessing wasn't built.
 support.import_module('_thread')
-support.import_module('_multiprocess')
+support.import_module('_multiprocessing')
 
 import importlib
 import importlib.machinery

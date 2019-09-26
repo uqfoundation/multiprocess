@@ -26,7 +26,7 @@ from test import support
 
 
 # Skip tests if _multiprocessing wasn't built.
-_multiprocessing = test.support.import_module('_multiprocess')
+_multiprocessing = test.support.import_module('_multiprocessing')
 # Skip tests if sem_open implementation is broken.
 test.support.import_module('multiprocess.synchronize')
 # import threading after _multiprocessing to raise a more relevant error

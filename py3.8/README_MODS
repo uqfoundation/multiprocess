@@ -580,3 +580,9 @@ diff Python-3.8.0b1/Lib/multiprocessing/util.py Python-3.8.0b4/Lib/multiprocessi
 >                  exitpriority=-100)
 # ----------------------------------------------------------------------
 ADDED *args, **kwds for ForkingPickler in __init__, dump, and dumps
+diff Python-3.8.0b4/Lib/multiprocessing/context.py py3.8/multiprocessing/context.py
+312c312
+<        _default_context = DefaultContext(_concrete_contexts['spawn'])
+---
+>        _default_context = DefaultContext(_concrete_contexts['fork']) #FIXME: spawn
+

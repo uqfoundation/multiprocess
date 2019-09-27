@@ -312,7 +312,7 @@ if sys.platform != 'win32':
     if sys.platform == 'darwin':
         # bpo-33725: running arbitrary code after fork() is no longer reliable
         # on macOS since macOS 10.14 (Mojave). Use spawn by default instead.
-        _default_context = DefaultContext(_concrete_contexts['spawn'])
+        _default_context = DefaultContext(_concrete_contexts['fork']) #FIXME: spawn
     else:
         _default_context = DefaultContext(_concrete_contexts['fork'])
 

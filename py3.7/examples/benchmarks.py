@@ -4,7 +4,6 @@
 
 import time, sys, multiprocess as processing, threading, queue as Queue, gc
 processing.freezeSupport = processing.freeze_support
-xrange = range
 
 if sys.platform == 'win32':
     _timer = time.clock
@@ -22,9 +21,9 @@ def queuespeed_func(q, c, iterations):
     c.notify()
     c.release()
 
-    for i in xrange(iterations):
+    for i in range(iterations):
         q.put(a)
-#    q.putMany((a for i in xrange(iterations))
+#    q.putMany((a for i in range(iterations))
 
     q.put('STOP')
 
@@ -63,7 +62,7 @@ def pipe_func(c, cond, iterations):
     cond.notify()
     cond.release()
 
-    for i in xrange(iterations):
+    for i in range(iterations):
         c.send(a)
 
     c.send('STOP')
@@ -107,7 +106,7 @@ def test_seqspeed(seq):
 
         t = _timer()
 
-        for i in xrange(iterations):
+        for i in range(iterations):
             a = seq[5]
 
         elapsed = _timer()-t
@@ -127,7 +126,7 @@ def test_lockspeed(l):
 
         t = _timer()
 
-        for i in xrange(iterations):
+        for i in range(iterations):
             l.acquire()
             l.release()
 
@@ -143,7 +142,7 @@ def conditionspeed_func(c, N):
     c.acquire()
     c.notify()
 
-    for i in xrange(N):
+    for i in range(N):
         c.wait()
         c.notify()
 
@@ -164,7 +163,7 @@ def test_conditionspeed(Process, c):
 
         t = _timer()
 
-        for i in xrange(iterations):
+        for i in range(iterations):
             c.notify()
             c.wait()
 

@@ -6,7 +6,6 @@ from multiprocess import Pool, TimeoutError
 from multiprocess import cpu_count as cpuCount, current_process as currentProcess, freeze_support as freezeSupport, active_children as activeChildren
 
 import time, random, sys
-xrange = range
 
 #
 # Functions used by test code
@@ -91,18 +90,18 @@ def test():
     print('def pow3(x): return x**3')
     
     t = time.time()
-    A = list(map(pow3, xrange(N)))
-    print('\tmap(pow3, xrange(%d)):\n\t\t%s seconds' % \
+    A = list(map(pow3, range(N)))
+    print('\tmap(pow3, range(%d)):\n\t\t%s seconds' % \
           (N, time.time() - t))
     
     t = time.time()
-    B = pool.map(pow3, xrange(N))
-    print('\tpool.map(pow3, xrange(%d)):\n\t\t%s seconds' % \
+    B = pool.map(pow3, range(N))
+    print('\tpool.map(pow3, range(%d)):\n\t\t%s seconds' % \
           (N, time.time() - t))
 
     t = time.time()
-    C = list(pool.imap(pow3, xrange(N), chunksize=N//8))
-    print('\tlist(pool.imap(pow3, xrange(%d), chunksize=%d)):\n\t\t%s' \
+    C = list(pool.imap(pow3, range(N), chunksize=N//8))
+    print('\tlist(pool.imap(pow3, range(%d), chunksize=%d)):\n\t\t%s' \
           ' seconds' % (N, N//8, time.time() - t))
     
     assert A == B == C, (len(A), len(B), len(C))

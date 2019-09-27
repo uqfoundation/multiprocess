@@ -4,8 +4,7 @@
 #
 
 from multiprocess import freeze_support as freezeSupport
-from multiprocess.managers import BaseManager, BaseProxy
-xrange = range
+from multiprocess.managers import BaseManager, IteratorProxy as BaseProxy
 
 ##
 
@@ -19,15 +18,15 @@ class Foo(object):
 
 # A simple generator function
 def baz():
-    for i in xrange(10):
+    for i in range(10):
         yield i*i
 
 # Proxy type for generator objects
 class GeneratorProxy(BaseProxy):
     def __iter__(self):
         return self
-    def next(self):
-        return self._callmethod('next')
+    def __next__(self):
+        return self._callmethod('__next__')
 
 ##
 

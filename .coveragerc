@@ -6,6 +6,7 @@ include =
 omit = 
     */examples/*
     */multiprocess/tests/*
+branch = true
 # timid = true
 # parallel = true
 # concurrency = multiprocessing # thread
@@ -19,6 +20,9 @@ include =
     */_multiprocess/*
 exclude_lines =
     pragma: no cover
+    raise NotImplementedError
     if __name__ == .__main__.:
 # show_missing = true
 ignore_errors = true
+# pragma: no branch
+# noqa

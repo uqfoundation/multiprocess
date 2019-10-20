@@ -287,7 +287,7 @@ Requirements
 
 ``multiprocess`` requires::
 
-    - ``python``, **version >= 2.5** or **version >= 3.1**
+    - ``python``, **version >= 2.6** or **version >= 3.2**
     - ``dill``, **version >= 0.3.1**
 
 Optional requirements::

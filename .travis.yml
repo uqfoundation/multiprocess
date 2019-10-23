@@ -56,11 +56,10 @@ matrix:
           sudo: true
           env:
 
-        - python: '3.8-dev'
+        - python: '3.8'
           dist: xenial
           sudo: true
           env:
-            - PYVERSION="3.8"
 
         - python: 'nightly'
           dist: xenial
@@ -84,7 +83,6 @@ matrix:
         - python: '3.1'
         - python: '3.2'
         - python: '3.3'
-        - python: '3.8-dev'
         - python: 'nightly'
         - python: 'pypy'
         - python: 'pypy3'

@@ -13,6 +13,7 @@ try:
     python = pox.which_python(version=True, fullpath=False) or 'python'
 except ImportError:
     python = 'python'
+import subprocess as sp
 
 suite = os.path.dirname(__file__) or os.path.curdir
 tests = glob.glob(suite + os.path.sep + 'test_*.py')
@@ -23,7 +24,7 @@ tests = glob.glob(suite + os.path.sep + '__init__.py') + \
 if __name__ == '__main__':
 
     for test in tests:
+        sp.check_call([python, test])
         print('.', end='')
-        os.system('{0} {1}'.format(python, test))
     print('')
 

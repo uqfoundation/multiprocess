@@ -61,11 +61,17 @@ matrix:
           sudo: true
           env:
 
+        - python: '3.9-dev'
+          dist: xenial
+          sudo: true
+          env:
+            - PYVERSION="3.9"
+
         - python: 'nightly'
           dist: xenial
           sudo: true
           env:
-            - PYVERSION="3.8"
+            - PYVERSION="3.9"
 
         - python: 'pypy'
           dist: trusty
@@ -83,6 +89,7 @@ matrix:
         - python: '3.1'
         - python: '3.2'
         - python: '3.3'
+        - python: '3.9-dev'
         - python: 'nightly'
         - python: 'pypy'
         - python: 'pypy3'
@@ -100,7 +107,7 @@ install:
     - python setup.py build && python setup.py install
 
 script:
-    - if [[ $PYVERSION != "3.8" ]]; then PYVERSION=$TRAVIS_PYTHON_VERSION ; fi
+    - if [[ $PYVERSION != "3.9" ]]; then PYVERSION=$TRAVIS_PYTHON_VERSION ; fi
     - cd py$PYVERSION
     - cp ../.coveragerc .coveragerc
     - for test in multiprocess/tests/__init__.py; do echo $test ; if [[ $COVERAGE == "true" ]]; then coverage run -a $test > /dev/null; else python $test > /dev/null; fi ; done

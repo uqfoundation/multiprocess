@@ -238,7 +238,7 @@ class Finalize(object):
         if self._kwargs:
             x += ', kwargs=' + str(self._kwargs)
         if self._key[0] is not None:
-            x += ', exitprority=' + str(self._key[0])
+            x += ', exitpriority=' + str(self._key[0])
         return x + '>'
 
 
@@ -439,3 +439,28 @@ def close_fds(*fds):
     """Close each file descriptor given as an argument"""
     for fd in fds:
         os.close(fd)
+
+
+def _cleanup_tests():
+    """Cleanup multiprocessing resources when multiprocessing tests
+    completed."""
+
+    from test import support
+
+    # cleanup multiprocessing
+    process._cleanup()
+
+    # Stop the ForkServer process if it's running
+    from multiprocess import forkserver
+    forkserver._forkserver._stop()
+
+    # Stop the ResourceTracker process if it's running
+    from multiprocess import resource_tracker
+    resource_tracker._resource_tracker._stop()
+
+    # bpo-37421: Explicitly call _run_finalizers() to remove immediately
+    # temporary directories created by multiprocessing.util.get_temp_dir().
+    _run_finalizers()
+    support.gc_collect()
+
+    support.reap_children()

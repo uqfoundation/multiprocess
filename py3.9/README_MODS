@@ -1,0 +1,94 @@
+cp -rf py3.8/examples .
+cp -rf py3.8/doc .
+cp -f py3.8/index.html .
+cp -rf py3.8/_multiprocess _multiprocess
+cp -rf py3.8/multiprocess multiprocess 
+cp -rf py3.8/Modules Modules 
+
+# ----------------------------------------------------------------------
+diff Python-3.8.1/Modules/_multiprocessing/multiprocessing.h Python-3.9.0a2/Modules/_multiprocessing/multiprocessing.h
+30,37d29
+< #  define HANDLE int
+< #  define SOCKET int
+< #  define BOOL int
+< #  define UINT32 uint32_t
+< #  define INT32 int32_t
+< #  define TRUE 1
+< #  define FALSE 0
+< #  define INVALID_HANDLE_VALUE (-1)
+75,76d66
+< #  define F_DWORD "k"
+< #  define T_DWORD T_ULONG
+# ----------------------------------------------------------------------
+diff Python-3.8.1/Lib/multiprocessing/managers.py Python-3.9.0a2/Lib/multiprocessing/managers.py
+251c251
+<                     except KeyError as second_ke:
+---
+>                     except KeyError:
+299c299
+<                 except Exception as e:
+---
+>                 except Exception:
+363c363
+<     def create(*args, **kwds):
+---
+>     def create(self, c, typeid, /, *args, **kwds):
+367,392d366
+<         if len(args) >= 3:
+<             self, c, typeid, *args = args
+<         elif not args:
+<             raise TypeError("descriptor 'create' of 'Server' object "
+<                             "needs an argument")
+<         else:
+<             if 'typeid' not in kwds:
+<                 raise TypeError('create expected at least 2 positional '
+<                                 'arguments, got %d' % (len(args)-1))
+<             typeid = kwds.pop('typeid')
+<             if len(args) >= 2:
+<                 self, c, *args = args
+<                 import warnings
+<                 warnings.warn("Passing 'typeid' as keyword argument is deprecated",
+<                               DeprecationWarning, stacklevel=2)
+<             else:
+<                 if 'c' not in kwds:
+<                     raise TypeError('create expected at least 2 positional '
+<                                     'arguments, got %d' % (len(args)-1))
+<                 c = kwds.pop('c')
+<                 self, *args = args
+<                 import warnings
+<                 warnings.warn("Passing 'c' as keyword argument is deprecated",
+<                               DeprecationWarning, stacklevel=2)
+<         args = tuple(args)
+< 
+424d397
+<     create.__text_signature__ = '($self, c, typeid, /, *args, **kwds)'
+1296c1269
+<         def create(*args, **kwargs):
+---
+>         def create(self, c, typeid, /, *args, **kwargs):
+1302,1311d1274
+<             if len(args) >= 3:
+<                 typeod = args[2]
+<             elif 'typeid' in kwargs:
+<                 typeid = kwargs['typeid']
+<             elif not args:
+<                 raise TypeError("descriptor 'create' of 'SharedMemoryServer' "
+<                                 "object needs an argument")
+<             else:
+<                 raise TypeError('create expected at least 2 positional '
+<                                 'arguments, got %d' % (len(args)-1))
+1314,1315c1277
+<             return Server.create(*args, **kwargs)
+<         create.__text_signature__ = '($self, c, typeid, /, *args, **kwargs)'
+---
+>             return Server.create(self, c, typeid, *args, **kwargs)
+diff Python-3.8.1/Lib/multiprocessing/popen_fork.py Python-3.9.0a2/Lib/multiprocessing/popen_fork.py
+28c28
+<             except OSError as e:
+---
+>             except OSError:
+diff Python-3.8.1/Lib/multiprocessing/util.py Python-3.9.0a2/Lib/multiprocessing/util.py
+432c432
+<             False, False, None)
+---
+>             False, False, None, None, None, -1, None)

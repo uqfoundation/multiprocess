@@ -580,9 +580,71 @@ diff Python-3.8.0b1/Lib/multiprocessing/util.py Python-3.8.0b4/Lib/multiprocessi
 >                  exitpriority=-100)
 # ----------------------------------------------------------------------
 ADDED *args, **kwds for ForkingPickler in __init__, dump, and dumps
+# ----------------------------------------------------------------------
 diff Python-3.8.0b4/Lib/multiprocessing/context.py py3.8/multiprocessing/context.py
 312c312
 <        _default_context = DefaultContext(_concrete_contexts['spawn'])
 ---
 >        _default_context = DefaultContext(_concrete_contexts['fork']) #FIXME: spawn
+# ----------------------------------------------------------------------
+diff Python-3.8.0b4/Lib/multiprocessing/popen_spawn_win32.py Python-3.8.1/Lib/multiprocessing/popen_spawn_win32.py
+75c75
+<                     env, None, False, 0, None, None, None)
+---
+>                     None, None, False, 0, env, None, None)
+diff Python-3.8.0b4/Lib/multiprocessing/process.py Python-3.8.1/Lib/multiprocessing/process.py
+303a304,305
+>             if threading._HAVE_THREAD_NATIVE_ID:
+>                 threading.main_thread()._set_native_id()
+diff Python-3.8.0b4/Lib/multiprocessing/resource_tracker.py Python-3.8.1/Lib/multiprocessing/resource_tracker.py
+52a53,65
+>     def _stop(self):
+>         with self._lock:
+>             if self._fd is None:
+>                 # not running
+>                 return
+> 
+>             # closing the "alive" file descriptor stops main()
+>             os.close(self._fd)
+>             self._fd = None
+> 
+>             os.waitpid(self._pid, 0)
+>             self._pid = None
+> 
+diff Python-3.8.0b4/Lib/multiprocessing/spawn.py Python-3.8.1/Lib/multiprocessing/spawn.py
+39c39
+<     _python_exe = sys.executable
+---
+>     _python_exe = sys._base_executable
+diff Python-3.8.0b4/Lib/multiprocessing/util.py Python-3.8.1/Lib/multiprocessing/util.py
+241c241
+<             x += ', exitprority=' + str(self._key[0])
+---
+>             x += ', exitpriority=' + str(self._key[0])
+441a442,466
+> 
+> 
+> def _cleanup_tests():
+>     """Cleanup multiprocessing resources when multiprocessing tests
+>     completed."""
+> 
+>     from test import support
+> 
+>     # cleanup multiprocessing
+>     process._cleanup()
+> 
+>     # Stop the ForkServer process if it's running
+>     from multiprocessing import forkserver
+>     forkserver._forkserver._stop()
+> 
+>     # Stop the ResourceTracker process if it's running
+>     from multiprocessing import resource_tracker
+>     resource_tracker._resource_tracker._stop()
+> 
+>     # bpo-37421: Explicitly call _run_finalizers() to remove immediately
+>     # temporary directories created by multiprocessing.util.get_temp_dir().
+>     _run_finalizers()
+>     support.gc_collect()
+> 
+>     support.reap_children()
 

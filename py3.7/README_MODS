@@ -399,3 +399,66 @@ diff Python-3.7.0rc1/Lib/test/test_multiprocessing_main_handling.py Python-3.7.3
 > pool.join()
 # ----------------------------------------------------------------------
 ADDED *args, **kwds for ForkingPickler in __init__, dump, and dumps
+# ----------------------------------------------------------------------
+diff Python-3.7.3/Modules/_multiprocessing/semaphore.c Python-3.7.6/Modules/_multiprocessing/semaphore.c
+144c144
+<                      "value %d", res);
+---
+>                      "value %u", res);
+diff Python-3.7.3/Lib/multiprocessing/managers.py Python-3.7.6/Lib/multiprocessing/managers.py
+354c354
+<     def create(self, c, typeid, *args, **kwds):
+---
+>     def create(*args, **kwds):
+357a358,377
+>         if len(args) >= 3:
+>             self, c, typeid, *args = args
+>         elif not args:
+>             raise TypeError("descriptor 'create' of 'Server' object "
+>                             "needs an argument")
+>         else:
+>             if 'typeid' not in kwds:
+>                 raise TypeError('create expected at least 2 positional '
+>                                 'arguments, got %d' % (len(args)-1))
+>             typeid = kwds.pop('typeid')
+>             if len(args) >= 2:
+>                 self, c, *args = args
+>             else:
+>                 if 'c' not in kwds:
+>                     raise TypeError('create expected at least 2 positional '
+>                                     'arguments, got %d' % (len(args)-1))
+>                 c = kwds.pop('c')
+>                 self, *args = args
+>         args = tuple(args)
+> 
+579c599
+<     def _create(self, typeid, *args, **kwds):
+---
+>     def _create(*args, **kwds):
+582a603,605
+>         self, typeid, *args = args
+>         args = tuple(args)
+> 
+diff Python-3.7.3/Lib/multiprocessing/resource_sharer.py Python-3.7.6/Lib/multiprocessing/resource_sharer.py
+62c62
+<     '''Manager for resouces using background thread.'''
+---
+>     '''Manager for resources using background thread.'''
+diff Python-3.7.3/Lib/multiprocessing/util.py Python-3.7.6/Lib/multiprocessing/util.py
+108a109,117
+> def _remove_temp_dir(rmtree, tempdir):
+>     rmtree(tempdir)
+> 
+>     current_process = process.current_process()
+>     # current_process() can be None if the finalizer is called
+>     # late during Python finalization
+>     if current_process is not None:
+>         current_process._config['tempdir'] = None
+> 
+116c125,128
+<         Finalize(None, shutil.rmtree, args=[tempdir], exitpriority=-100)
+---
+>         # keep a strong reference to shutil.rmtree(), since the finalizer
+>         # can be called late during Python shutdown
+>         Finalize(None, _remove_temp_dir, args=(shutil.rmtree, tempdir),
+>                  exitpriority=-100)

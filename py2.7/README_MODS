@@ -384,3 +384,9 @@ diff Python-2.7.15/Lib/test/test_multiprocessing.py Python-2.7.16/Lib/test/test_
 >     with support.check_py3k_warnings(
 # ----------------------------------------------------------------------
 ADDED *args, **kwds for ForkingPickler in __init__ and dump
+# ----------------------------------------------------------------------
+diff Python-2.7.16/Modules/_multiprocessing/multiprocessing.c Python-2.7.17/Modules/_multiprocessing/multiprocessing.c
+170c170
+<     cmsg->cmsg_len = CMSG_LEN(sizeof(int));
+---
+>     cmsg->cmsg_len = CMSG_SPACE(sizeof(int));

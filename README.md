@@ -28,9 +28,7 @@ Features:
 
 ``multiprocess`` is part of ``pathos``, a python framework for heterogeneous computing.
 ``multiprocess`` is in active development, so any user feedback, bug reports, comments,
-or suggestions are highly appreciated.  A list of known issues is maintained
-at http://trac.mystic.cacr.caltech.edu/project/pathos/query.html, with a public
-ticket list at https://github.com/uqfoundation/multiprocess/issues.
+or suggestions are highly appreciated.  A list of issues is located at https://github.com/uqfoundation/multiprocess/issues, with a legacy list maintained at https://uqfoundation.github.io/pathos-issues.html.
 
 NOTE: A C compiler is required to build the included extension module. For python 3.3 and above, a C compiler is suggested, but not required.
 
@@ -52,6 +50,7 @@ The latest released version of ``multiprocess`` is available from::
 
 Development Version
 [![Travis Build Status](https://img.shields.io/travis/uqfoundation/multiprocess.svg?label=build&logo=travis&branch=master)](https://travis-ci.org/uqfoundation/multiprocess)
+[![Downloads](https://pepy.tech/badge/multiprocess)](https://pepy.tech/project/multiprocess)
 -------------------
 You can get the latest development version with all the shiny new features at::
     https://github.com/uqfoundation
@@ -143,8 +142,8 @@ acknowledge use of ``multiprocess`` by citing the following in your publication:
 
     Michael McKerns and Michael Aivazis,
     "pathos: a framework for heterogeneous computing", 2010- ;
-    http://trac.mystic.cacr.caltech.edu/project/pathos
+    https://uqfoundation.github.io/pathos.html
 
-Please see http://trac.mystic.cacr.caltech.edu/project/pathos or
+Please see https://uqfoundation.github.io/pathos.html or
 http://arxiv.org/pdf/1202.1056 for further information.
 

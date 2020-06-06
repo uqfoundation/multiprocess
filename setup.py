@@ -4,12 +4,18 @@ import re
 import os
 import sys
 import glob
+# drop support for older python
+unsupported = None
+if sys.version_info < (2, 7):
+    unsupported = 'Versions of Python before 2.7 are not supported'
+elif (3, 0) <= sys.version_info < (3, 5):
+    unsupported = 'Versions of Python before 3.5 are not supported'
+if unsupported:
+    raise ValueError(unsupported)
 stable_version = '0.70.10'
 pymajor,pyminor = sys.version_info[:2]
 pkgdir = 'py%s.%s' % (pymajor,pyminor)
-if sys.version_info < (2, 5):
-    raise ValueError('Versions of Python before 2.5 are not supported')
-elif sys.version_info >= (2, 6):
+if sys.version_info >= (2, 6):
     pkgname = 'multiprocess'
 else: # (2, 5)
     pkgname = 'processing'  #XXX: oddity, due to lazyness at the moment
@@ -227,7 +233,7 @@ Features:
 
 ``multiprocess`` is part of ``pathos``,  a python framework for heterogeneous computing.
 ``multiprocess`` is in active development, so any user feedback, bug reports, comments,
-or suggestions are highly appreciated.  A list of known issues is maintained at http://trac.mystic.cacr.caltech.edu/project/pathos/query.html, with a public ticket list at https://github.com/uqfoundation/multiprocess/issues.
+or suggestions are highly appreciated.  A list of issues is located at https://github.com/uqfoundation/multiprocess/issues, with a legacy list maintained at https://uqfoundation.github.io/pathos-issues.html.
 
 NOTE: A C compiler is required to build the included extension module. For python 3.3 and above, a C compiler is suggested, but not required.
 
@@ -287,7 +293,7 @@ Requirements
 
 ``multiprocess`` requires::
 
-    - ``python``, **version >= 2.6** or **version >= 3.2**
+    - ``python``, **version >= 2.7** or **version >= 3.5**
     - ``dill``, **version >= 0.3.1**
 
 Optional requirements::
@@ -320,9 +326,9 @@ acknowledge use of ``multiprocess`` by citing the following in your publication:
 
     Michael McKerns and Michael Aivazis,
     "pathos: a framework for heterogeneous computing", 2010- ;
-    http://trac.mystic.cacr.caltech.edu/project/pathos
+    https://uqfoundation.github.io/pathos.html
 
-Please see http://trac.mystic.cacr.caltech.edu/project/pathos or
+Please see https://uqfoundation.github.io/pathos.html or
 http://arxiv.org/pdf/1202.1056 for further information.
 ''' % {'relver': stable_version, 'thisver': stable_version}
 #long_description = open(os.path.join(HERE, 'README.md')).read()

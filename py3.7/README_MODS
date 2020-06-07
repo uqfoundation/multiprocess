@@ -462,3 +462,8 @@ diff Python-3.7.3/Lib/multiprocessing/util.py Python-3.7.6/Lib/multiprocessing/u
 >         # can be called late during Python shutdown
 >         Finalize(None, _remove_temp_dir, args=(shutil.rmtree, tempdir),
 >                  exitpriority=-100)
+diff Python-3.7.6/Lib/multiprocessing/popen_spawn_win32.py Python-3.7.7/Lib/multiprocessing/popen_spawn_win32.py
+72c72
+<                     env, None, False, 0, None, None, None)
+---
+>                     None, None, False, 0, env, None, None)

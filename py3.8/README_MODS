@@ -647,4 +647,98 @@ diff Python-3.8.0b4/Lib/multiprocessing/util.py Python-3.8.1/Lib/multiprocessing
 >     support.gc_collect()
 > 
 >     support.reap_children()
-
+diff Python-3.8.1/Lib/multiprocessing/connection.py Python-3.8.3/Lib/multiprocessing/connection.py
+105c105
+<     elif type(address) is str:
+---
+>     elif type(address) is str or util.is_abstract_socket_namespace(address):
+600c600,601
+<         if family == 'AF_UNIX':
+---
+>         if family == 'AF_UNIX' and not util.is_abstract_socket_namespace(address):
+>             # Linux abstract socket namespaces do not need to be explicitly unlinked
+diff Python-3.8.1/Lib/multiprocessing/forkserver.py Python-3.8.3/Lib/multiprocessing/forkserver.py
+58c58,59
+<         os.unlink(self._forkserver_address)
+---
+>         if not util.is_abstract_socket_namespace(self._forkserver_address):
+>             os.unlink(self._forkserver_address)
+138c139,140
+<                 os.chmod(address, 0o600)
+---
+>                 if not util.is_abstract_socket_namespace(address):
+>                     os.chmod(address, 0o600)
+diff Python-3.8.1/Lib/multiprocessing/managers.py Python-3.8.3/Lib/multiprocessing/managers.py
+62c62
+<     Type to uniquely indentify a shared object
+---
+>     Type to uniquely identify a shared object
+824c824
+<         Try to call a method of the referrent and return a copy of the result
+---
+>         Try to call a method of the referent and return a copy of the result
+1291a1292,1295
+>             address = self.address
+>             # The address of Linux abstract namespaces can be bytes
+>             if isinstance(address, bytes):
+>                 address = os.fsdecode(address)
+1293c1297
+<                 _SharedMemoryTracker(f"shmm_{self.address}_{getpid()}")
+---
+>                 _SharedMemoryTracker(f"shm_{address}_{getpid()}")
+diff Python-3.8.1/Lib/multiprocessing/pool.py Python-3.8.3/Lib/multiprocessing/pool.py
+654,655d653
+<         self._worker_handler._state = TERMINATE
+<         self._change_notifier.put(None)
+684a683,685
+>         # Notify that the worker_handler state has been changed so the
+>         # _handle_workers loop can be unblocked (and exited) in order to
+>         # send the finalization sentinel all the workers.
+685a687,688
+>         change_notifier.put(None)
+> 
+diff Python-3.8.1/Lib/multiprocessing/shared_memory.py Python-3.8.3/Lib/multiprocessing/shared_memory.py
+435a436
+>             encoded_value = value
+437,438c438,441
+<             if len(value) > self._allocated_bytes[position]:
+<                 raise ValueError("exceeds available storage for existing str")
+---
+>             encoded_value = (value.encode(_encoding)
+>                              if isinstance(value, str) else value)
+>             if len(encoded_value) > self._allocated_bytes[position]:
+>                 raise ValueError("bytes/str item exceeds available storage")
+451,452c454
+<         value = value.encode(_encoding) if isinstance(value, str) else value
+<         struct.pack_into(new_format, self.shm.buf, offset, value)
+---
+>         struct.pack_into(new_format, self.shm.buf, offset, encoded_value)
+diff Python-3.8.1/Lib/multiprocessing/spawn.py Python-3.8.3/Lib/multiprocessing/spawn.py
+39c39
+<     _python_exe = sys._base_executable
+---
+>     _python_exe = sys.executable
+diff Python-3.8.1/Lib/multiprocessing/util.py Python-3.8.3/Lib/multiprocessing/util.py
+104a105,127
+> 
+> # Abstract socket support
+> 
+> def _platform_supports_abstract_sockets():
+>     if sys.platform == "linux":
+>         return True
+>     if hasattr(sys, 'getandroidapilevel'):
+>         return True
+>     return False
+> 
+> 
+> def is_abstract_socket_namespace(address):
+>     if not address:
+>         return False
+>     if isinstance(address, bytes):
+>         return address[0] == 0
+>     elif isinstance(address, str):
+>         return address[0] == "\0"
+>     raise TypeError('address type of {address!r} unrecognized')
+> 
+> 
+> abstract_sockets_supported = _platform_supports_abstract_sockets()

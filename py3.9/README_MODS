@@ -92,3 +92,353 @@ diff Python-3.8.1/Lib/multiprocessing/util.py Python-3.9.0a2/Lib/multiprocessing
 <             False, False, None)
 ---
 >             False, False, None, None, None, -1, None)
+# ----------------------------------------------------------------------
+diff Python-3.9.0a2/Modules/_multiprocessing/posixshmem.c Python-3.9.0b1/Modules/_multiprocessing/posixshmem.c
+8d7
+< #include "structmember.h"
+diff Python-3.9.0a2/Modules/_multiprocessing/semaphore.c Python-3.9.0b1/Modules/_multiprocessing/semaphore.c
+271d270
+<     double timeout;
+274,275d272
+<     struct timeval now;
+<     long sec, nsec;
+288,290c285,288
+<     if (timeout_obj != Py_None) {
+<         timeout = PyFloat_AsDouble(timeout_obj);
+<         if (PyErr_Occurred())
+---
+>     int use_deadline = (timeout_obj != Py_None);
+>     if (use_deadline) {
+>         double timeout = PyFloat_AsDouble(timeout_obj);
+>         if (PyErr_Occurred()) {
+292c290,291
+<         if (timeout < 0.0)
+---
+>         }
+>         if (timeout < 0.0) {
+293a293
+>         }
+294a295
+>         struct timeval now;
+299,300c300,301
+<         sec = (long) timeout;
+<         nsec = (long) (1e9 * (timeout - sec) + 0.5);
+---
+>         long sec = (long) timeout;
+>         long nsec = (long) (1e9 * (timeout - sec) + 0.5);
+318c319
+<             if (timeout_obj == Py_None) {
+---
+>             if (!use_deadline) {
+diff Python-3.9.0a2/Lib/multiprocessing/connection.py Python-3.9.0b1/Lib/multiprocessing/connection.py
+75a76,80
+>         # Prefer abstract sockets if possible to avoid problems with the address
+>         # size.  When coding portable applications, some implementations have
+>         # sun_path as short as 92 bytes in the sockaddr_un struct.
+>         if util.abstract_sockets_supported:
+>             return f"\0listener-{os.getpid()}-{next(_mmap_counter)}"
+105c110
+<     elif type(address) is str:
+---
+>     elif type(address) is str or util.is_abstract_socket_namespace(address):
+600c605,606
+<         if family == 'AF_UNIX':
+---
+>         if family == 'AF_UNIX' and not util.is_abstract_socket_namespace(address):
+>             # Linux abstract socket namespaces do not need to be explicitly unlinked
+diff Python-3.9.0a2/Lib/multiprocessing/forkserver.py Python-3.9.0b1/Lib/multiprocessing/forkserver.py
+58c58,59
+<         os.unlink(self._forkserver_address)
+---
+>         if not util.is_abstract_socket_namespace(self._forkserver_address):
+>             os.unlink(self._forkserver_address)
+138c139,140
+<                 os.chmod(address, 0o600)
+---
+>                 if not util.is_abstract_socket_namespace(address):
+>                     os.chmod(address, 0o600)
+238,245c240,241
+<                             if os.WIFSIGNALED(sts):
+<                                 returncode = -os.WTERMSIG(sts)
+<                             else:
+<                                 if not os.WIFEXITED(sts):
+<                                     raise AssertionError(
+<                                         "Child {0:n} status is {1:n}".format(
+<                                             pid,sts))
+<                                 returncode = os.WEXITSTATUS(sts)
+---
+>                             returncode = os.waitstatus_to_exitcode(sts)
+> 
+diff Python-3.9.0a2/Lib/multiprocessing/managers.py Python-3.9.0b1/Lib/multiprocessing/managers.py
+23a24
+> import types
+62c63
+<     Type to uniquely indentify a shared object
+---
+>     Type to uniquely identify a shared object
+797c798
+<         Try to call a method of the referrent and return a copy of the result
+---
+>         Try to call a method of the referent and return a copy of the result
+1131a1133,1134
+>     __class_getitem__ = classmethod(types.GenericAlias)
+> 
+1264a1268,1271
+>             address = self.address
+>             # The address of Linux abstract namespaces can be bytes
+>             if isinstance(address, bytes):
+>                 address = os.fsdecode(address)
+1266c1273
+<                 _SharedMemoryTracker(f"shmm_{self.address}_{getpid()}")
+---
+>                 _SharedMemoryTracker(f"shm_{address}_{getpid()}")
+diff Python-3.9.0a2/Lib/multiprocessing/pool.py Python-3.9.0b1/Lib/multiprocessing/pool.py
+22a23
+> import types
+24d24
+< from queue import Empty
+654,655d653
+<         self._worker_handler._state = TERMINATE
+<         self._change_notifier.put(None)
+684a683,685
+>         # Notify that the worker_handler state has been changed so the
+>         # _handle_workers loop can be unblocked (and exited) in order to
+>         # send the finalization sentinel all the workers.
+685a687,688
+>         change_notifier.put(None)
+> 
+779a783,784
+>     __class_getitem__ = classmethod(types.GenericAlias)
+> 
+diff Python-3.9.0a2/Lib/multiprocessing/popen_fork.py Python-3.9.0b1/Lib/multiprocessing/popen_fork.py
+33,37c33
+<                 if os.WIFSIGNALED(sts):
+<                     self.returncode = -os.WTERMSIG(sts)
+<                 else:
+<                     assert os.WIFEXITED(sts), "Status is {:n}".format(sts)
+<                     self.returncode = os.WEXITSTATUS(sts)
+---
+>                 self.returncode = os.waitstatus_to_exitcode(sts)
+diff Python-3.9.0a2/Lib/multiprocessing/process.py Python-3.9.0b1/Lib/multiprocessing/process.py
+320,323c320,323
+<             if not e.args:
+<                 exitcode = 1
+<             elif isinstance(e.args[0], int):
+<                 exitcode = e.args[0]
+---
+>             if e.code is None:
+>                 exitcode = 0
+>             elif isinstance(e.code, int):
+>                 exitcode = e.code
+325c325
+<                 sys.stderr.write(str(e.args[0]) + '\n')
+---
+>                 sys.stderr.write(str(e.code) + '\n')
+diff Python-3.9.0a2/Lib/multiprocessing/queues.py Python-3.9.0b1/Lib/multiprocessing/queues.py
+16a17
+> import types
+51,52c52
+< 
+<         self._after_fork()
+---
+>         self._reset()
+65c65
+<         self._after_fork()
+---
+>         self._reset()
+69c69,75
+<         self._notempty = threading.Condition(threading.Lock())
+---
+>         self._reset(after_fork=True)
+> 
+>     def _reset(self, after_fork=False):
+>         if after_fork:
+>             self._notempty._at_fork_reinit()
+>         else:
+>             self._notempty = threading.Condition(threading.Lock())
+342a349,352
+>     def close(self):
+>         self._reader.close()
+>         self._writer.close()
+> 
+368a379,380
+> 
+>     __class_getitem__ = classmethod(types.GenericAlias)
+diff Python-3.9.0a2/Lib/multiprocessing/resource_sharer.py Python-3.9.0b1/Lib/multiprocessing/resource_sharer.py
+66d65
+<         self._old_locks = []
+116,119c115
+<         # If self._lock was locked at the time of the fork, it may be broken
+<         # -- see issue 6721.  Replace it without letting it be gc'ed.
+<         self._old_locks.append(self._lock)
+<         self._lock = threading.Lock()
+---
+>         self._lock._at_fork_reinit()
+diff Python-3.9.0a2/Lib/multiprocessing/shared_memory.py Python-3.9.0b1/Lib/multiprocessing/shared_memory.py
+16a17
+> import types
+253a255,263
+>     # The shared memory area is organized as follows:
+>     # - 8 bytes: number of items (N) as a 64-bit integer
+>     # - (N + 1) * 8 bytes: offsets of each element from the start of the
+>     #                      data area
+>     # - K bytes: the data area storing item values (with encoding and size
+>     #            depending on their respective types)
+>     # - N * 8 bytes: `struct` format string for each element
+>     # - N bytes: index into _back_transforms_mapping for each element
+>     #            (for reconstructing the corresponding Python value)
+285c295,296
+<         if sequence is not None:
+---
+>         if name is None or sequence is not None:
+>             sequence = sequence or ()
+296,299c307,314
+<             self._allocated_bytes = tuple(
+<                     self._alignment if fmt[-1] != "s" else int(fmt[:-1])
+<                     for fmt in _formats
+<             )
+---
+>             offset = 0
+>             # The offsets of each list element into the shared memory's
+>             # data area (0 meaning the start of the data area, not the start
+>             # of the shared memory area).
+>             self._allocated_offsets = [0]
+>             for fmt in _formats:
+>                 offset += self._alignment if fmt[-1] != "s" else int(fmt[:-1])
+>                 self._allocated_offsets.append(offset)
+309a325
+>             self.shm = SharedMemory(name, create=True, size=requested_size)
+311,313d326
+<             requested_size = 8  # Some platforms require > 0.
+< 
+<         if name is not None and sequence is None:
+315,316d327
+<         else:
+<             self.shm = SharedMemory(name, create=True, size=requested_size)
+325c336
+<                 *(self._allocated_bytes)
+---
+>                 *(self._allocated_offsets)
+348,351c359,364
+<             self._allocated_bytes = struct.unpack_from(
+<                 self._format_size_metainfo,
+<                 self.shm.buf,
+<                 1 * 8
+---
+>             self._allocated_offsets = list(
+>                 struct.unpack_from(
+>                     self._format_size_metainfo,
+>                     self.shm.buf,
+>                     1 * 8
+>                 )
+373d385
+<         position = position if position >= 0 else position + self._list_len
+390d401
+<         position = position if position >= 0 else position + self._list_len
+409a421
+>         position = position if position >= 0 else position + self._list_len
+411,412c423
+<             offset = self._offset_data_start \
+<                      + sum(self._allocated_bytes[:position])
+---
+>             offset = self._offset_data_start + self._allocated_offsets[position]
+426a438
+>         position = position if position >= 0 else position + self._list_len
+428,429c440,441
+<             offset = self._offset_data_start \
+<                      + sum(self._allocated_bytes[:position])
+---
+>             item_offset = self._allocated_offsets[position]
+>             offset = self._offset_data_start + item_offset
+435a448
+>             encoded_value = value
+437,438c450,455
+<             if len(value) > self._allocated_bytes[position]:
+<                 raise ValueError("exceeds available storage for existing str")
+---
+>             allocated_length = self._allocated_offsets[position + 1] - item_offset
+> 
+>             encoded_value = (value.encode(_encoding)
+>                              if isinstance(value, str) else value)
+>             if len(encoded_value) > allocated_length:
+>                 raise ValueError("bytes/str item exceeds available storage")
+443c460
+<                     self._allocated_bytes[position],
+---
+>                     allocated_length,
+451,452c468
+<         value = value.encode(_encoding) if isinstance(value, str) else value
+<         struct.pack_into(new_format, self.shm.buf, offset, value)
+---
+>         struct.pack_into(new_format, self.shm.buf, offset, encoded_value)
+465c481
+<         "The struct packing format used by all currently stored values."
+---
+>         "The struct packing format used by all currently stored items."
+472,473c488,489
+<         "The struct packing format used for metainfo on storage sizes."
+<         return f"{self._list_len}q"
+---
+>         "The struct packing format used for the items' storage offsets."
+>         return "q" * (self._list_len + 1)
+477c493
+<         "The struct packing format used for the values' packing formats."
+---
+>         "The struct packing format used for the items' packing formats."
+482c498
+<         "The struct packing format used for the values' back transforms."
+---
+>         "The struct packing format used for the items' back transforms."
+487c503,505
+<         return (self._list_len + 1) * 8  # 8 bytes per "q"
+---
+>         # - 8 bytes for the list length
+>         # - (N + 1) * 8 bytes for the element offsets
+>         return (self._list_len + 2) * 8
+491c509
+<         return self._offset_data_start + sum(self._allocated_bytes)
+---
+>         return self._offset_data_start + self._allocated_offsets[-1]
+510a529,530
+> 
+>     __class_getitem__ = classmethod(types.GenericAlias)
+diff Python-3.9.0a2/Lib/multiprocessing/spawn.py Python-3.9.0b1/Lib/multiprocessing/spawn.py
+39c39
+<     _python_exe = sys._base_executable
+---
+>     _python_exe = sys.executable
+diff Python-3.9.0a2/Lib/multiprocessing/util.py Python-3.9.0b1/Lib/multiprocessing/util.py
+104a105,127
+> 
+> # Abstract socket support
+> 
+> def _platform_supports_abstract_sockets():
+>     if sys.platform == "linux":
+>         return True
+>     if hasattr(sys, 'getandroidapilevel'):
+>         return True
+>     return False
+> 
+> 
+> def is_abstract_socket_namespace(address):
+>     if not address:
+>         return False
+>     if isinstance(address, bytes):
+>         return address[0] == 0
+>     elif isinstance(address, str):
+>         return address[0] == "\0"
+>     raise TypeError('address type of {address!r} unrecognized')
+> 
+> 
+> abstract_sockets_supported = _platform_supports_abstract_sockets()
+> 
+347,350d369
+<         self._reset()
+<         register_after_fork(self, ForkAwareThreadLock._reset)
+< 
+<     def _reset(self):
+353a373,376
+>         register_after_fork(self, ForkAwareThreadLock._at_fork_reinit)
+> 
+>     def _at_fork_reinit(self):
+>         self._lock._at_fork_reinit()

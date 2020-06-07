@@ -647,6 +647,7 @@ diff Python-3.8.0b4/Lib/multiprocessing/util.py Python-3.8.1/Lib/multiprocessing
 >     support.gc_collect()
 > 
 >     support.reap_children()
+# ----------------------------------------------------------------------
 diff Python-3.8.1/Lib/multiprocessing/connection.py Python-3.8.3/Lib/multiprocessing/connection.py
 105c105
 <     elif type(address) is str:

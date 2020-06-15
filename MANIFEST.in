@@ -15,3 +15,5 @@ recursive-include py3.7 *
 recursive-include py3.8 *
 recursive-include py3.9 *
 include .*
+prune .git
+prune .coverage

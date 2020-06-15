@@ -1,8 +1,6 @@
-include CHANGES.txt
-include COPYING.txt
+include *.txt
 include LICENSE
-include README.md
-include THANKS.txt
+include README*
 include tox.ini
 recursive-include py2.5 *
 recursive-include py2.6 *
@@ -16,3 +14,4 @@ recursive-include py3.6 *
 recursive-include py3.7 *
 recursive-include py3.8 *
 recursive-include py3.9 *
+include .*

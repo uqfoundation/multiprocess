@@ -442,3 +442,26 @@ diff Python-3.9.0a2/Lib/multiprocessing/util.py Python-3.9.0b1/Lib/multiprocessi
 > 
 >     def _at_fork_reinit(self):
 >         self._lock._at_fork_reinit()
+# ----------------------------------------------------------------------
+diff Python-3.9.0b1/Lib/multiprocessing/context.py Python-3.9.0/Lib/multiprocessing/context.py
+259a260
+>             methods = ['spawn', 'fork'] if sys.platform == 'darwin' else ['fork', 'spawn']
+261,263c262,264
+<                 return ['fork', 'spawn', 'forkserver']
+<             else:
+<                 return ['fork', 'spawn']
+---
+>                 methods.append('forkserver')
+>             return methods
+> 
+Common subdirectories: Python-3.9.0b1/Lib/multiprocessing/dummy and Python-3.9.0/Lib/multiprocessing/dummy
+diff Python-3.9.0b1/Lib/multiprocessing/shared_memory.py Python-3.9.0/Lib/multiprocessing/shared_memory.py
+78a79,80
+>             if size == 0:
+>                 raise ValueError("'size' must be a positive number different from zero")
+diff Python-3.9.0b1/Lib/multiprocessing/synchronize.py Python-3.9.0/Lib/multiprocessing/synchronize.py
+273c273
+<             False), ('notify: Should not have been able to acquire'
+---
+>             False), ('notify: Should not have been able to acquire '
+

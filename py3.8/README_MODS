@@ -743,3 +743,25 @@ diff Python-3.8.1/Lib/multiprocessing/util.py Python-3.8.3/Lib/multiprocessing/u
 > 
 > 
 > abstract_sockets_supported = _platform_supports_abstract_sockets()
+# ----------------------------------------------------------------------
+diff Python-3.8.3/Lib/multiprocessing/context.py Python-3.8.6/Lib/multiprocessing/context.py
+259a260
+>             methods = ['spawn', 'fork'] if sys.platform == 'darwin' else ['fork', 'spawn']
+261,263c262,264
+<                 return ['fork', 'spawn', 'forkserver']
+<             else:
+<                 return ['fork', 'spawn']
+---
+>                 methods.append('forkserver')
+>             return methods
+> 
+diff Python-3.8.3/Lib/multiprocessing/shared_memory.py Python-3.8.6/Lib/multiprocessing/shared_memory.py
+77a78,79
+>             if size == 0:
+>                 raise ValueError("'size' must be a positive number different from zero")
+diff Python-3.8.3/Lib/multiprocessing/synchronize.py Python-3.8.6/Lib/multiprocessing/synchronize.py
+273c273
+<             False), ('notify: Should not have been able to acquire'
+---
+>             False), ('notify: Should not have been able to acquire '
+

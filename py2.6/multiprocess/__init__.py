@@ -40,7 +40,7 @@
 # OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 #
 
-__version__ = '0.70.11.1'
+__version__ = '0.70.12.dev0'
 
 __all__ = [
     'Process', 'current_process', 'active_children', 'freeze_support',

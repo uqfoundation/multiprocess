@@ -12,7 +12,7 @@ elif (3, 0) <= sys.version_info < (3, 5):
     unsupported = 'Versions of Python before 3.5 are not supported'
 if unsupported:
     raise ValueError(unsupported)
-stable_version = '0.70.11.1'
+stable_version = '0.70.12'
 pymajor,pyminor = sys.version_info[:2]
 pkgdir = 'py%s.%s' % (pymajor,pyminor)
 if sys.version_info >= (2, 6):

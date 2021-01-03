@@ -6,10 +6,8 @@ matrix:
         - python: '2.7'
           env:
 
-        - python: '3.5'
-          env:
-
         - python: '3.6'
+          dist: xenial
           env:
             - COVERAGE="true"
             - DILL="true"
@@ -40,6 +38,7 @@ matrix:
           env:
 
         - python: 'pypy3'
+          dist: xenial
           env:
 
     allow_failures:

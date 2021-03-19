@@ -20,14 +20,15 @@ if sys.version_info >= (2, 6):
 else: # (2, 5)
     pkgname = 'processing'  #XXX: oddity, due to lazyness at the moment
 # if sys.version is higher than explicitly supported, try the latest version
-ver = float(pkgdir[2:])
 HERE = os.path.dirname(os.path.abspath(__file__))
-while not os.path.exists(os.path.join(HERE,'py%s' % ver)):
-    ver -= 0.1
-if 'py%s' % ver != pkgdir:
-    msg = 'Warning: Python %s is not currently supported, reverting to %s'
-    print(msg % (pkgdir[2:],ver))
-    pkgdir = 'py%s' % ver
+while not os.path.exists(os.path.join(HERE,'py%s.%s' % (pymajor,pyminor))):
+    pyminor -= 1
+    if pyminor < 0:
+        sys.exit('Error: Python %s is not supported' % pymajor)
+if 'py%s.%s' % (pymajor,pyminor) != pkgdir:
+    msg = 'Warning: Python %s is not currently supported, reverting to %s.%s'
+    print(msg % (pkgdir[2:],pymajor,pyminor))
+    pkgdir = 'py%s.%s' % (pymajor,pyminor)
 srcdir = '%s/Modules/_%s' % (pkgdir, pkgname)
 libdir = '%s/%s' % (pkgdir, pkgname)
 

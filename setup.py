@@ -24,7 +24,8 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 while not os.path.exists(os.path.join(HERE,'py%s.%s' % (pymajor,pyminor))):
     pyminor -= 1
     if pyminor < 0:
-        sys.exit('Error: Python %s is not supported' % pymajor)
+        unsupported = 'Python %s is not supported' % pkgdir[2:]
+        raise ValueError(unsupported)
 if 'py%s.%s' % (pymajor,pyminor) != pkgdir:
     msg = 'Warning: Python %s is not currently supported, reverting to %s.%s'
     print(msg % (pkgdir[2:],pymajor,pyminor))

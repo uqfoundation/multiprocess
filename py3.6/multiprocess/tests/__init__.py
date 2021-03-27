@@ -3943,7 +3943,7 @@ class TestTimeouts(unittest.TestCase):
 #
 
 class TestNoForkBomb(unittest.TestCase):
-    def _test_noforkbomb(self):
+    def test_noforkbomb(self):
         sm = multiprocess.get_start_method()
         name = os.path.join(os.path.dirname(__file__), 'mp_fork_bomb.py')
         if sm != 'fork':

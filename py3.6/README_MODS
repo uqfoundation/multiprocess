@@ -1299,7 +1299,7 @@ diff Python-3.6.13/Lib/test/mp_fork_bomb.py tests/mp_fork_bomb.py
 1c1
 < import multiprocessing, sys
 ---
-> import multiprocess, sys
+> import multiprocessing as multiprocess, sys
 11c11
 <     multiprocessing.set_start_method(sys.argv[1])
 ---

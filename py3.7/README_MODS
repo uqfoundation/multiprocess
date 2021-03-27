@@ -4,6 +4,8 @@ cp -f py3.6/index.html .
 cp -rf Python-3.7.0rc1/Modules/_multiprocessing Modules/_multiprocess
 cp -rf Python-3.7.0rc1/Lib/multiprocessing multiprocess
 cp -rf Python-3.7.0rc1/Lib/test/*test_multiprocessing*.py multiprocess/tests/
+cp Python-3.7.10/Lib/test/mp_*.py multiprocess/tests
+cp Python-3.7.10/Lib/test/_test_multiprocessing.py multiprocess/tests/__init__.py
 
 # ----------------------------------------------------------------------
 diff ../Python-3.7.0rc1/Lib/test/test_multiprocessing_fork.py Python-3.7.3/Lib/test/test_multiprocessing_fork.py 
@@ -562,4 +564,831 @@ diff Python-3.7.7/Lib/multiprocessing/util.py Python-3.7.9/Lib/multiprocessing/u
 >     support.gc_collect()
 > 
 >     support.reap_children()
-
+# ----------------------------------------------------------------------
+diff Python-3.7.10/Lib/test/_test_multiprocessing.py multiprocess/tests/__init__.py 
+2c2
+< # Unit tests for the multiprocessing package
+---
+> # Unit tests for the multiprocess package
+31c31
+< test.support.import_module('multiprocessing.synchronize')
+---
+> test.support.import_module('multiprocess.synchronize')
+37,42c37,42
+< import multiprocessing.connection
+< import multiprocessing.dummy
+< import multiprocessing.heap
+< import multiprocessing.managers
+< import multiprocessing.pool
+< import multiprocessing.queues
+---
+> import multiprocess.connection
+> import multiprocess.dummy
+> import multiprocess.heap
+> import multiprocess.managers
+> import multiprocess.pool
+> import multiprocess.queues
+44c44
+< from multiprocessing import util
+---
+> from multiprocess import util
+47c47
+<     from multiprocessing import reduction
+---
+>     from multiprocess import reduction
+53c53
+<     from multiprocessing.sharedctypes import Value, copy
+---
+>     from multiprocess.sharedctypes import Value, copy
+75c75
+<     if isinstance(queue, multiprocessing.queues.Queue):
+---
+>     if isinstance(queue, multiprocess.queues.Queue):
+81c81
+<     # Since multiprocessing.Process has the same API than threading.Thread
+---
+>     # Since multiprocess.Process has the same API than threading.Thread
+108c108
+< from multiprocessing.connection import wait
+---
+> from multiprocess.connection import wait
+121c121
+< PRELOAD = ['__main__', 'test.test_multiprocessing_forkserver']
+---
+> PRELOAD = ['__main__', 'test_multiprocessing_forkserver']
+160c160
+<         t = time.monotonic()
+---
+>         t = getattr(time,'monotonic',time.time)()
+164c164
+<             self.elapsed = time.monotonic() - t
+---
+>             self.elapsed = getattr(time,'monotonic',time.time)() - t
+359c359
+<         exitcode = self._kill_process(multiprocessing.Process.terminate)
+---
+>         exitcode = self._kill_process(multiprocess.Process.terminate)
+364c364
+<         exitcode = self._kill_process(multiprocessing.Process.kill)
+---
+>         exitcode = self._kill_process(multiprocess.Process.kill)
+370c370
+<             cpus = multiprocessing.cpu_count()
+---
+>             cpus = multiprocess.cpu_count()
+399a400
+>     @unittest.skipIf(True, "fails with is_dill(obj, child=True)")
+482c483
+<         sm = multiprocessing.get_start_method()
+---
+>         sm = multiprocess.get_start_method()
+536c537
+<         sm = multiprocessing.get_start_method()
+---
+>         sm = multiprocess.get_start_method()
+645c646
+<         sm = multiprocessing.get_start_method()
+---
+>         sm = multiprocess.get_start_method()
+651c652
+<         from multiprocessing.forkserver import _forkserver
+---
+>         from multiprocess.forkserver import _forkserver
+691c692
+< class _UpperCaser(multiprocessing.Process):
+---
+> class _UpperCaser(multiprocess.Process):
+694,695c695,696
+<         multiprocessing.Process.__init__(self)
+<         self.child_conn, self.parent_conn = multiprocessing.Pipe()
+---
+>         multiprocess.Process.__init__(self)
+>         self.child_conn, self.parent_conn = multiprocess.Pipe()
+740c741
+<             self.assertIn("test_multiprocessing.py", err)
+---
+>             self.assertIn("__init__.py", err)
+1021c1022
+<                     import multiprocessing
+---
+>                     import multiprocess as multiprocessing
+1038,1039c1039,1040
+<         q = multiprocessing.Queue()
+<         start = time.monotonic()
+---
+>         q = multiprocess.Queue()
+>         start = getattr(time,'monotonic',time.time)()
+1041c1042
+<         delta = time.monotonic() - start
+---
+>         delta = getattr(time,'monotonic',time.time)() - start
+1097c1098
+<         class SafeQueue(multiprocessing.queues.Queue):
+---
+>         class SafeQueue(multiprocess.queues.Queue):
+1108c1109
+<             q = SafeQueue(ctx=multiprocessing.get_context())
+---
+>             q = SafeQueue(ctx=multiprocess.get_context())
+1436c1437
+<             dt = time.monotonic()
+---
+>             dt = getattr(time,'monotonic',time.time)()
+1438c1439
+<             dt = time.monotonic() - dt
+---
+>             dt = getattr(time,'monotonic',time.time)() - dt
+1550,1551c1551,1552
+<         wrapper = multiprocessing.heap.BufferWrapper(struct.calcsize('i'))
+<         lock = multiprocessing.Lock()
+---
+>         wrapper = multiprocess.heap.BufferWrapper(struct.calcsize('i'))
+>         lock = multiprocess.Lock()
+1907c1908
+<             self.skipTest("requires multiprocessing.sharedctypes")
+---
+>             self.skipTest("requires multiprocess.sharedctypes")
+2299c2300
+<         except multiprocessing.TimeoutError:
+---
+>         except multiprocess.TimeoutError:
+2337c2338
+<         self.assertRaises(multiprocessing.TimeoutError, get, timeout=TIMEOUT2)
+---
+>         self.assertRaises(multiprocess.TimeoutError, get, timeout=TIMEOUT2)
+2473a2475
+>     @unittest.skipIf(True, "fails with is_dill(obj, child=True)")
+2489c2491
+<             self.assertIs(type(cause), multiprocessing.pool.RemoteTraceback)
+---
+>             self.assertIs(type(cause), multiprocess.pool.RemoteTraceback)
+2515a2518
+>     @unittest.skipIf(True, "fails with is_dill(obj, child=True)")
+2529c2532
+<         t_start = time.monotonic()
+---
+>         t_start = getattr(time,'monotonic',time.time)()
+2541c2544
+<         self.assertGreater(time.monotonic() - t_start, 0.9)
+---
+>         self.assertGreater(getattr(time,'monotonic',time.time)() - t_start, 0.9)
+2568c2571
+<         p = multiprocessing.Pool(2)
+---
+>         p = multiprocess.Pool(2)
+2582,2584c2585,2587
+<     def test_unpickleable_result(self):
+<         from multiprocessing.pool import MaybeEncodingError
+<         p = multiprocessing.Pool(2)
+---
+>     def _test_unpickleable_result(self):
+>         from multiprocess.pool import MaybeEncodingError
+>         p = multiprocess.Pool(2)
+2608c2611
+<         p = multiprocessing.Pool(3, maxtasksperchild=10)
+---
+>         p = multiprocess.Pool(3, maxtasksperchild=10)
+2639c2642
+<         p = multiprocessing.Pool(3, maxtasksperchild=1)
+---
+>         p = multiprocess.Pool(3, maxtasksperchild=1)
+2653c2656
+< from multiprocessing.managers import BaseManager, BaseProxy, RemoteError
+---
+> from multiprocess.managers import BaseManager, BaseProxy, RemoteError
+2907c2910
+<             except multiprocessing.BufferTooShort as e:
+---
+>             except multiprocess.BufferTooShort as e:
+3035c3038
+<     @unittest.skipUnless(HAS_REDUCTION, "test needs multiprocessing.reduction")
+---
+>     @unittest.skipUnless(HAS_REDUCTION, "test needs multiprocess.reduction")
+3054c3057
+<     @unittest.skipUnless(HAS_REDUCTION, "test needs multiprocessing.reduction")
+---
+>     @unittest.skipUnless(HAS_REDUCTION, "test needs multiprocess.reduction")
+3091c3094
+<     @unittest.skipUnless(HAS_REDUCTION, "test needs multiprocessing.reduction")
+---
+>     @unittest.skipUnless(HAS_REDUCTION, "test needs multiprocess.reduction")
+3286c3289
+< @unittest.skipUnless(HAS_REDUCTION, "test needs multiprocessing.reduction")
+---
+> @unittest.skipUnless(HAS_REDUCTION, "test needs multiprocess.reduction")
+3293c3296
+<         from multiprocessing import resource_sharer
+---
+>         from multiprocess import resource_sharer
+3430,3431c3433,3434
+<         self.old_heap = multiprocessing.heap.BufferWrapper._heap
+<         multiprocessing.heap.BufferWrapper._heap = multiprocessing.heap.Heap()
+---
+>         self.old_heap = multiprocess.heap.BufferWrapper._heap
+>         multiprocess.heap.BufferWrapper._heap = multiprocess.heap.Heap()
+3434c3437
+<         multiprocessing.heap.BufferWrapper._heap = self.old_heap
+---
+>         multiprocess.heap.BufferWrapper._heap = self.old_heap
+3445c3448
+<             b = multiprocessing.heap.BufferWrapper(size)
+---
+>             b = multiprocess.heap.BufferWrapper(size)
+3452c3455
+<         heap = multiprocessing.heap.BufferWrapper._heap
+---
+>         heap = multiprocess.heap.BufferWrapper._heap
+3492,3493c3495,3496
+<             a = multiprocessing.heap.BufferWrapper(1)
+<             b = multiprocessing.heap.BufferWrapper(1)
+---
+>             a = multiprocess.heap.BufferWrapper(1)
+>             b = multiprocess.heap.BufferWrapper(1)
+3515c3518
+<             self.skipTest("requires multiprocessing.sharedctypes")
+---
+>             self.skipTest("requires multiprocess.sharedctypes")
+3612c3615
+<         # call multiprocessing's cleanup function then exit process without
+---
+>         # call multiprocess's cleanup function then exit process without
+3692c3695
+<         folder = os.path.dirname(multiprocessing.__file__)
+---
+>         folder = os.path.dirname(multiprocess.__file__)
+3696,3698c3699,3701
+<         modules = ['multiprocessing.' + m for m in modules]
+<         modules.remove('multiprocessing.__init__')
+<         modules.append('multiprocessing')
+---
+>         modules = ['multiprocess.' + m for m in modules]
+>         modules.remove('multiprocess.__init__')
+>         modules.append('multiprocess')
+3704,3706c3707,3709
+<             modules.remove('multiprocessing.popen_fork')
+<             modules.remove('multiprocessing.popen_forkserver')
+<             modules.remove('multiprocessing.popen_spawn_posix')
+---
+>             modules.remove('multiprocess.popen_fork')
+>             modules.remove('multiprocess.popen_forkserver')
+>             modules.remove('multiprocess.popen_spawn_posix')
+3708c3711
+<             modules.remove('multiprocessing.popen_spawn_win32')
+---
+>             modules.remove('multiprocess.popen_spawn_win32')
+3710c3713
+<                 modules.remove('multiprocessing.popen_forkserver')
+---
+>                 modules.remove('multiprocess.popen_forkserver')
+3714c3717
+<             modules.remove('multiprocessing.sharedctypes')
+---
+>             modules.remove('multiprocess.sharedctypes')
+3736c3739
+<         logger = multiprocessing.get_logger()
+---
+>         logger = multiprocess.get_logger()
+3745c3748
+<         logger = multiprocessing.get_logger()
+---
+>         logger = multiprocess.get_logger()
+3752c3755
+<         logger = multiprocessing.get_logger()
+---
+>         logger = multiprocess.get_logger()
+3756c3759
+<         reader, writer = multiprocessing.Pipe(duplex=False)
+---
+>         reader, writer = multiprocess.Pipe(duplex=False)
+3780c3783
+< #         assert record.processName == multiprocessing.current_process().name
+---
+> #         assert record.processName == multiprocess.current_process().name
+3789c3792
+< #                 'multiprocessing.test.TestLoggingProcessName')
+---
+> #                 'multiprocess.test.TestLoggingProcessName')
+3838c3841
+<         conn = multiprocessing.connection.Connection(44977608)
+---
+>         conn = multiprocess.connection.Connection(44977608)
+3849c3852
+<                           multiprocessing.connection.Connection, -1)
+---
+>                           multiprocess.connection.Connection, -1)
+3861,3862c3864,3865
+<         self.assertRaises(multiprocessing.AuthenticationError,
+<                           multiprocessing.connection.deliver_challenge,
+---
+>         self.assertRaises(multiprocess.AuthenticationError,
+>                           multiprocess.connection.deliver_challenge,
+3872c3875
+<                     return multiprocessing.connection.CHALLENGE
+---
+>                     return multiprocess.connection.CHALLENGE
+3878,3879c3881,3882
+<         self.assertRaises(multiprocessing.AuthenticationError,
+<                           multiprocessing.connection.answer_challenge,
+---
+>         self.assertRaises(multiprocess.AuthenticationError,
+>                           multiprocess.connection.answer_challenge,
+3891c3894
+<         self.mgr = multiprocessing.Manager()
+---
+>         self.mgr = multiprocess.Manager()
+3900c3903
+<         m = multiprocessing.managers.SyncManager()
+---
+>         m = multiprocess.managers.SyncManager()
+3908,3909c3911,3912
+<         self.assertRaises(TypeError, multiprocessing.Pool, initializer=1)
+<         p = multiprocessing.Pool(1, initializer, (self.ns,))
+---
+>         self.assertRaises(TypeError, multiprocess.Pool, initializer=1)
+>         p = multiprocess.Pool(1, initializer, (self.ns,))
+3926,3927c3929,3930
+<     queue = multiprocessing.Queue()
+<     subProc = multiprocessing.Process(target=_this_sub_process, args=(queue,))
+---
+>     queue = multiprocess.Queue()
+>     subProc = multiprocess.Process(target=_this_sub_process, args=(queue,))
+3936c3939
+<     pool = multiprocessing.Pool(processes=4)
+---
+>     pool = multiprocess.Pool(processes=4)
+3965c3968
+<         proc = multiprocessing.Process(target=_test_process)
+---
+>         proc = multiprocess.Process(target=_test_process)
+3970c3973
+<         p = multiprocessing.Process(target=pool_in_process)
+---
+>         p = multiprocess.Process(target=pool_in_process)
+3978c3981
+<         proc = multiprocessing.Process(target=lambda: flike.flush())
+---
+>         proc = multiprocess.Process(target=lambda: flike.flush())
+3994c3997
+<         from multiprocessing.connection import wait
+---
+>         from multiprocess.connection import wait
+4000,4001c4003,4004
+<             r, w = multiprocessing.Pipe(duplex=False)
+<             p = multiprocessing.Process(target=self._child_test_wait, args=(w, slow))
+---
+>             r, w = multiprocess.Pipe(duplex=False)
+>             p = multiprocess.Process(target=self._child_test_wait, args=(w, slow))
+4034c4037
+<         from multiprocessing.connection import wait
+---
+>         from multiprocess.connection import wait
+4044c4047
+<             p = multiprocessing.Process(target=self._child_test_wait_socket,
+---
+>             p = multiprocess.Process(target=self._child_test_wait_socket,
+4077c4080
+<         from multiprocessing.connection import wait
+---
+>         from multiprocess.connection import wait
+4080c4083
+<         a, b = multiprocessing.Pipe()
+---
+>         a, b = multiprocess.Pipe()
+4082c4085
+<         start = time.monotonic()
+---
+>         start = getattr(time,'monotonic',time.time)()
+4084c4087
+<         delta = time.monotonic() - start
+---
+>         delta = getattr(time,'monotonic',time.time)() - start
+4092c4095
+<         start = time.monotonic()
+---
+>         start = getattr(time,'monotonic',time.time)()
+4094c4097
+<         delta = time.monotonic() - start
+---
+>         delta = getattr(time,'monotonic',time.time)() - start
+4105c4108
+<         from multiprocessing.connection import wait
+---
+>         from multiprocess.connection import wait
+4109,4111c4112,4114
+<         sem = multiprocessing.Semaphore(0)
+<         a, b = multiprocessing.Pipe()
+<         p = multiprocessing.Process(target=self.signal_and_sleep,
+---
+>         sem = multiprocess.Semaphore(0)
+>         a, b = multiprocess.Pipe()
+>         p = multiprocess.Process(target=self.signal_and_sleep,
+4118c4121
+<         start = time.monotonic()
+---
+>         start = getattr(time,'monotonic',time.time)()
+4120c4123
+<         delta = time.monotonic() - start
+---
+>         delta = getattr(time,'monotonic',time.time)() - start
+4128c4131
+<         start = time.monotonic()
+---
+>         start = getattr(time,'monotonic',time.time)()
+4130c4133
+<         delta = time.monotonic() - start
+---
+>         delta = getattr(time,'monotonic',time.time)() - start
+4137c4140
+<         start = time.monotonic()
+---
+>         start = getattr(time,'monotonic',time.time)()
+4139c4142
+<         delta = time.monotonic() - start
+---
+>         delta = getattr(time,'monotonic',time.time)() - start
+4148,4150c4151,4153
+<         from multiprocessing.connection import wait
+<         a, b = multiprocessing.Pipe()
+<         t = time.monotonic()
+---
+>         from multiprocess.connection import wait
+>         a, b = multiprocess.Pipe()
+>         t = getattr(time,'monotonic',time.time)()
+4152c4155
+<         t = time.monotonic() - t
+---
+>         t = getattr(time,'monotonic',time.time)() - t
+4167c4170
+<             multiprocessing.connection.Listener(r'\\.\test')
+---
+>             multiprocess.connection.Listener(r'\\.\test')
+4172c4175
+<             multiprocessing.connection.Listener('/var/test.pipe')
+---
+>             multiprocess.connection.Listener('/var/test.pipe')
+4186,4187c4189,4190
+<         r, w = multiprocessing.Pipe(duplex=False)
+<         p = multiprocessing.Process(target=cls.run_in_grandchild, args=(w,))
+---
+>         r, w = multiprocess.Pipe(duplex=False)
+>         p = multiprocess.Process(target=cls.run_in_grandchild, args=(w,))
+4196c4199
+<     def test_flags(self):
+---
+>     def _test_flags(self):
+4199c4202
+<         prog = ('from test._test_multiprocessing import TestFlags; ' +
+---
+>         prog = ('from multiprocess.tests import TestFlags; ' +
+4216c4219
+<         conn = multiprocessing.connection.Client(address)
+---
+>         conn = multiprocess.connection.Client(address)
+4224,4226c4227,4229
+<             parent, child = multiprocessing.Pipe(duplex=True)
+<             l = multiprocessing.connection.Listener(family='AF_INET')
+<             p = multiprocessing.Process(target=self._test_timeout,
+---
+>             parent, child = multiprocess.Pipe(duplex=True)
+>             l = multiprocess.connection.Listener(family='AF_INET')
+>             p = multiprocess.Process(target=self._test_timeout,
+4246c4249
+<         sm = multiprocessing.get_start_method()
+---
+>         sm = multiprocess.get_start_method()
+4269c4272
+<             p = multiprocessing.Process(target=cls.child, args=(n-1, conn))
+---
+>             p = multiprocess.Process(target=cls.child, args=(n-1, conn))
+4278c4281
+<         r, w = multiprocessing.Pipe(False)
+---
+>         r, w = multiprocess.Pipe(False)
+4281c4284
+<         p = multiprocessing.Process(target=self.child, args=(5, w))
+---
+>         p = multiprocess.Process(target=self.child, args=(5, w))
+4332c4335
+<         reader, writer = multiprocessing.Pipe()
+---
+>         reader, writer = multiprocess.Pipe()
+4335c4338
+<             p = multiprocessing.Process(target=self._test_closefds,
+---
+>             p = multiprocess.Process(target=self._test_closefds,
+4346c4349
+<         if multiprocessing.get_start_method() == 'fork':
+---
+>         if multiprocess.get_start_method() == 'fork':
+4360c4363
+<     # Sending CONN_MAX_SIZE bytes into a multiprocessing pipe must block
+---
+>     # Sending CONN_MAX_SIZE bytes into a multiprocess pipe must block
+4375c4378
+<         conn, child_conn = multiprocessing.Pipe()
+---
+>         conn, child_conn = multiprocess.Pipe()
+4377c4380
+<             p = multiprocessing.Process(target=self._test_ignore,
+---
+>             p = multiprocess.Process(target=self._test_ignore,
+4401c4404
+<         with multiprocessing.connection.Listener() as l:
+---
+>         with multiprocess.connection.Listener() as l:
+4408c4411
+<         conn, child_conn = multiprocessing.Pipe()
+---
+>         conn, child_conn = multiprocess.Pipe()
+4410c4413
+<             p = multiprocessing.Process(target=self._test_ignore_listener,
+---
+>             p = multiprocess.Process(target=self._test_ignore_listener,
+4419c4422
+<             client = multiprocessing.connection.Client(address)
+---
+>             client = multiprocess.connection.Client(address)
+4428c4431
+<         conn.send(multiprocessing.get_start_method())
+---
+>         conn.send(multiprocess.get_start_method())
+4443c4446
+<                 ctx = multiprocessing.get_context(method)
+---
+>                 ctx = multiprocess.get_context(method)
+4453c4456
+<         multiprocessing.set_forkserver_preload(PRELOAD)
+---
+>         multiprocess.set_forkserver_preload(PRELOAD)
+4455c4458
+<         old_method = multiprocessing.get_start_method()
+---
+>         old_method = multiprocess.get_start_method()
+4459c4462
+<                     multiprocessing.set_start_method(method, force=True)
+---
+>                     multiprocess.set_start_method(method, force=True)
+4462,4463c4465,4466
+<                 self.assertEqual(multiprocessing.get_start_method(), method)
+<                 ctx = multiprocessing.get_context()
+---
+>                 self.assertEqual(multiprocess.get_start_method(), method)
+>                 ctx = multiprocess.get_context()
+4468c4471
+<                 self.check_context(multiprocessing)
+---
+>                 self.check_context(multiprocess)
+4471c4474
+<             multiprocessing.set_start_method(old_method, force=True)
+---
+>             multiprocess.set_start_method(old_method, force=True)
+4475c4478
+<         methods = multiprocessing.get_all_start_methods()
+---
+>         methods = multiprocess.get_all_start_methods()
+4483c4486
+<         if multiprocessing.get_start_method() != 'forkserver':
+---
+>         if multiprocess.get_start_method() != 'forkserver':
+4499c4502
+<     def test_semaphore_tracker(self):
+---
+>     def _test_semaphore_tracker(self):
+4505c4508
+<             import multiprocessing as mp, time, os
+---
+>             import multiprocess as mp, time, os
+4539c4542
+<         from multiprocessing.semaphore_tracker import _semaphore_tracker
+---
+>         from multiprocess.semaphore_tracker import _semaphore_tracker
+4545c4548
+<         ctx = multiprocessing.get_context("spawn")
+---
+>         ctx = multiprocess.get_context("spawn")
+4583,4585c4586,4588
+<         queue = multiprocessing.SimpleQueue()
+<         child_can_start = multiprocessing.Event()
+<         parent_can_continue = multiprocessing.Event()
+---
+>         queue = multiprocess.SimpleQueue()
+>         child_can_start = multiprocess.Event()
+>         parent_can_continue = multiprocess.Event()
+4587c4590
+<         proc = multiprocessing.Process(
+---
+>         proc = multiprocess.Process(
+4629c4632
+<     manager_class = multiprocessing.managers.SyncManager
+---
+>     manager_class = multiprocess.managers.SyncManager
+4655c4658
+<         start_time = time.monotonic()
+---
+>         start_time = getattr(time,'monotonic',time.time)()
+4657c4660
+<         while len(multiprocessing.active_children()) > 1:
+---
+>         while len(multiprocess.active_children()) > 1:
+4660c4663
+<             dt = time.monotonic() - start_time
+---
+>             dt = getattr(time,'monotonic',time.time)() - start_time
+4663c4666
+<                 print("Warning -- multiprocessing.Manager still has %s active "
+---
+>                 print("Warning -- multiprocess.Manager still has %s active "
+4665c4668
+<                       % (multiprocessing.active_children(), dt),
+---
+>                       % (multiprocess.active_children(), dt),
+4670c4673
+<         self.proc = multiprocessing.Process(target=worker, args=(obj, ))
+---
+>         self.proc = multiprocess.Process(target=worker, args=(obj, ))
+4849c4852
+<         cls.dangling = (multiprocessing.process._dangling.copy(),
+---
+>         cls.dangling = (multiprocess.process._dangling.copy(),
+4854c4857
+<         # bpo-26762: Some multiprocessing objects like Pool create reference
+---
+>         # bpo-26762: Some multiprocess objects like Pool create reference
+4858c4861
+<         processes = set(multiprocessing.process._dangling) - set(cls.dangling[0])
+---
+>         processes = set(multiprocess.process._dangling) - set(cls.dangling[0])
+4875,4893c4878,4896
+<     Process = multiprocessing.Process
+<     connection = multiprocessing.connection
+<     current_process = staticmethod(multiprocessing.current_process)
+<     active_children = staticmethod(multiprocessing.active_children)
+<     Pool = staticmethod(multiprocessing.Pool)
+<     Pipe = staticmethod(multiprocessing.Pipe)
+<     Queue = staticmethod(multiprocessing.Queue)
+<     JoinableQueue = staticmethod(multiprocessing.JoinableQueue)
+<     Lock = staticmethod(multiprocessing.Lock)
+<     RLock = staticmethod(multiprocessing.RLock)
+<     Semaphore = staticmethod(multiprocessing.Semaphore)
+<     BoundedSemaphore = staticmethod(multiprocessing.BoundedSemaphore)
+<     Condition = staticmethod(multiprocessing.Condition)
+<     Event = staticmethod(multiprocessing.Event)
+<     Barrier = staticmethod(multiprocessing.Barrier)
+<     Value = staticmethod(multiprocessing.Value)
+<     Array = staticmethod(multiprocessing.Array)
+<     RawValue = staticmethod(multiprocessing.RawValue)
+<     RawArray = staticmethod(multiprocessing.RawArray)
+---
+>     Process = multiprocess.Process
+>     connection = multiprocess.connection
+>     current_process = staticmethod(multiprocess.current_process)
+>     active_children = staticmethod(multiprocess.active_children)
+>     Pool = staticmethod(multiprocess.Pool)
+>     Pipe = staticmethod(multiprocess.Pipe)
+>     Queue = staticmethod(multiprocess.Queue)
+>     JoinableQueue = staticmethod(multiprocess.JoinableQueue)
+>     Lock = staticmethod(multiprocess.Lock)
+>     RLock = staticmethod(multiprocess.RLock)
+>     Semaphore = staticmethod(multiprocess.Semaphore)
+>     BoundedSemaphore = staticmethod(multiprocess.BoundedSemaphore)
+>     Condition = staticmethod(multiprocess.Condition)
+>     Event = staticmethod(multiprocess.Event)
+>     Barrier = staticmethod(multiprocess.Barrier)
+>     Value = staticmethod(multiprocess.Value)
+>     Array = staticmethod(multiprocess.Array)
+>     RawValue = staticmethod(multiprocess.RawValue)
+>     RawArray = staticmethod(multiprocess.RawArray)
+4898c4901
+<     Process = multiprocessing.Process
+---
+>     Process = multiprocess.Process
+4921c4924
+<         cls.manager = multiprocessing.Manager()
+---
+>         cls.manager = multiprocess.Manager()
+4928c4931
+<         start_time = time.monotonic()
+---
+>         start_time = getattr(time,'monotonic',time.time)()
+4930c4933
+<         while len(multiprocessing.active_children()) > 1:
+---
+>         while len(multiprocess.active_children()) > 1:
+4933c4936
+<             dt = time.monotonic() - start_time
+---
+>             dt = getattr(time,'monotonic',time.time)() - start_time
+4936c4939
+<                 print("Warning -- multiprocessing.Manager still has %s active "
+---
+>                 print("Warning -- multiprocess.Manager still has %s active "
+4938c4941
+<                       % (multiprocessing.active_children(), dt),
+---
+>                       % (multiprocess.active_children(), dt),
+4960,4976c4963,4979
+<     Process = multiprocessing.dummy.Process
+<     connection = multiprocessing.dummy.connection
+<     current_process = staticmethod(multiprocessing.dummy.current_process)
+<     active_children = staticmethod(multiprocessing.dummy.active_children)
+<     Pool = staticmethod(multiprocessing.dummy.Pool)
+<     Pipe = staticmethod(multiprocessing.dummy.Pipe)
+<     Queue = staticmethod(multiprocessing.dummy.Queue)
+<     JoinableQueue = staticmethod(multiprocessing.dummy.JoinableQueue)
+<     Lock = staticmethod(multiprocessing.dummy.Lock)
+<     RLock = staticmethod(multiprocessing.dummy.RLock)
+<     Semaphore = staticmethod(multiprocessing.dummy.Semaphore)
+<     BoundedSemaphore = staticmethod(multiprocessing.dummy.BoundedSemaphore)
+<     Condition = staticmethod(multiprocessing.dummy.Condition)
+<     Event = staticmethod(multiprocessing.dummy.Event)
+<     Barrier = staticmethod(multiprocessing.dummy.Barrier)
+<     Value = staticmethod(multiprocessing.dummy.Value)
+<     Array = staticmethod(multiprocessing.dummy.Array)
+---
+>     Process = multiprocess.dummy.Process
+>     connection = multiprocess.dummy.connection
+>     current_process = staticmethod(multiprocess.dummy.current_process)
+>     active_children = staticmethod(multiprocess.dummy.active_children)
+>     Pool = staticmethod(multiprocess.dummy.Pool)
+>     Pipe = staticmethod(multiprocess.dummy.Pipe)
+>     Queue = staticmethod(multiprocess.dummy.Queue)
+>     JoinableQueue = staticmethod(multiprocess.dummy.JoinableQueue)
+>     Lock = staticmethod(multiprocess.dummy.Lock)
+>     RLock = staticmethod(multiprocess.dummy.RLock)
+>     Semaphore = staticmethod(multiprocess.dummy.Semaphore)
+>     BoundedSemaphore = staticmethod(multiprocess.dummy.BoundedSemaphore)
+>     Condition = staticmethod(multiprocess.dummy.Condition)
+>     Event = staticmethod(multiprocess.dummy.Event)
+>     Barrier = staticmethod(multiprocess.dummy.Barrier)
+>     Value = staticmethod(multiprocess.dummy.Value)
+>     Array = staticmethod(multiprocess.dummy.Array)
+5013,5015c5016,5018
+<         multiprocessing.set_forkserver_preload(PRELOAD)
+<         multiprocessing.process._cleanup()
+<         dangling[0] = multiprocessing.process._dangling.copy()
+---
+>         multiprocess.set_forkserver_preload(PRELOAD)
+>         multiprocess.process._cleanup()
+>         dangling[0] = multiprocess.process._dangling.copy()
+5017c5020
+<         old_start_method[0] = multiprocessing.get_start_method(allow_none=True)
+---
+>         old_start_method[0] = multiprocess.get_start_method(allow_none=True)
+5019c5022
+<             multiprocessing.set_start_method(start_method, force=True)
+---
+>             multiprocess.set_start_method(start_method, force=True)
+5026c5029
+<                 lock = multiprocessing.RLock()
+---
+>                 lock = multiprocess.RLock()
+5032c5035
+<         multiprocessing.get_logger().setLevel(LOG_LEVEL)
+---
+>         multiprocess.get_logger().setLevel(LOG_LEVEL)
+5037c5040
+<         # bpo-26762: Some multiprocessing objects like Pool create reference
+---
+>         # bpo-26762: Some multiprocess objects like Pool create reference
+5041c5044
+<         multiprocessing.set_start_method(old_start_method[0], force=True)
+---
+>         multiprocess.set_start_method(old_start_method[0], force=True)
+5043c5046
+<         processes = set(multiprocessing.process._dangling) - set(dangling[0])
+---
+>         processes = set(multiprocess.process._dangling) - set(dangling[0])
+5063c5066
+<         multiprocessing.util._cleanup_tests()
+---
+>         multiprocess.util._cleanup_tests()
+diff Python-3.7.10/Lib/test/mp_fork_bomb.py /Users/mmckerns/dev/svn/pathos/multiprocess/py3.7/multiprocess/tests/mp_fork_bomb.py 
+1c1
+< import multiprocessing, sys
+---
+> import multiprocessing as multiprocess, sys
+11c11
+<     multiprocessing.set_start_method(sys.argv[1])
+---
+>     multiprocess.set_start_method(sys.argv[1])
+13c13
+<     multiprocessing.set_start_method('spawn')
+---
+>     multiprocess.set_start_method('spawn')
+15c15
+< p = multiprocessing.Process(target=foo)
+---
+> p = multiprocess.Process(target=foo)
+diff Python-3.7.10/Lib/test/mp_preload.py /Users/mmckerns/dev/svn/pathos/multiprocess/py3.7/multiprocess/tests/mp_preload.py 
+1c1
+< import multiprocessing
+---
+> import multiprocessing as multiprocess
+3c3
+< multiprocessing.Lock()
+---
+> multiprocess.Lock()
+11c11
+<     ctx = multiprocessing.get_context("forkserver")
+---
+>     ctx = multiprocess.get_context("forkserver")

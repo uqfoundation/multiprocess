@@ -4,6 +4,8 @@ cp -f py3.8/index.html .
 cp -rf py3.8/_multiprocess _multiprocess
 cp -rf py3.8/multiprocess multiprocess 
 cp -rf py3.8/Modules Modules 
+cp Python-3.9.2/Lib/test/mp_*py multiprocess/tests
+cp Python-3.9.2/Lib/test/_test_multiprocessing.py multiprocess/tests/__init__.py
 
 # ----------------------------------------------------------------------
 diff Python-3.8.1/Modules/_multiprocessing/multiprocessing.h Python-3.9.0a2/Modules/_multiprocessing/multiprocessing.h
@@ -464,4 +466,302 @@ diff Python-3.9.0b1/Lib/multiprocessing/synchronize.py Python-3.9.0/Lib/multipro
 <             False), ('notify: Should not have been able to acquire'
 ---
 >             False), ('notify: Should not have been able to acquire '
-
+# ----------------------------------------------------------------------
+diff Python-3.9.2/Lib/test/_test_multiprocessing.py multiprocess/tests/__init__.py 
+23c23
+< import pickle
+---
+> import pickle #XXX: use dill?
+36c36
+< support.skip_if_broken_multiprocessing_synchronize()
+---
+> test.support.import_module('multiprocess.synchronize')
+39,44c39,45
+< import multiprocessing.connection
+< import multiprocessing.dummy
+< import multiprocessing.heap
+< import multiprocessing.managers
+< import multiprocessing.pool
+< import multiprocessing.queues
+---
+> import multiprocess as multiprocessing
+> import multiprocess.connection
+> import multiprocess.dummy
+> import multiprocess.heap
+> import multiprocess.managers
+> import multiprocess.pool
+> import multiprocess.queues
+46c47
+< from multiprocessing import util
+---
+> from multiprocess import util
+49c50
+<     from multiprocessing import reduction
+---
+>     from multiprocess import reduction
+55c56
+<     from multiprocessing.sharedctypes import Value, copy
+---
+>     from multiprocess.sharedctypes import Value, copy
+61c62
+<     from multiprocessing import shared_memory
+---
+>     from multiprocess import shared_memory
+89c90
+<     from multiprocessing import resource_tracker
+---
+>     from multiprocess import resource_tracker
+117c118
+< from multiprocessing.connection import wait
+---
+> from multiprocess.connection import wait
+130c131
+< PRELOAD = ['__main__', 'test.test_multiprocessing_forkserver']
+---
+> PRELOAD = ['__main__', 'test_multiprocessing_forkserver']
+169c170
+<         t = time.monotonic()
+---
+>         t = getattr(time,'monotonic',time.time)()
+173c174
+<             self.elapsed = time.monotonic() - t
+---
+>             self.elapsed = getattr(time,'monotonic',time.time)() - t
+285c286
+<         from multiprocessing.process import parent_process
+---
+>         from multiprocess.process import parent_process
+288c289
+<     def test_parent_process(self):
+---
+>     def _test_parent_process(self):
+321c322
+<         from multiprocessing.process import parent_process
+---
+>         from multiprocess.process import parent_process
+488a490
+>     @unittest.skipIf(True, "fails with is_dill(obj, child=True)")
+740c742
+<         from multiprocessing.forkserver import _forkserver
+---
+>         from multiprocess.forkserver import _forkserver
+829c831
+<             self.assertIn("test_multiprocessing.py", err)
+---
+>             self.assertIn("__init__.py", err)
+1119c1121
+<                     import multiprocessing
+---
+>                     import multiprocess as multiprocessing
+1137c1139
+<         start = time.monotonic()
+---
+>         start = getattr(time,'monotonic',time.time)()
+1139c1141
+<         delta = time.monotonic() - start
+---
+>         delta = getattr(time,'monotonic',time.time)() - start
+1541c1543
+<             dt = time.monotonic()
+---
+>             dt = getattr(time,'monotonic',time.time)()
+1543c1545
+<             dt = time.monotonic() - dt
+---
+>             dt = getattr(time,'monotonic',time.time)() - dt
+2012c2014
+<             self.skipTest("requires multiprocessing.sharedctypes")
+---
+>             self.skipTest("requires multiprocess.sharedctypes")
+2578a2581
+>     @unittest.skipIf(True, "fails with is_dill(obj, child=True)")
+2620a2624
+>     @unittest.skipIf(True, "fails with is_dill(obj, child=True)")
+2634c2638
+<         t_start = time.monotonic()
+---
+>         t_start = getattr(time,'monotonic',time.time)()
+2646c2650
+<         self.assertGreater(time.monotonic() - t_start, 0.9)
+---
+>         self.assertGreater(getattr(time,'monotonic',time.time)() - t_start, 0.9)
+2718,2719c2722,2723
+<     def test_unpickleable_result(self):
+<         from multiprocessing.pool import MaybeEncodingError
+---
+>     def _test_unpickleable_result(self):
+>         from multiprocess.pool import MaybeEncodingError
+2807c2811
+< from multiprocessing.managers import BaseManager, BaseProxy, RemoteError
+---
+> from multiprocess.managers import BaseManager, BaseProxy, RemoteError
+3450c3454
+<         from multiprocessing import resource_sharer
+---
+>         from multiprocess import resource_sharer
+4123c4127
+<             deadline = time.monotonic() + support.LONG_TIMEOUT
+---
+>             deadline = getattr(time,'monotonic',time.time)() + support.LONG_TIMEOUT
+4125c4129
+<             while time.monotonic() < deadline:
+---
+>             while getattr(time,'monotonic',time.time)() < deadline:
+4277,4279c4281,4283
+<         modules = ['multiprocessing.' + m for m in modules]
+<         modules.remove('multiprocessing.__init__')
+<         modules.append('multiprocessing')
+---
+>         modules = ['multiprocess.' + m for m in modules]
+>         modules.remove('multiprocess.__init__')
+>         modules.append('multiprocess')
+4285,4287c4289,4291
+<             modules.remove('multiprocessing.popen_fork')
+<             modules.remove('multiprocessing.popen_forkserver')
+<             modules.remove('multiprocessing.popen_spawn_posix')
+---
+>             modules.remove('multiprocess.popen_fork')
+>             modules.remove('multiprocess.popen_forkserver')
+>             modules.remove('multiprocess.popen_spawn_posix')
+4289c4293
+<             modules.remove('multiprocessing.popen_spawn_win32')
+---
+>             modules.remove('multiprocess.popen_spawn_win32')
+4291c4295
+<                 modules.remove('multiprocessing.popen_forkserver')
+---
+>                 modules.remove('multiprocess.popen_forkserver')
+4295c4299
+<             modules.remove('multiprocessing.sharedctypes')
+---
+>             modules.remove('multiprocess.sharedctypes')
+4577c4581
+<         from multiprocessing.connection import wait
+---
+>         from multiprocess.connection import wait
+4617c4621
+<         from multiprocessing.connection import wait
+---
+>         from multiprocess.connection import wait
+4658c4662
+<         from multiprocessing.connection import wait
+---
+>         from multiprocess.connection import wait
+4663c4667
+<         start = time.monotonic()
+---
+>         start = getattr(time,'monotonic',time.time)()
+4665c4669
+<         delta = time.monotonic() - start
+---
+>         delta = getattr(time,'monotonic',time.time)() - start
+4673c4677
+<         start = time.monotonic()
+---
+>         start = getattr(time,'monotonic',time.time)()
+4675c4679
+<         delta = time.monotonic() - start
+---
+>         delta = getattr(time,'monotonic',time.time)() - start
+4686c4690
+<         from multiprocessing.connection import wait
+---
+>         from multiprocess.connection import wait
+4699c4703
+<         start = time.monotonic()
+---
+>         start = getattr(time,'monotonic',time.time)()
+4701c4705
+<         delta = time.monotonic() - start
+---
+>         delta = getattr(time,'monotonic',time.time)() - start
+4709c4713
+<         start = time.monotonic()
+---
+>         start = getattr(time,'monotonic',time.time)()
+4711c4715
+<         delta = time.monotonic() - start
+---
+>         delta = getattr(time,'monotonic',time.time)() - start
+4718c4722
+<         start = time.monotonic()
+---
+>         start = getattr(time,'monotonic',time.time)()
+4720c4724
+<         delta = time.monotonic() - start
+---
+>         delta = getattr(time,'monotonic',time.time)() - start
+4729c4733
+<         from multiprocessing.connection import wait
+---
+>         from multiprocess.connection import wait
+4731c4735
+<         t = time.monotonic()
+---
+>         t = getattr(time,'monotonic',time.time)()
+4733c4737
+<         t = time.monotonic() - t
+---
+>         t = getattr(time,'monotonic',time.time)() - t
+4777c4781
+<     def test_flags(self):
+---
+>     def _test_flags(self):
+4780c4784
+<         prog = ('from test._test_multiprocessing import TestFlags; ' +
+---
+>         prog = ('from multiprocess.tests import TestFlags; ' +
+5082c5086
+<     def test_resource_tracker(self):
+---
+>     def _test_resource_tracker(self):
+5088,5090c5092,5094
+<             import multiprocessing as mp
+<             from multiprocessing import resource_tracker
+<             from multiprocessing.shared_memory import SharedMemory
+---
+>             import multiprocess as mp
+>             from multiprocess import resource_tracker
+>             from multiprocess.shared_memory import SharedMemory
+5134,5135c5138,5139
+<                 deadline = time.monotonic() + support.LONG_TIMEOUT
+<                 while time.monotonic() < deadline:
+---
+>                 deadline = getattr(time,'monotonic',time.time)() + support.LONG_TIMEOUT
+>                 while getattr(time,'monotonic',time.time)() < deadline:
+5159c5163
+<         from multiprocessing.resource_tracker import _resource_tracker
+---
+>         from multiprocess.resource_tracker import _resource_tracker
+5207c5211
+<         from multiprocessing.resource_tracker import _resource_tracker
+---
+>         from multiprocess.resource_tracker import _resource_tracker
+5216c5220
+<         from multiprocessing.resource_tracker import _resource_tracker
+---
+>         from multiprocess.resource_tracker import _resource_tracker
+5375c5379
+<         start_time = time.monotonic()
+---
+>         start_time = getattr(time,'monotonic',time.time)()
+5380c5384
+<             dt = time.monotonic() - start_time
+---
+>             dt = getattr(time,'monotonic',time.time)() - start_time
+5383c5387
+<                 support.print_warning(f"multiprocessing.Manager still has "
+---
+>                 support.print_warning(f"multiprocess.Manager still has "
+5651c5655
+<         start_time = time.monotonic()
+---
+>         start_time = getattr(time,'monotonic',time.time)()
+5656c5660
+<             dt = time.monotonic() - start_time
+---
+>             dt = getattr(time,'monotonic',time.time)() - start_time
+5659c5663
+<                 support.print_warning(f"multiprocessing.Manager still has "
+---
+>                 support.print_warning(f"multiprocess.Manager still has "

@@ -164,6 +164,7 @@ diff Python-3.10.0a5/Lib/multiprocessing/resource_tracker.py Python-3.10.0a6/Lib
 >         })
 41d49
 <         'semaphore': _multiprocessing.sem_unlink,
+# ----------------------------------------------------------------------
 diff Python-3.10.0a6/Lib/test/_test_multiprocessing.py multiprocess/tests/__init__.py 
 23c23
 < import pickle
@@ -362,3 +363,30 @@ diff Python-3.10.0a6/Lib/test/_test_multiprocessing.py multiprocess/tests/__init
 <                 support.print_warning(f"multiprocessing.Manager still has "
 ---
 >                 support.print_warning(f"multiprocess.Manager still has "
+# ----------------------------------------------------------------------
+diff Python-3.10.0a7/Lib/test/_test_multiprocessing.py Python-3.10.0a6/Lib/test/_test_multiprocessing.py 
+829c829
+<         with open(testfn, encoding="utf-8") as f:
+---
+>         with open(testfn, 'r') as f:
+839c839
+<         sys.stderr = open(fd, 'w', encoding="utf-8", closefd=False)
+---
+>         sys.stderr = open(fd, 'w', closefd=False)
+846c846
+<         sys.stderr = open(fd, 'w', encoding="utf-8", closefd=False)
+---
+>         sys.stderr = open(fd, 'w', closefd=False)
+867c867
+<             with open(testfn, encoding="utf-8") as f:
+---
+>             with open(testfn, 'r') as f:
+1121c1121
+<             with open(module_name + '.py', 'w', encoding="utf-8") as f:
+---
+>             with open(module_name + '.py', 'w') as f:
+diff Python-3.10.0a7/Lib/multiprocessing/util.py Python-3.10.0a6/Lib/multiprocessing/util.py
+422c422
+<             sys.stdin = open(fd, encoding="utf-8", closefd=False)
+---
+>             sys.stdin = open(fd, closefd=False)

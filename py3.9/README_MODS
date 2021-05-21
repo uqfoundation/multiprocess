@@ -599,6 +599,14 @@ diff Python-3.9.2/Lib/test/_test_multiprocessing.py multiprocess/tests/__init__.
 <         from multiprocessing import resource_sharer
 ---
 >         from multiprocess import resource_sharer
+3695c3699
+<             self.skipTest("requires multiprocessing.sharedctypes")
+---
+>             self.skipTest("requires multiprocess.sharedctypes")
+3745c3749
+< @unittest.skipUnless(HAS_SHMEM, "requires multiprocessing.shared_memory")
+---
+> @unittest.skipUnless(HAS_SHMEM, "requires multiprocess.shared_memory")
 4123c4127
 <             deadline = time.monotonic() + support.LONG_TIMEOUT
 ---

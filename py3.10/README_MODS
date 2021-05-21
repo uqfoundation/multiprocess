@@ -390,3 +390,31 @@ diff Python-3.10.0a7/Lib/multiprocessing/util.py Python-3.10.0a6/Lib/multiproces
 <             sys.stdin = open(fd, encoding="utf-8", closefd=False)
 ---
 >             sys.stdin = open(fd, closefd=False)
+# ----------------------------------------------------------------------
+diff Python-3.10.0b1/Lib/multiprocessing/managers.py Python-3.10.0a7/Lib/multiprocessing/managers.py
+195,196c195,199
+<     def _handle_request(self, c):
+<         request = None
+---
+>     def handle_request(self, c):
+>         '''
+>         Handle a new connection
+>         '''
+>         funcname = result = request = None
+213d215
+< 
+225,235c227
+<     def handle_request(self, conn):
+<         '''
+<         Handle a new connection
+<         '''
+<         try:
+<             self._handle_request(conn)
+<         except SystemExit:
+<             # Server.serve_client() calls sys.exit(0) on EOF
+<             pass
+<         finally:
+<             conn.close()
+---
+>         c.close()
+

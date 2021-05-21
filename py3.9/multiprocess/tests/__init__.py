@@ -3696,7 +3696,7 @@ class _TestSharedCTypes(BaseTestCase):
 
     def setUp(self):
         if not HAS_SHAREDCTYPES:
-            self.skipTest("requires multiprocessing.sharedctypes")
+            self.skipTest("requires multiprocess.sharedctypes")
 
     @classmethod
     def _double(cls, x, y, z, foo, arr, string):
@@ -3746,7 +3746,7 @@ class _TestSharedCTypes(BaseTestCase):
         self.assertEqual(bar.z, 2 ** 33)
 
 
-@unittest.skipUnless(HAS_SHMEM, "requires multiprocessing.shared_memory")
+@unittest.skipUnless(HAS_SHMEM, "requires multiprocess.shared_memory")
 @hashlib_helper.requires_hashdigest('md5')
 class _TestSharedMemory(BaseTestCase):
 

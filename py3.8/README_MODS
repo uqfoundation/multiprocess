@@ -899,6 +899,14 @@ diff Python-3.8.8/Lib/test/_test_multiprocessing.py multiprocess/tests/__init__.
 <         from multiprocessing import resource_sharer
 ---
 >         from multiprocess import resource_sharer
+3688c3692
+<             self.skipTest("requires multiprocessing.sharedctypes")
+---
+>             self.skipTest("requires multiprocess.sharedctypes")
+3738c3742
+< @unittest.skipUnless(HAS_SHMEM, "requires multiprocessing.shared_memory")
+---
+> @unittest.skipUnless(HAS_SHMEM, "requires multiprocess.shared_memory")
 3844c3848
 <         # the failure when we run multiprocessing tests in parallel.
 ---

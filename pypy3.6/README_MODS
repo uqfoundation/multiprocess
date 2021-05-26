@@ -1,0 +1,60 @@
+cp -rf py3.6/examples .
+cp -rf py3.6/doc .
+cp -f py3.6/index.html .
+cp -rf pypy3.6-v7.3.3-src/pypy/module/_multiprocessing _multiprocess
+cp -rf pypy3.6-v7.3.3-src/lib-python/3/multiprocessing multiprocess
+cp -rf pypy3.6-v7.3.3-src/lib-python/3/test/_test_multiprocessing.py multiprocess/tests/__init__.py
+cp -rf pypy3.6-v7.3.3-src/lib-python/3/test/test_multiprocessing*py multiprocess/tests
+cp -rf pypy3.6-v7.3.3-src/lib-python/3/test/mp_*py multiprocess/tests
+cp -f py3.6/multiprocess/tests/__main__.py multiprocess/tests
+cp -rf py3.6/_multiprocess _multiprocess
+# ----------------------------------------------------------------------
+EDIT multiprocess/__init__: __version__
+EDIT multiprocess: multiprocessing --> multiprocess
+EDIT multiprocess: pickle --> dill
+EDIT multiprocess/dummy: multiprocessing --> multiprocess
+EDIT multiprocess/tests: multiprocessing --> multiprocess
+ADDED *args, **kwds for ForkingPickler in __init__ and dump
+EDIT time.monotonic --> getattr(time,'monotonic',time.time)
+# ----------------------------------------------------------------------
+diff py3.6/multiprocess/managers.py pypy3.6/multiprocess/managers.py
+21d20
+< 
+22a22
+> 
+diff py3.6/multiprocess/synchronize.py pypy3.6/multiprocess/synchronize.py
+32c32
+< except ImportError:
+---
+> except (ImportError):
+# ----------------------------------------------------------------------
+diff py3.6/multiprocess/tests/__init__.py pypy3.6/multiprocess/tests/__init__.py
+425a426,427
+>         for i in range(3):
+>             gc.collect()
+2288a2291,2292
+>         for i in range(3):
+>             gc.collect()
+2534c2538,2539
+<         self.assertRaises(Exception, queue.put, time.sleep)
+---
+>         # Changed on PyPy: passing functions to xmlrpc is broken
+>         #self.assertRaises(Exception, queue.put, time.sleep)
+3184a3190
+>     @test.support.cpython_only
+3279a3286,3287
+>         for i in range(3):
+>             gc.collect()
+3290a3299
+>         import gc; gc.collect()
+3296a3306
+>         import gc; gc.collect()
+3331a3342
+>     @test.support.cpython_only
+# ----------------------------------------------------------------------
+NOTE: semaphore_tracker throws KeyError in multiprocess and multiprocessing
+
+Traceback (most recent call last):
+  File "multiprocess/semaphore_tracker.py", line 132, in main
+    cache.remove(name)
+KeyError: b'/mp-oh37i3by'

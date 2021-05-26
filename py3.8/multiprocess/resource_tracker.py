@@ -34,7 +34,7 @@ _CLEANUP_FUNCS = {
 }
 
 if os.name == 'posix':
-    try: 
+    try:
         import _multiprocess as _multiprocessing
     except ImportError:
         import _multiprocessing

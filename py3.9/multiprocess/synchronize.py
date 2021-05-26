@@ -14,7 +14,7 @@ __all__ = [
 import threading
 import sys
 import tempfile
-try: 
+try:
     import _multiprocess as _multiprocessing
 except ImportError:
     import _multiprocessing

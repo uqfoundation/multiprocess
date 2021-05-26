@@ -16,7 +16,7 @@ import signal
 import sys
 import threading
 import warnings
-try: 
+try:
     import _multiprocess as _multiprocessing
 except ImportError:
     import _multiprocessing

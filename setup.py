@@ -4,6 +4,9 @@ import re
 import os
 import sys
 import glob
+
+stable_version = '0.70.12'
+
 # drop support for older python
 unsupported = None
 if sys.version_info < (2, 7):
@@ -12,24 +15,31 @@ elif (3, 0) <= sys.version_info < (3, 6):
     unsupported = 'Versions of Python before 3.6 are not supported'
 if unsupported:
     raise ValueError(unsupported)
-stable_version = '0.70.12'
+
+is_jython = sys.platform.startswith('java')
+is_pypy = hasattr(sys, 'pypy_version_info')
+is_py3k = sys.version_info[0] == 3
+lt_py33 = sys.version_info < (3, 3)
+
+# the code is version-specific, so get the appropriate root directory
+root = 'pypy' if is_pypy else 'py'
 pymajor,pyminor = sys.version_info[:2]
-pkgdir = 'py%s.%s' % (pymajor,pyminor)
+pkgdir = '%s%s.%s' % (root,pymajor,pyminor)
 if sys.version_info >= (2, 6):
     pkgname = 'multiprocess'
 else: # (2, 5)
     pkgname = 'processing'  #XXX: oddity, due to lazyness at the moment
 # if sys.version is higher than explicitly supported, try the latest version
 HERE = os.path.dirname(os.path.abspath(__file__))
-while not os.path.exists(os.path.join(HERE,'py%s.%s' % (pymajor,pyminor))):
+while not os.path.exists(os.path.join(HERE,'%s%s.%s' % (root,pymajor,pyminor))):
     pyminor -= 1
     if pyminor < 0:
-        unsupported = 'Python %s is not supported' % pkgdir[2:]
+        unsupported = 'Python %s is not supported' % pkgdir[len(root):]
         raise ValueError(unsupported)
-if 'py%s.%s' % (pymajor,pyminor) != pkgdir:
+if '%s%s.%s' % (root,pymajor,pyminor) != pkgdir:
     msg = 'Warning: Python %s is not currently supported, reverting to %s.%s'
-    print(msg % (pkgdir[2:],pymajor,pyminor))
-    pkgdir = 'py%s.%s' % (pymajor,pyminor)
+    print(msg % (pkgdir[len(root):],pymajor,pyminor))
+    pkgdir = '%s%s.%s' % (root,pymajor,pyminor)
 srcdir = '%s/Modules/_%s' % (pkgdir, pkgname)
 libdir = '%s/%s' % (pkgdir, pkgname)
 
@@ -48,11 +58,6 @@ ext_errors = (CCompilerError, DistutilsExecError, DistutilsPlatformError)
 if sys.platform == 'win32' and sys.version_info >= (2, 6):
     # distutils.msvc9compiler can raise IOError if the compiler is missing
     ext_errors += (IOError, )
-
-is_jython = sys.platform.startswith('java')
-is_pypy = hasattr(sys, 'pypy_version_info')
-is_py3k = sys.version_info[0] == 3
-lt_py33 = sys.version_info < (3, 3)
 
 BUILD_WARNING = """
 
@@ -425,7 +430,7 @@ def run_setup(with_extensions=True):
 try:
     run_setup(not (is_jython or is_pypy) and lt_py33)
 except BaseException:
-    if _is_build_command(sys.argv):
+    if _is_build_command(sys.argv): #XXX: skip WARNING if is_pypy?
         import traceback
         msg = BUILD_WARNING % '\n'.join(traceback.format_stack())
         if not is_py3k:

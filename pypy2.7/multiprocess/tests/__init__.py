@@ -21,7 +21,10 @@ import logging
 import errno
 import weakref
 import test.script_helper
-from test import test_support as support
+try:
+    from test import support
+except ImportError:
+    from test import test_support as support
 from StringIO import StringIO
 try: #XXX
     _multiprocessing = support.import_module('_multiprocess')
@@ -677,7 +680,7 @@ class _TestQueue(BaseTestCase):
         class NotSerializable(object):
             def __reduce__(self):
                 raise AttributeError
-        with test.support.captured_stderr():
+        with support.captured_stderr():
             q = self.Queue()
             q.put(NotSerializable())
             q.put(True)
@@ -1574,7 +1577,7 @@ class _TestRemoteManager(BaseTestCase):
         authkey = os.urandom(32)
 
         manager = QueueManager(
-            address=(test.support.HOST, 0), authkey=authkey, serializer=SERIALIZER
+            address=(support.HOST, 0), authkey=authkey, serializer=SERIALIZER
             )
         manager.start()
 
@@ -1611,7 +1614,7 @@ class _TestManagerRestart(BaseTestCase):
     def test_rapid_restart(self):
         authkey = os.urandom(32)
         manager = QueueManager(
-            address=(test.support.HOST, 0), authkey=authkey, serializer=SERIALIZER)
+            address=(support.HOST, 0), authkey=authkey, serializer=SERIALIZER)
         srvr = manager.get_server()
         addr = srvr.address
         # Close the connection.Listener socket which gets opened as a part
@@ -2817,7 +2820,7 @@ def test_main(run=None):
     check_enough_semaphores()
 
     if run is None:
-        from test.support import run_unittest as run
+        run = support.run_unittest
 
     util.get_temp_dir()     # creates temp directory for use by all processes
 

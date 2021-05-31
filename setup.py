@@ -308,6 +308,68 @@ Optional requirements::
     - ``setuptools``, **version >= 0.6**
 
 
+Basic Usage
+===========
+
+The ``multiprocess.Process`` class follows the API of ``threading.Thread``.
+For example ::
+
+    from multiprocess import Process, Queue
+
+    def f(q):
+        q.put('hello world')
+
+    if __name__ == '__main__':
+        q = Queue()
+        p = Process(target=f, args=[q])
+        p.start()
+        print (q.get())
+        p.join()
+
+Synchronization primitives like locks, semaphores and conditions are
+available, for example ::
+
+    >>> from multiprocess import Condition
+    >>> c = Condition()
+    >>> print (c)
+    <Condition(<RLock(None, 0)>), 0>
+    >>> c.acquire()
+    True
+    >>> print (c)
+    <Condition(<RLock(MainProcess, 1)>), 0>
+
+One can also use a manager to create shared objects either in shared
+memory or in a server process, for example ::
+
+    >>> from multiprocess import Manager
+    >>> manager = Manager()
+    >>> l = manager.list(range(10))
+    >>> l.reverse()
+    >>> print (l)
+    [9, 8, 7, 6, 5, 4, 3, 2, 1, 0]
+    >>> print (repr(l))
+    <Proxy[list] object at 0x00E1B3B0>
+
+Tasks can be offloaded to a pool of worker processes in various ways,
+for example ::
+
+    >>> from multiprocess import Pool
+    >>> def f(x): return x*x
+    ...
+    >>> p = Pool(4)
+    >>> result = p.map_async(f, range(10))
+    >>> print (result.get(timeout=1))
+    [0, 1, 4, 9, 16, 25, 36, 49, 64, 81]
+
+When ``dill`` is installed, serialization is extended to most objects,
+for example ::
+
+    >>> from multiprocess import Pool
+    >>> p = Pool(4)
+    >>> print (p.map(lambda x: (lambda y:y**2)(x) + x, xrange(10)))
+    [0, 2, 6, 12, 20, 30, 42, 56, 72, 90]
+
+
 More Information
 ================
 

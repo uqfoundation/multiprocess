@@ -58,8 +58,8 @@ You can get the latest development version with all the shiny new features at::
 If you have a new contribution, please submit a pull request.
 
 
-Examples
---------
+Basic Usage
+-----------
 The ``multiprocess.Process`` class follows the API of ``threading.Thread``.
 For example ::
 

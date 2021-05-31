@@ -32,9 +32,11 @@ matrix:
         - python: 'pypy'
           dist: xenial
           env:
+            - PYPY_VERSION="2.7"
 
         - python: 'pypy3'
           env:
+            - PYPY_VERSION="3.6"
 
     allow_failures:
         - python: '2.7'
@@ -57,6 +59,8 @@ install:
 
 script:
     - if [[ $PYVERSION != "3.10" ]]; then PYVERSION=$TRAVIS_PYTHON_VERSION ; fi
+    - if [[ $PYVERSION == "pypy" ]]; then PYVERSION=py$PYPY_VERSION ; fi
+    - if [[ $PYVERSION == "pypy3" ]]; then PYVERSION=py$PYPY_VERSION ; fi
     - cd py$PYVERSION
     - cp ../.coveragerc .coveragerc
     - for test in multiprocess/tests/__init__.py; do echo $test ; if [[ $COVERAGE == "true" ]]; then coverage run -a $test > /dev/null; else python $test > /dev/null; fi ; done

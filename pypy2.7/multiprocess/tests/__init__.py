@@ -21,7 +21,7 @@ import logging
 import errno
 import weakref
 import test.script_helper
-from test import support
+from test import test_support as support
 from StringIO import StringIO
 try: #XXX
     _multiprocessing = support.import_module('_multiprocess')

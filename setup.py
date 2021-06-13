@@ -80,7 +80,7 @@ install a C compiler or fix the error(s) above.
 
 # -*- extra config (setuptools) -*-
 if has_setuptools:
-    extras = dict(install_requires=['dill>=0.3.3'])
+    extras = dict(install_requires=['dill>=0.3.4'])
 else:
     extras = dict()
 
@@ -301,7 +301,7 @@ Requirements
 ``multiprocess`` requires::
 
     - ``python``, **version == 2.7** or **version >= 3.6**, or ``pypy``
-    - ``dill``, **version >= 0.3.3**
+    - ``dill``, **version >= 0.3.4**
 
 Optional requirements::
 

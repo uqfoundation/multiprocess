@@ -5,7 +5,7 @@ import os
 import sys
 import glob
 
-stable_version = '0.70.12.1'
+stable_version = '0.70.12.2'
 
 # drop support for older python
 unsupported = None

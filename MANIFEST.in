@@ -6,6 +6,7 @@ recursive-include py2.5 *
 recursive-include py2.6 *
 recursive-include py2.7 *
 recursive-include py3.1 *
+recursive-include py3.10 *
 recursive-include py3.2 *
 recursive-include py3.3 *
 recursive-include py3.4 *
@@ -14,6 +15,9 @@ recursive-include py3.6 *
 recursive-include py3.7 *
 recursive-include py3.8 *
 recursive-include py3.9 *
+recursive-include pypy2.7 *
+recursive-include pypy3.6 *
+recursive-include pypy3.7 *
 include .*
 prune .git
 prune .coverage

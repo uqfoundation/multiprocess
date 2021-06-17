@@ -49,7 +49,7 @@ The latest released version of ``multiprocess`` is available from::
 
 
 Development Version
-[![Travis Build Status](https://img.shields.io/travis/uqfoundation/multiprocess.svg?label=build&logo=travis&branch=master)](https://travis-ci.org/uqfoundation/multiprocess)
+[![Build Status](https://travis-ci.com/uqfoundation/multiprocess.svg?label=build&logo=travis&branch=master)](https://travis-ci.com/uqfoundation/multiprocess)
 [![Downloads](https://pepy.tech/badge/multiprocess)](https://pepy.tech/project/multiprocess)
 -------------------
 You can get the latest development version with all the shiny new features at::

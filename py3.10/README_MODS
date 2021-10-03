@@ -417,4 +417,39 @@ diff Python-3.10.0b1/Lib/multiprocessing/managers.py Python-3.10.0a7/Lib/multipr
 <             conn.close()
 ---
 >         c.close()
-
+# ----------------------------------------------------------------------
+diff Python-3.10.0b1/Lib/multiprocessing/managers.py Python-3.10.0rc2/Lib/multiprocessing/managers.py
+11,12c11
+< __all__ = [ 'BaseManager', 'SyncManager', 'BaseProxy', 'Token',
+<             'SharedMemoryManager' ]
+---
+> __all__ = [ 'BaseManager', 'SyncManager', 'BaseProxy', 'Token' ]
+38d36
+<     HAS_SHMEM = True
+40a39,41
+> else:
+>     HAS_SHMEM = True
+>     __all__.append('SharedMemoryManager')
+970c971
+<               exposed=None, incref=True):
+---
+>               exposed=None, incref=True, manager_owned=False):
+990c991
+<                       incref=incref)
+---
+>                       incref=incref, manager_owned=manager_owned)
+# ----------------------------------------------------------------------
+diff Python-3.10.0b1/Lib/test/_test_multiprocessing.py Python-3.10.0rc2/Lib/test/_test_multiprocessing.py 
+2288a2289,2298
+>     def test_nested_queue(self):
+>         a = self.list() # Test queue inside list
+>         a.append(self.Queue())
+>         a[0].put(123)
+>         self.assertEqual(a[0].get(), 123)
+>         b = self.dict() # Test queue inside dict
+>         b[0] = self.Queue()
+>         b[0].put(456)
+>         self.assertEqual(b[0].get(), 456)
+> 
+3782d3791
+<         self.assertEqual(sms.size, sms2.size)

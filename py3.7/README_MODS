@@ -1362,7 +1362,7 @@ diff Python-3.7.10/Lib/test/_test_multiprocessing.py multiprocess/tests/__init__
 <         multiprocessing.util._cleanup_tests()
 ---
 >         multiprocess.util._cleanup_tests()
-diff Python-3.7.10/Lib/test/mp_fork_bomb.py /Users/mmckerns/dev/svn/pathos/multiprocess/py3.7/multiprocess/tests/mp_fork_bomb.py 
+diff Python-3.7.10/Lib/test/mp_fork_bomb.py multiprocess/tests/mp_fork_bomb.py 
 1c1
 < import multiprocessing, sys
 ---
@@ -1379,7 +1379,7 @@ diff Python-3.7.10/Lib/test/mp_fork_bomb.py /Users/mmckerns/dev/svn/pathos/multi
 < p = multiprocessing.Process(target=foo)
 ---
 > p = multiprocess.Process(target=foo)
-diff Python-3.7.10/Lib/test/mp_preload.py /Users/mmckerns/dev/svn/pathos/multiprocess/py3.7/multiprocess/tests/mp_preload.py 
+diff Python-3.7.10/Lib/test/mp_preload.py multiprocess/tests/mp_preload.py 
 1c1
 < import multiprocessing
 ---

@@ -773,3 +773,48 @@ diff Python-3.9.2/Lib/test/_test_multiprocessing.py multiprocess/tests/__init__.
 <                 support.print_warning(f"multiprocessing.Manager still has "
 ---
 >                 support.print_warning(f"multiprocess.Manager still has "
+# ----------------------------------------------------------------------
+diff Python-3.9.4/Lib/test/_test_multiprocessing.py Python-3.9.7/Lib/test/_test_multiprocessing.py 
+609a610
+>         gc.collect()  # For PyPy or other GCs.
+2284a2286,2295
+>     def test_nested_queue(self):
+>         a = self.list() # Test queue inside list
+>         a.append(self.Queue())
+>         a[0].put(123)
+>         self.assertEqual(a[0].get(), 123)
+>         b = self.dict() # Test queue inside dict
+>         b[0] = self.Queue()
+>         b[0].put(456)
+>         self.assertEqual(b[0].get(), 456)
+> 
+2655a2667
+>         gc.collect()  # For PyPy or other GCs.
+4157a4170
+>         gc.collect()  # For PyPy or other GCs.
+4168a4182
+>         gc.collect()  # For PyPy or other GCs.
+4174a4189
+>         gc.collect()  # For PyPy or other GCs.
+# ----------------------------------------------------------------------
+diff Python-3.9.4/Lib/multiprocessing/managers.py Python-3.9.7/Lib/multiprocessing/managers.py
+11,12c11
+< __all__ = [ 'BaseManager', 'SyncManager', 'BaseProxy', 'Token',
+<             'SharedMemoryManager' ]
+---
+> __all__ = [ 'BaseManager', 'SyncManager', 'BaseProxy', 'Token' ]
+38d36
+<     HAS_SHMEM = True
+40a39,41
+> else:
+>     HAS_SHMEM = True
+>     __all__.append('SharedMemoryManager')
+962c963
+<               exposed=None, incref=True):
+---
+>               exposed=None, incref=True, manager_owned=False):
+982c983
+<                       incref=incref)
+---
+>                       incref=incref, manager_owned=manager_owned)
+

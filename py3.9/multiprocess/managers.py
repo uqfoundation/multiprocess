@@ -980,7 +980,7 @@ def AutoProxy(token, serializer, manager=None, authkey=None,
 
     ProxyType = MakeProxyType('AutoProxy[%s]' % token.typeid, exposed)
     proxy = ProxyType(token, serializer, manager=manager, authkey=authkey,
-                      incref=incref, manager_owned=manager_owned))
+                      incref=incref, manager_owned=manager_owned)
     proxy._isauto = True
     return proxy
 

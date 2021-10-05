@@ -42,7 +42,6 @@ matrix:
         - python: '2.7'
         - python: 'nightly'
         - python: 'pypy'
-        - python: 'pypy3'
     fast_finish: true
 
 cache:

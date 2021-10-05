@@ -453,3 +453,68 @@ diff Python-3.10.0b1/Lib/test/_test_multiprocessing.py Python-3.10.0rc2/Lib/test
 > 
 3782d3791
 <         self.assertEqual(sms.size, sms2.size)
+# ----------------------------------------------------------------------
+diff Python-3.10.0rc2/Lib/test/_test_multiprocessing.py Python-3.10.0/Lib//test/_test_multiprocessing.py
+3773a3774,3779
+>     def _new_shm_name(self, prefix):
+>         # Add a PID to the name of a POSIX shared memory object to allow
+>         # running multiprocessing tests (test_multiprocessing_fork,
+>         # test_multiprocessing_spawn, etc) in parallel.
+>         return prefix + str(os.getpid())
+> 
+3775c3781,3782
+<         sms = shared_memory.SharedMemory('test01_tsmb', create=True, size=512)
+---
+>         name_tsmb = self._new_shm_name('test01_tsmb')
+>         sms = shared_memory.SharedMemory(name_tsmb, create=True, size=512)
+3779c3786
+<         self.assertEqual(sms.name, 'test01_tsmb')
+---
+>         self.assertEqual(sms.name, name_tsmb)
+3799c3806
+<         also_sms = shared_memory.SharedMemory('test01_tsmb')
+---
+>         also_sms = shared_memory.SharedMemory(name_tsmb)
+3804c3811
+<         same_sms = shared_memory.SharedMemory('test01_tsmb', size=20*sms.size)
+---
+>         same_sms = shared_memory.SharedMemory(name_tsmb, size=20*sms.size)
+3822c3829
+<             names = ['test01_fn', 'test02_fn']
+---
+>             names = [self._new_shm_name('test01_fn'), self._new_shm_name('test02_fn')]
+3843a3851,3856
+>             name_dblunlink = self._new_shm_name('test01_dblunlink')
+>             sms_uno = shared_memory.SharedMemory(
+>                 name_dblunlink,
+>                 create=True,
+>                 size=5000
+>             )
+3845,3850d3857
+<                 sms_uno = shared_memory.SharedMemory(
+<                     'test01_dblunlink',
+<                     create=True,
+<                     size=5000
+<                 )
+< 
+3854c3861
+<                     sms_duo = shared_memory.SharedMemory('test01_dblunlink')
+---
+>                     sms_duo = shared_memory.SharedMemory(name_dblunlink)
+3866c3873
+<                 'test01_tsmb',
+---
+>                 name_tsmb,
+3880c3887
+<             ok_if_exists_sms = OptionalAttachSharedMemory('test01_tsmb')
+---
+>             ok_if_exists_sms = OptionalAttachSharedMemory(name_tsmb)
+4085c4092,4093
+<         sl_copy = shared_memory.ShareableList(sl, name='test03_duplicate')
+---
+>         name_duplicate = self._new_shm_name('test03_duplicate')
+>         sl_copy = shared_memory.ShareableList(sl, name=name_duplicate)
+4088c4096
+<             self.assertEqual('test03_duplicate', sl_copy.shm.name)
+---
+>             self.assertEqual(name_duplicate, sl_copy.shm.name)

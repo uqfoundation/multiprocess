@@ -40,7 +40,6 @@ matrix:
 
     allow_failures:
         - python: '2.7'
-        - python: '3.10-dev'
         - python: 'nightly'
         - python: 'pypy'
         - python: 'pypy3'

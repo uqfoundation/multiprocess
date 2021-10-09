@@ -518,3 +518,10 @@ diff Python-3.10.0rc2/Lib/test/_test_multiprocessing.py Python-3.10.0/Lib//test/
 <             self.assertEqual('test03_duplicate', sl_copy.shm.name)
 ---
 >             self.assertEqual(name_duplicate, sl_copy.shm.name)
+# ----------------------------------------------------------------------
+diff Python-3.10.0/Lib/test/_test_multiprocessing.py py3.10/multiprocess/tests/__init__.py
+3826c3830
+>             'multiprocessing.shared_memory._make_filename') as mock_make_filename:
+---
+<             'multiprocess.shared_memory._make_filename') as mock_make_filename:
+

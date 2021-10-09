@@ -3822,7 +3822,7 @@ class _TestSharedMemory(BaseTestCase):
         # Test if shared memory segment is created properly,
         # when _make_filename returns an existing shared memory segment name
         with unittest.mock.patch(
-            'multiprocessing.shared_memory._make_filename') as mock_make_filename:
+            'multiprocess.shared_memory._make_filename') as mock_make_filename:
 
             NAME_PREFIX = shared_memory._SHM_NAME_PREFIX
             names = [self._new_shm_name('test01_fn'), self._new_shm_name('test02_fn')]
@@ -3899,7 +3899,7 @@ class _TestSharedMemory(BaseTestCase):
         # Test if shared memory segment is created properly,
         # when _make_filename returns an existing shared memory segment name
         with unittest.mock.patch(
-            'multiprocessing.shared_memory._make_filename') as mock_make_filename:
+            'multiprocess.shared_memory._make_filename') as mock_make_filename:
 
             NAME_PREFIX = shared_memory._SHM_NAME_PREFIX
             names = ['test01_fn', 'test02_fn']

@@ -238,3 +238,15 @@ diff Python-3.10.0rc2/Lib/test/_test_multiprocessing.py Python-3.11.0a1/Lib/test
 >         gc.collect()  # For PyPy or other GCs.
 4216a4309
 >         gc.collect()  # For PyPy or other GCs.
+g
+# ----------------------------------------------------------------------
+diff Python-3.11.0a1/Lib/test/_test_multiprocessing.py py3.11/multiprocess/tests/__init__.py
+3821c3825
+<             'multiprocessing.shared_memory._make_filename') as mock_make_filename:
+---
+>             'multiprocess.shared_memory._make_filename') as mock_make_filename:
+3898c3902
+<             'multiprocessing.shared_memory._make_filename') as mock_make_filename:
+---
+>             'multiprocess.shared_memory._make_filename') as mock_make_filename:
+

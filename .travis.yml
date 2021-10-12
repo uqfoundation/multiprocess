@@ -29,25 +29,25 @@ matrix:
           env:
             - PYVERSION="3.10"
 
-        - python: 'pypy2.7-7.3.1' # pypy2.7-7.1.1 != pypy2.7-7.3.1
+        - python: 'pypy2.7-7.3.1' # most recent
           dist: xenial
           env:
             - PYPY_VERSION="2.7"
 
-        - python: 'pypy3.6-7.3.3' # pypy3.6-7.3.1 != pypy3.6-7.3.3
+        - python: 'pypy3.6-7.3.3' # most recent
           dist: bionic
           env:
             - PYPY_VERSION="3.6"
 
-        - python: 'pypy3.7-7.3.5' # pypy3.6-7.3.1 != pypy3.7-7.3.5
+        - python: 'pypy3.7-7.3.5' # most recent
           dist: bionic
           env:
             - PYPY_VERSION="3.7"
 
     allow_failures:
         - python: '2.7'
-        - python: 'nightly'
         - python: 'pypy2.7-7.3.1'
+        - python: 'nightly'
     fast_finish: true
 
 cache:

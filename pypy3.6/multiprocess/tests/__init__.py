@@ -3569,7 +3569,6 @@ class TestInvalidHandle(unittest.TestCase):
 
 
 
-@unittest.skipIf(True, "skip due to UserDict hashing in pypy3")
 class OtherTest(unittest.TestCase):
     # TODO: add more tests for deliver/answer challenge.
     def test_deliver_challenge_auth_failure(self):
@@ -3606,7 +3605,6 @@ class OtherTest(unittest.TestCase):
 def initializer(ns):
     ns.test += 1
 
-@unittest.skipIf(True, "skip due to UserDict hashing in pypy3")
 class TestInitializers(unittest.TestCase):
     def setUp(self):
         self.mgr = multiprocess.Manager()
@@ -3680,7 +3678,6 @@ class _file_like(object):
         self._delegate.write(''.join(self.cache))
         self._cache = []
 
-@unittest.skipIf(True, "skip due to UserDict hashing in pypy3")
 class TestStdinBadfiledescriptor(unittest.TestCase):
 
     def test_queue_in_process(self):
@@ -3702,7 +3699,6 @@ class TestStdinBadfiledescriptor(unittest.TestCase):
         assert sio.getvalue() == 'foo'
 
 
-@unittest.skipIf(True, "skip due to UserDict hashing in pypy3")
 class TestWait(unittest.TestCase):
 
     @classmethod
@@ -3882,7 +3878,6 @@ class TestWait(unittest.TestCase):
 # Issue 14151: Test invalid family on invalid environment
 #
 
-@unittest.skipIf(True, "skip due to UserDict hashing in pypy3")
 class TestInvalidFamily(unittest.TestCase):
 
     @unittest.skipIf(WIN32, "skipped on Windows")
@@ -3931,7 +3926,6 @@ class TestFlags(unittest.TestCase):
 # Test interaction with socket timeouts - see Issue #6056
 #
 
-@unittest.skipIf(True, "skip due to UserDict hashing in pypy3")
 class TestTimeouts(unittest.TestCase):
     @classmethod
     def _test_timeout(cls, child, address):
@@ -3966,7 +3960,6 @@ class TestTimeouts(unittest.TestCase):
 # Test what happens with no "if __name__ == '__main__'"
 #
 
-@unittest.skipIf(True, "skip due to UserDict hashing in pypy3")
 class TestNoForkBomb(unittest.TestCase):
     def test_noforkbomb(self):
         sm = multiprocess.get_start_method()
@@ -3984,7 +3977,6 @@ class TestNoForkBomb(unittest.TestCase):
 # Issue #17555: ForkAwareThreadLock
 #
 
-@unittest.skipIf(True, "skip due to UserDict hashing in pypy3")
 class TestForkAwareThreadLock(unittest.TestCase):
     # We recursively start processes.  Issue #17555 meant that the
     # after fork registry would get duplicate entries for the same
@@ -4016,7 +4008,6 @@ class TestForkAwareThreadLock(unittest.TestCase):
 # Check that non-forked child processes do not inherit unneeded fds/handles
 #
 
-@unittest.skipIf(True, "skip due to UserDict hashing in pypy3")
 class TestCloseFds(unittest.TestCase):
 
     def get_high_socket_fd(self):
@@ -4083,7 +4074,6 @@ class TestCloseFds(unittest.TestCase):
 # Issue #17097: EINTR should be ignored by recv(), send(), accept() etc
 #
 
-@unittest.skipIf(True, "skip due to UserDict hashing in pypy3")
 class TestIgnoreEINTR(unittest.TestCase):
 
     # Sending CONN_MAX_SIZE bytes into a multiprocess pipe must block
@@ -4151,7 +4141,6 @@ class TestIgnoreEINTR(unittest.TestCase):
         finally:
             conn.close()
 
-@unittest.skipIf(True, "skip due to UserDict hashing in pypy3")
 class TestStartMethod(unittest.TestCase):
     @classmethod
     def _check_context(cls, conn):
@@ -4222,7 +4211,6 @@ class TestStartMethod(unittest.TestCase):
             self.fail("failed spawning forkserver or grandchild")
 
 
-@unittest.skipIf(True, "skip due to UserDict hashing in pypy3")
 @unittest.skipIf(sys.platform == "win32",
                  "test semantics don't make sense on Windows")
 class TestSemaphoreTracker(unittest.TestCase):

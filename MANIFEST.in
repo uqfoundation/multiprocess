@@ -21,3 +21,4 @@ recursive-include pypy3.7 *
 include .*
 prune .git
 prune .coverage
+prune .eggs

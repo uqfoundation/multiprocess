@@ -817,4 +817,78 @@ diff Python-3.9.4/Lib/multiprocessing/managers.py Python-3.9.7/Lib/multiprocessi
 <                       incref=incref)
 ---
 >                       incref=incref, manager_owned=manager_owned)
-
+# ----------------------------------------------------------------------
+dude@borel>$ diff Python-3.9.7/Lib/test/_test_multiprocessing.py Python-3.9.9/Lib/test/_test_multiprocessing.py 
+3771a3772,3778
+>     def _new_shm_name(self, prefix):
+>         # Add a PID to the name of a POSIX shared memory object to allow
+>         # running multiprocessing tests (test_multiprocessing_fork,
+>         # test_multiprocessing_spawn, etc) in parallel.
+>         return prefix + str(os.getpid())
+> 
+>     @unittest.skipIf(sys.platform == "win32", "test is broken on Windows")
+>     @unittest.skipIf(True, "fails with is_dill(obj, child=True)")
+3773c3780,3781
+<         sms = shared_memory.SharedMemory('test01_tsmb', create=True, size=512)
+---
+>         name_tsmb = self._new_shm_name('test01_tsmb')
+>         sms = shared_memory.SharedMemory(name_tsmb, create=True, size=512)
+3777c3785
+<         self.assertEqual(sms.name, 'test01_tsmb')
+---
+>         self.assertEqual(sms.name, name_tsmb)
+3786c3794
+<         also_sms = shared_memory.SharedMemory('test01_tsmb')
+---
+>         also_sms = shared_memory.SharedMemory(name_tsmb)
+3791c3799
+<         same_sms = shared_memory.SharedMemory('test01_tsmb', size=20*sms.size)
+---
+>         same_sms = shared_memory.SharedMemory(name_tsmb, size=20*sms.size)
+3809c3817
+<             names = ['test01_fn', 'test02_fn']
+---
+>             names = [self._new_shm_name('test01_fn'), self._new_shm_name('test02_fn')]
+3830a3839,3844
+>             name_dblunlink = self._new_shm_name('test01_dblunlink')
+>             sms_uno = shared_memory.SharedMemory(
+>                 name_dblunlink,
+>                 create=True,
+>                 size=5000
+>             )
+3832,3837d3845
+<                 sms_uno = shared_memory.SharedMemory(
+<                     'test01_dblunlink',
+<                     create=True,
+<                     size=5000
+<                 )
+< 
+3841c3849
+<                     sms_duo = shared_memory.SharedMemory('test01_dblunlink')
+---
+>                     sms_duo = shared_memory.SharedMemory(name_dblunlink)
+3853c3861
+<                 'test01_tsmb',
+---
+>                 name_tsmb,
+3867c3875
+<             ok_if_exists_sms = OptionalAttachSharedMemory('test01_tsmb')
+---
+>             ok_if_exists_sms = OptionalAttachSharedMemory(name_tsmb)
+4055c4063,4064
+<         sl_copy = shared_memory.ShareableList(sl, name='test03_duplicate')
+---
+>         name_duplicate = self._new_shm_name('test03_duplicate')
+>         sl_copy = shared_memory.ShareableList(sl, name=name_duplicate)
+4058c4067
+<             self.assertEqual('test03_duplicate', sl_copy.shm.name)
+---
+>             self.assertEqual(name_duplicate, sl_copy.shm.name)
+4148a4158,4164
+>                 # Without this line it was raising warnings like:
+>                 #   UserWarning: resource_tracker:
+>                 #   There appear to be 1 leaked shared_memory
+>                 #   objects to clean up at shutdown
+>                 # See: https://bugs.python.org/issue45209
+>                 resource_tracker.unregister(f"/{name}", "shared_memory")
+> 

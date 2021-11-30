@@ -265,3 +265,13 @@ diff py2.7/multiprocess/tests/__init__.py pypy2.7/multiprocess/tests/__init__.py
 ---
 >     def test_noforkbomb(self):
 Only in pypy2.7/multiprocess/tests: mp_fork_bomb.py
+# ----------------------------------------------------------------------
+diff pypy2.7-v7.3.5-src/pypy/module/_multiprocessing/moduledef.py pypy2.7-v7.3.6-src/pypy/module/_multiprocessing/moduledef.py
+2d1
+< 
+22,23c21
+<     def init(self, space):
+<         MixedModule.init(self, space)
+---
+>     def startup(self, space):
+

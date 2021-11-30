@@ -38,9 +38,21 @@ diff py3.7/multiprocess/tests/__init__.py pypy3.7/multiprocess/tests/__init__.py
 521a522,523
 >         for i in range(3):
 >             gc.collect()
+1443a1446
+>     @unittest.skipIf(True, 'bad timeout in pypy3')
+1833a1837
+>     @unittest.skipIf(True, 'bad timeout in pypy3')
+1852a1857
+>     @unittest.skipIf(True, 'bad timeout in pypy3')
 2553a2556,2557
 >         for i in range(3):
 >             gc.collect()
+2688a2696
+>     @unittest.skipIf(True, 'bad exitcode in pypy3')
+2699a2708
+>     @unittest.skipIf(True, 'bad exitcode in pypy3')
+2707a2717
+>     @unittest.skipIf(True, 'bad exitcode in pypy3')
 2801c2805,2806
 <         self.assertRaises(Exception, queue.put, time.sleep)
 ---
@@ -57,6 +69,11 @@ diff py3.7/multiprocess/tests/__init__.py pypy3.7/multiprocess/tests/__init__.py
 >         import gc; gc.collect()
 3631a3642
 >     @test.support.cpython_only
+# ----------------------------------------------------------------------
+$ diff pypy3.7-v7.3.5-src/pypy/module/_multiprocessing pypy3.7-v7.3.7-src/pypy/module/_multiprocessing
+diff pypy3.7-v7.3.5-src/pypy/module/_multiprocessing/moduledef.py pypy3.7-v7.3.7-src/pypy/module/_multiprocessing/moduledef.py
+2d1
+< 
 # ----------------------------------------------------------------------
 NOTE: semaphore_tracker throws KeyError in multiprocess and multiprocessing
 

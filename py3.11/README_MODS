@@ -249,4 +249,24 @@ diff Python-3.11.0a1/Lib/test/_test_multiprocessing.py py3.11/multiprocess/tests
 <             'multiprocessing.shared_memory._make_filename') as mock_make_filename:
 ---
 >             'multiprocess.shared_memory._make_filename') as mock_make_filename:
-
+# ----------------------------------------------------------------------
+diff Python-3.11.0a1/Modules/_multiprocessing/multiprocessing.c Python-3.11.0a3/Modules/_multiprocessing/multiprocessing.c
+189,190c189
+< #if defined(MS_WINDOWS) ||                                              \
+<   (defined(HAVE_SEM_OPEN) && !defined(POSIX_SEMAPHORES_NOT_ENABLED))
+---
+> #ifdef HAVE_MP_SEMAPHORE
+diff Python-3.11.0a1/Modules/_multiprocessing/multiprocessing.h Python-3.11.0a3/Modules/_multiprocessing/multiprocessing.h
+23a24
+> #  define HAVE_MP_SEMAPHORE
+26a28
+> #    define HAVE_MP_SEMAPHORE
+diff Python-3.11.0a1/Modules/_multiprocessing/semaphore.c Python-3.11.0a3/Modules/_multiprocessing/semaphore.c
+11a12,13
+> #ifdef HAVE_MP_SEMAPHORE
+> 
+796a799,800
+> 
+> #endif // HAVE_MP_SEMAPHORE
+# ----------------------------------------------------------------------
+cp Python-3.11.0a3/Modules/_multiprocessing/clinic/* py3.11/Modules/_multiprocess/clinic

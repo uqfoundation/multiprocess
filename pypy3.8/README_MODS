@@ -1,0 +1,73 @@
+cp -rf py3.8/examples .
+cp -rf py3.8/doc .
+cp -f py3.8/index.html .
+cp -rf pypy3.8-v7.3.7-src/pypy/module/_multiprocessing module/_multiprocess
+cp -rf pypy3.8-v7.3.7-src/lib-python/3/multiprocessing multiprocess
+cp -rf pypy3.8-v7.3.7-src/lib-python/3/test/test_multiprocessing*py multiprocess/tests
+cp -rf pypy3.8-v7.3.7-src/lib-python/3/test/_test_multiprocessing.py multiprocess/tests/__init__.py
+cp -rf pypy3.8-v7.3.7-src/lib-python/3/test/mp_*py multiprocess/tests
+cp -f py3.8/multiprocess/tests/__main__.py multiprocess/tests
+cp -rf py3.8/_multiprocess _multiprocess
+# ----------------------------------------------------------------------
+EDIT multiprocess/__init__: __version__
+EDIT multiprocess: multiprocessing --> multiprocess
+EDIT multiprocess: pickle --> dill
+ADDED *args, **kwds for ForkingPickler in __init__ and dump
+EDIT time.monotonic --> getattr(time,'monotonic',time.time)
+EDIT multiprocess/dummy: multiprocessing --> multiprocess
+# ----------------------------------------------------------------------
+diff py3.8/multiprocess/managers.py pypy3.8/multiprocess/managers.py
+1177c1177
+<     '__setitem__', 'clear', 'copy', 'get', 'has_key', 'items',
+---
+>     '__setitem__', 'clear', 'copy', 'get', 'items',
+diff py3.8/multiprocess/synchronize.py pypy3.8/multiprocess/synchronize.py
+32c32
+< except ImportError:
+---
+> except (ImportError):
+# ----------------------------------------------------------------------
+EDIT multiprocess/tests: multiprocessing --> multiprocess
+# ----------------------------------------------------------------------
+diff py3.8/multiprocess/tests/__init__.py pypy3.8/multiprocess/tests/__init__.py
+572a573
+>     @unittest.skipIf(True, 'bad pipe in pypy3')
+615a617,618
+>         for i in range(3):
+>             gc.collect()
+1935a1939
+>     @unittest.skipIf(True, 'bad timeout in pypy3')
+2655a2660,2661
+>         for i in range(3):
+>             gc.collect()
+2952c2958,2959
+<         self.assertRaises(Exception, queue.put, time.sleep)
+---
+>         # Changed on PyPy: passing functions to xmlrpc is broken
+>         #self.assertRaises(Exception, queue.put, time.sleep)
+3589c3596
+<     def test_heap(self):
+---
+>     def _test_heap(self):
+3652a3660
+>     @test.support.cpython_only
+4124a4133,4134
+>         for i in range(3):
+>             gc.collect()
+4135a4146
+>         import gc; gc.collect()
+4141a4153
+>         import gc; gc.collect()
+4176a4189
+>     @test.support.cpython_only
+5030c5043
+<     def test_preload_resources(self):
+---
+>     def _test_preload_resources(self):
+# ----------------------------------------------------------------------
+NOTE: semaphore_tracker throws KeyError in multiprocess and multiprocessing
+
+Traceback (most recent call last):
+  File "multiprocess/resource_tracker.py", line 204, in main
+    cache[rtype].remove(name)
+KeyError: '/mp-v2zejd7s'

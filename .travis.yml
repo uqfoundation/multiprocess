@@ -21,13 +21,16 @@ matrix:
         - python: '3.9'
           env:
 
-        - python: '3.10-dev'
+        - python: '3.10'
           env:
-            - PYVERSION="3.10"
+
+        - python: '3.11-dev'
+          env:
+            - PYVERSION="3.11"
 
         - python: 'nightly'
           env:
-            - PYVERSION="3.10"
+            - PYVERSION="3.11"
 
         - python: 'pypy2.7-7.3.1' # most recent
           dist: xenial
@@ -47,6 +50,7 @@ matrix:
     allow_failures:
         - python: '2.7'
         - python: 'pypy2.7-7.3.1'
+        - python: '3.11-dev'
         - python: 'nightly'
     fast_finish: true
 
@@ -62,7 +66,7 @@ install:
     - python setup.py build && python setup.py install
 
 script:
-    - if [[ $PYVERSION != "3.10" ]]; then PYVERSION=$TRAVIS_PYTHON_VERSION ; fi
+    - if [[ $PYVERSION != "3.11" ]]; then PYVERSION=$TRAVIS_PYTHON_VERSION ; fi
     - if [[ $PYVERSION == "pypy2.7-7.3.1" ]]; then PYVERSION=py$PYPY_VERSION ; fi
     - if [[ $PYVERSION == "pypy3.6-7.3.3" ]]; then PYVERSION=py$PYPY_VERSION ; fi
     - if [[ $PYVERSION == "pypy3.7-7.3.5" ]]; then PYVERSION=py$PYPY_VERSION ; fi

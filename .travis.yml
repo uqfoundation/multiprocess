@@ -7,13 +7,10 @@ matrix:
           dist: bionic
           env:
 
-        - python: '3.6'
+        - python: '3.7'
           env:
             - COVERAGE="true"
             - DILL="true"
-
-        - python: '3.7'
-          env:
 
         - python: '3.8'
           env:
@@ -33,11 +30,6 @@ matrix:
           dist: xenial
           env:
             - PYPY_VERSION="2.7"
-
-        - python: 'pypy3.6-7.3.3' # most recent
-          dist: bionic
-          env:
-            - PYPY_VERSION="3.6"
 
         - python: 'pypy3.7-7.3.5' # most recent
           dist: bionic
@@ -64,7 +56,6 @@ install:
 script:
     - if [[ $PYVERSION != "3.11" ]]; then PYVERSION=$TRAVIS_PYTHON_VERSION ; fi
     - if [[ $PYVERSION == "pypy2.7-7.3.1" ]]; then PYVERSION=py$PYPY_VERSION ; fi
-    - if [[ $PYVERSION == "pypy3.6-7.3.3" ]]; then PYVERSION=py$PYPY_VERSION ; fi
     - if [[ $PYVERSION == "pypy3.7-7.3.5" ]]; then PYVERSION=py$PYPY_VERSION ; fi
     - cd py$PYVERSION
     - cp ../.coveragerc .coveragerc

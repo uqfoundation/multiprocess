@@ -311,7 +311,7 @@ Requirements
 
 ``multiprocess`` requires::
 
-    - ``python``, **version == 2.7** or **version >= 3.6**, or ``pypy``
+    - ``python`` (or ``pypy``), **version == 2.7** or **version >= 3.6**
     - ``dill``, **version >= 0.3.4**
 
 Optional requirements::
@@ -493,6 +493,7 @@ def run_setup(with_extensions=True):
             'Programming Language :: Python :: 3.8',
             'Programming Language :: Python :: 3.9',
             'Programming Language :: Python :: 3.10',
+            'Programming Language :: Python :: Implementation :: PyPy',
             'Topic :: Scientific/Engineering',
             'Topic :: Software Development',
         ],

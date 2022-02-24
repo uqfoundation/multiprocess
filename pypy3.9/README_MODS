@@ -1,0 +1,100 @@
+cp -rf pypy3.8/examples .
+cp -rf pypy3.8/doc .
+cp -f pypy3.8/index.html .
+cp -rf pypy3.8/module .
+cp -rf pypy3.9-v7.3.8-src/lib-python/3/multiprocessing multiprocess
+cp -rf pypy3.9-v7.3.8-src/lib-python/3/test/test_multiprocessing_*py multiprocess/tests
+cp -rf pypy3.9-v7.3.8-src/lib-python/3/test/_test_multiprocessing.py multiprocess/tests/__init__.py
+cp -rf pypy3.9-v7.3.8-src/lib-python/3/test/mp_*py multiprocess/tests/
+cp -rf pypy3.8/multiprocess/tests/__main__.py multiprocess/tests/
+cp -rf pypy3.8/_multiprocess .
+# ----------------------------------------------------------------------
+EDIT multiprocess/__init__: __version__
+EDIT time.monotonic --> getattr(time,'monotonic',time.time)
+EDIT "spawn" --> "fork" for darwin context
+EDIT multiprocess: multiprocessing --> multiprocess
+EDIT multiprocess: pickle --> dill
+ADDED *args, **kwds for ForkingPickler in __init__ and dump
+EDIT multiprocess/dummy: multiprocessing --> multiprocess
+EDIT multiprocess/tests: multiprocessing --> multiprocess
+# ----------------------------------------------------------------------
+diff py3.9/multiprocess/forkserver.py pypy3.9/multiprocess/forkserver.py
+240a241
+> 
+diff py3.9/multiprocess/managers.py pypy3.9/multiprocess/managers.py
+1154c1154
+<     '__setitem__', 'clear', 'copy', 'get', 'has_key', 'items',
+---
+>     '__setitem__', 'clear', 'copy', 'get', 'items',
+diff py3.9/multiprocess/shared_memory.py pypy3.9/multiprocess/shared_memory.py
+320,322d319
+<             _recreation_codes = [
+<                 self._extract_recreation_code(item) for item in sequence
+<             ]
+428c425
+<             offset = self._offset_data_start + self._allocated_offsets[position]    
+---
+>             offset = self._offset_data_start + self._allocated_offsets[position]
+diff py3.9/multiprocess/synchronize.py pypy3.9/multiprocess/synchronize.py
+32c32
+< except ImportError:
+---
+> except (ImportError):
+# ----------------------------------------------------------------------
+diff py3.9/multiprocess/tests/__init__.py pypy3.9/multiprocess/tests/__init__.py
+568a569
+>     @unittest.skipIf(True, 'bad pipe in pypy3')
+612c613,614
+<         gc.collect()  # For PyPy or other GCs.
+---
+>         for i in range(3):
+>             gc.collect()
+1940a1943
+>     @unittest.skipIf(True, 'bad timeout in pypy3')
+1959a1963
+>     @unittest.skipIf(True, 'bad timeout in pypy3')
+2671c2673,2674
+<         gc.collect()  # For PyPy or other GCs.
+---
+>         for i in range(3):
+>             gc.collect()
+2759a2763,2765
+>         sm = multiprocessing.get_start_method()
+>         if sm == 'fork' and sys.implementation.name == 'pypy':
+>             self.skipTest("race condition on PyPy")
+2968c2974,2975
+<         self.assertRaises(Exception, queue.put, time.sleep)
+---
+>         # Changed on PyPy: passing functions to xmlrpc is broken
+>         #self.assertRaises(Exception, queue.put, time.sleep)
+3608c3615
+<     def test_heap(self):
+---
+>     def _test_heap(self):
+3665a3673,3674
+>         support.gc_collect() # for PyPy and other GCs
+> 
+3671a3681
+>     @test.support.cpython_only
+3778c3788
+<         # running multiprocessing tests (test_multiprocessing_fork,
+---
+>         # running multiprocess tests (test_multiprocessing_fork,
+4191c4200,4201
+<         gc.collect()  # For PyPy or other GCs.
+---
+>         for i in range(3):
+>             gc.collect()
+4245a4256
+>     @test.support.cpython_only
+5101c5112
+<     def test_preload_resources(self):
+---
+>     def _test_preload_resources(self):
+# ----------------------------------------------------------------------
+NOTE: semaphore_tracker throws KeyError in multiprocess and multiprocessing
+
+Traceback (most recent call last):
+  File "multiprocess/resource_tracker.py", line 204, in main
+    cache[rtype].remove(name)
+KeyError: '/mp-v2zejd7s'

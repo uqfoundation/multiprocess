@@ -72,7 +72,7 @@ except ImportError:
 #
 
 # Timeout to wait until a process completes
-TIMEOUT = 60.0 # seconds
+TIMEOUT = 120.0 # seconds
 
 def latin(s):
     return s.encode('latin')

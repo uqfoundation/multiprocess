@@ -591,7 +591,7 @@ class _TestProcess(BaseTestCase):
                  for i in range(N)]
         for p in procs:
             p.start()
-        time.sleep(0.001)  # let the children start...
+        time.sleep(0.0002)  # let the children start...
         for p in procs:
             p.terminate()
         for p in procs:

@@ -480,6 +480,7 @@ def run_setup(with_extensions=True):
         package_dir={'': pkgdir},
 #       tests_require=tests_require,
 #       test_suite='nose.collector',
+        python_requires='>=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*, !=3.5.*, !=3.6.*',
         classifiers=[
             'Development Status :: 5 - Production/Stable',
             'Intended Audience :: Developers',

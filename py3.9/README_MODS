@@ -892,3 +892,12 @@ dude@borel>$ diff Python-3.9.7/Lib/test/_test_multiprocessing.py Python-3.9.9/Li
 >                 # See: https://bugs.python.org/issue45209
 >                 resource_tracker.unregister(f"/{name}", "shared_memory")
 > 
+# ----------------------------------------------------------------------
+$ diff Python-3.9.10/Lib/test/_test_multiprocessing.py Python-3.9.12/Lib/test/_test_multiprocessing.py 
+71a72,77
+> if support.check_sanitizer(address=True):
+>     # bpo-45200: Skip multiprocessing tests if Python is built with ASAN to
+>     # work around a libasan race condition: dead lock in pthread_create().
+>     raise unittest.SkipTest("libasan has a pthread_create() dead lock")
+> 
+> 

@@ -65,6 +65,67 @@ diff py3.8/multiprocess/tests/__init__.py pypy3.8/multiprocess/tests/__init__.py
 ---
 >     def _test_preload_resources(self):
 # ----------------------------------------------------------------------
+$ diff pypy3.8-v7.3.8-src/lib-python/3/test/_test_multiprocessing.py pypy3.8-v7.3.9-src/lib-python/3/test/_test_multiprocessing.py 
+3757a3758,3763
+>     def _new_shm_name(self, prefix):
+>         # Add a PID to the name of a POSIX shared memory object to allow
+>         # running multiprocessing tests (test_multiprocessing_fork,
+>         # test_multiprocessing_spawn, etc) in parallel.
+>         return prefix + str(os.getpid())
+> 
+3759c3765,3766
+<         sms = shared_memory.SharedMemory('test01_tsmb', create=True, size=512)
+---
+>         name_tsmb = self._new_shm_name('test01_tsmb')
+>         sms = shared_memory.SharedMemory(name_tsmb, create=True, size=512)
+3763c3770
+<         self.assertEqual(sms.name, 'test01_tsmb')
+---
+>         self.assertEqual(sms.name, name_tsmb)
+3772c3779
+<         also_sms = shared_memory.SharedMemory('test01_tsmb')
+---
+>         also_sms = shared_memory.SharedMemory(name_tsmb)
+3777c3784
+<         same_sms = shared_memory.SharedMemory('test01_tsmb', size=20*sms.size)
+---
+>         same_sms = shared_memory.SharedMemory(name_tsmb, size=20*sms.size)
+3787a3795,3800
+>             name_dblunlink = self._new_shm_name('test01_dblunlink')
+>             sms_uno = shared_memory.SharedMemory(
+>                 name_dblunlink,
+>                 create=True,
+>                 size=5000
+>             )
+3789,3794d3801
+<                 sms_uno = shared_memory.SharedMemory(
+<                     'test01_dblunlink',
+<                     create=True,
+<                     size=5000
+<                 )
+< 
+3798c3805
+<                     sms_duo = shared_memory.SharedMemory('test01_dblunlink')
+---
+>                     sms_duo = shared_memory.SharedMemory(name_dblunlink)
+3810c3817
+<                 'test01_tsmb',
+---
+>                 name_tsmb,
+3824c3831
+<             ok_if_exists_sms = OptionalAttachSharedMemory('test01_tsmb')
+---
+>             ok_if_exists_sms = OptionalAttachSharedMemory(name_tsmb)
+4012c4019,4020
+<         sl_copy = shared_memory.ShareableList(sl, name='test03_duplicate')
+---
+>         name_duplicate = self._new_shm_name('test03_duplicate')
+>         sl_copy = shared_memory.ShareableList(sl, name=name_duplicate)
+4015c4023
+<             self.assertEqual('test03_duplicate', sl_copy.shm.name)
+---
+>             self.assertEqual(name_duplicate, sl_copy.shm.name)
+# ----------------------------------------------------------------------
 NOTE: semaphore_tracker throws KeyError in multiprocess and multiprocessing
 
 Traceback (most recent call last):

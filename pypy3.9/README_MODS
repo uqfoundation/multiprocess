@@ -92,6 +92,14 @@ diff py3.9/multiprocess/tests/__init__.py pypy3.9/multiprocess/tests/__init__.py
 ---
 >     def _test_preload_resources(self):
 # ----------------------------------------------------------------------
+$ diff pypy3.9-v7.3.8-src/lib-python/3/test/_test_multiprocessing.py pypy3.9-v7.3.9-src/lib-python/3/test/_test_multiprocessing.py 
+71a72,77
+> if support.check_sanitizer(address=True):
+>     # bpo-45200: Skip multiprocessing tests if Python is built with ASAN to
+>     # work around a libasan race condition: dead lock in pthread_create().
+>     raise unittest.SkipTest("libasan has a pthread_create() dead lock")
+> 
+# ----------------------------------------------------------------------
 NOTE: semaphore_tracker throws KeyError in multiprocess and multiprocessing
 
 Traceback (most recent call last):

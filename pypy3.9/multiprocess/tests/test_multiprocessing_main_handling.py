@@ -37,6 +37,7 @@ test_source = """\
 
 import sys
 import time
+sys.path.extend({0})
 from multiprocess import Pool, set_start_method
 
 # We use this __main__ defined function in the map call below in order to
@@ -69,7 +70,7 @@ if __name__ == '__main__':
     print(start_method, "->", results)
 
     pool.join()
-"""
+""".format(sys.path)
 
 test_source_main_skipped_in_children = """\
 # __main__.py files have an implied "if __name__ == '__main__'" so
@@ -83,6 +84,7 @@ if __name__ != "__main__":
 
 import sys
 import time
+sys.path.extend({0})
 from multiprocess import Pool, set_start_method
 
 start_method = sys.argv[1]
@@ -102,7 +104,7 @@ results.sort()
 print(start_method, "->", results)
 
 pool.join()
-"""
+""".format(sys.path)
 
 # These helpers were copied from test_cmd_line_script & tweaked a bit...
 

@@ -574,7 +574,7 @@ class _TestProcess(BaseTestCase):
         if self.TYPE == 'threads':
             self.skipTest('test not appropriate for {}'.format(self.TYPE))
 
-        sm = multiprocessing.get_start_method()
+        sm = multiprocessing.get_start_method() #XXX: travis-ci
         N = (5 if sys.hexversion > 0x30809f0 else 3) if sm == 'spawn' else 100
 
         # Try to overwhelm the forkserver loop with events

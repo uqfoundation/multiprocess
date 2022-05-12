@@ -76,8 +76,8 @@ if hasattr(support,'check_sanitizer') and support.check_sanitizer(address=True):
     raise unittest.SkipTest("libasan has a pthread_create() dead lock")
 
 
-# Timeout to wait until a process completes
-TIMEOUT = 60.0 # seconds
+# Timeout to wait until a process completes #XXX: travis-ci
+TIMEOUT = (60.0 if sys.hexversion > 0x30909f0 else 120.0) # seconds
 
 def latin(s):
     return s.encode('latin')

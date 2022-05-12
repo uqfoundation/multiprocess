@@ -64,8 +64,8 @@ except ImportError:
 #
 #
 
-# Timeout to wait until a process completes
-TIMEOUT = 60.0 # seconds
+# Timeout to wait until a process completes #XXX: travis-ci
+TIMEOUT = (60.0 if sys.hexversion > 0x30709f0 else 120.0) # seconds
 
 def latin(s):
     return s.encode('latin')

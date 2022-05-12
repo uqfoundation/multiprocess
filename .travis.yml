@@ -52,7 +52,7 @@ before_install:
     - if [[ $DILL == "master" ]]; then pip install "https://github.com/uqfoundation/dill/archive/master.tar.gz"; fi
 
 install:
-    - python setup.py build && python setup.py install
+    - python -m pip install .
 
 script:
     - if [[ $PYVERSION != "3.11" ]]; then PYVERSION=$TRAVIS_PYTHON_VERSION ; fi

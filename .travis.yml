@@ -9,14 +9,14 @@ matrix:
 
         - python: '3.7'
           env:
-            - COVERAGE="true"
-            - DILL="true"
 
         - python: '3.8'
           env:
 
         - python: '3.9'
           env:
+            - COVERAGE="true"
+            - DILL="true"
 
         - python: '3.10'
           env:

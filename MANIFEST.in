@@ -1,24 +1,29 @@
-include *.txt
+include COPYING
 include LICENSE
 include README*
+include MANIFEST.in
+include pyproject.toml
 include tox.ini
-recursive-include py2.5 *
-recursive-include py2.6 *
 recursive-include py2.7 *
-recursive-include py3.1 *
 recursive-include py3.10 *
-recursive-include py3.2 *
-recursive-include py3.3 *
-recursive-include py3.4 *
-recursive-include py3.5 *
-recursive-include py3.6 *
+recursive-include py3.11 *
 recursive-include py3.7 *
 recursive-include py3.8 *
 recursive-include py3.9 *
 recursive-include pypy2.7 *
-recursive-include pypy3.6 *
 recursive-include pypy3.7 *
+recursive-include pypy3.8 *
+recursive-include pypy3.9 *
 include .*
 prune .git
 prune .coverage
 prune .eggs
+prune py2.5
+prune py2.6
+prune py3.1
+prune py3.2
+prune py3.3
+prune py3.4
+prune py3.5
+prune py3.6
+prune pypy3.6

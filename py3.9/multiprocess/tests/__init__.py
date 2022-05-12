@@ -577,7 +577,7 @@ class _TestProcess(BaseTestCase):
             self.skipTest('test not appropriate for {}'.format(self.TYPE))
 
         sm = multiprocessing.get_start_method()
-        N = 5 if sm == 'spawn' else 100
+        N = (5 if sys.hexversion > 0x30909f0 else 3) if sm == 'spawn' else 100
 
         # Try to overwhelm the forkserver loop with events
         procs = [self.Process(target=self._test_sleep, args=(0.01,))

@@ -72,7 +72,7 @@ except ImportError:
 #
 
 # Timeout to wait until a process completes #XXX: travis-ci
-TIMEOUT = (60.0 if sys.hexversion > 0x30809f0 else 120.0) # seconds
+TIMEOUT = (60.0 if sys.hexversion > 0x30809f0 else 90.0) # seconds
 
 def latin(s):
     return s.encode('latin')
@@ -575,7 +575,7 @@ class _TestProcess(BaseTestCase):
             self.skipTest('test not appropriate for {}'.format(self.TYPE))
 
         sm = multiprocessing.get_start_method() #XXX: travis-ci
-        N = (5 if sys.hexversion > 0x30809f0 else 3) if sm == 'spawn' else 100
+        N = (5 if sys.hexversion > 0x30809f0 else 1) if sm == 'spawn' else 100
 
         # Try to overwhelm the forkserver loop with events
         procs = [self.Process(target=self._test_sleep, args=(0.01,))

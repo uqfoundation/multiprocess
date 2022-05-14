@@ -20,3 +20,16 @@ coverage:
         target: auto
         threshold: 1%
  
+fixes:
+  # reduces pip-installed path to git root
+  # does not strip multiprocess-* from setup-installed path
+  - "*/python2.7/site-packages/::py2.7/"
+  - "*/python3.7/site-packages/::py3.7/"
+  - "*/python3.8/site-packages/::py3.8/"
+  - "*/python3.9/site-packages/::py3.9/"
+  - "*/python3.10/site-packages/::py3.10/"
+  - "*/python3.11/site-packages/::py3.11/"
+  - "*/pypy2.7-*/site-packages/::pypy2.7/"
+  - "*/pypy3.7-*/site-packages/::pypy3.7/"
+  - "*/pypy3.8-*/site-packages/::pypy3.8/"
+  - "*/pypy3.9-*/site-packages/::pypy3.9/"

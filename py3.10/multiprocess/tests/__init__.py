@@ -80,6 +80,9 @@ if hasattr(support,'check_sanitizer') and support.check_sanitizer(address=True):
     raise unittest.SkipTest("libasan has a pthread_create() dead lock")
 
 
+# Timeout to wait until a process completes #XXX: travis-ci
+TIMEOUT = (90.0 if os.environ.get('COVERAGE') else 60.0) # seconds
+
 def latin(s):
     return s.encode('latin')
 
@@ -93,7 +96,7 @@ def close_queue(queue):
 def join_process(process):
     # Since multiprocessing.Process has the same API than threading.Thread
     # (join() and is_alive(), the support function can be reused
-    threading_helper.join_thread(process)
+    threading_helper.join_thread(process, timeout=TIMEOUT)
 
 
 if os.name == "posix":
@@ -581,7 +584,8 @@ class _TestProcess(BaseTestCase):
             self.skipTest('test not appropriate for {}'.format(self.TYPE))
 
         sm = multiprocessing.get_start_method()
-        N = 5 if sm == 'spawn' else 100
+        travis = os.environ.get('COVERAGE') #XXX: travis-ci
+        N = (1 if travis else 5) if sm == 'spawn' else 100
 
         # Try to overwhelm the forkserver loop with events
         procs = [self.Process(target=self._test_sleep, args=(0.01,))

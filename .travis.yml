@@ -9,9 +9,11 @@ matrix:
 
         - python: '3.7'
           env:
+            - COVERAGE="true"
 
         - python: '3.8'
           env:
+            - COVERAGE="true"
 
         - python: '3.9'
           env:

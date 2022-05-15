@@ -1,10 +1,10 @@
 [run]
 # source = multiprocess
 include =
-    */_multiprocess/*
     */multiprocess/*
     */multiprocess/dummy/*
 omit = 
+    */_multiprocess/*
     */examples/*
     */multiprocess/tests/*
 branch = true
@@ -17,16 +17,15 @@ branch = true
 
 [paths]
 source =
-    _multiprocess
     multiprocess
     multiprocess/dummy
-    */site-packages/multiprocess*/_multiprocess
-    */site-packages/multiprocess*/multiprocess
-    */site-packages/multiprocess*/multiprocess/dummy
+    */site-packages/multiprocess
+    */site-packages/multiprocess/dummy
+    */site-packages/multiprocess-*/multiprocess
+    */site-packages/multiprocess-*/multiprocess/dummy
 
 [report]
 include =
-    */_multiprocess/*
     */multiprocess/*
     */multiprocess/dummy/*
 exclude_lines =

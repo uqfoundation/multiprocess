@@ -2,8 +2,9 @@
 # source = multiprocess
 include =
     */multiprocess/*
-    */_multiprocess/*
+    */multiprocess/dummy/*
 omit = 
+    */_multiprocess/*
     */examples/*
     */multiprocess/tests/*
 branch = true
@@ -14,10 +15,19 @@ branch = true
 # data_file = ./.coverage
 # debug = trace
 
+[paths]
+source =
+    multiprocess
+    multiprocess/dummy
+    */site-packages/multiprocess
+    */site-packages/multiprocess/dummy
+    */site-packages/multiprocess-*/multiprocess
+    */site-packages/multiprocess-*/multiprocess/dummy
+
 [report]
 include =
     */multiprocess/*
-    */_multiprocess/*
+    */multiprocess/dummy/*
 exclude_lines =
     pragma: no cover
     raise NotImplementedError

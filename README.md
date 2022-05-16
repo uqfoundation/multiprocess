@@ -4,37 +4,24 @@ better multiprocessing and multithreading in python
 
 About Multiprocess
 ------------------
-``multiprocess`` is a fork of ``multiprocessing``, and is developed as part of ``pathos``: https://github.com/uqfoundation/pathos
+``multiprocess`` is a fork of ``multiprocessing``. ``multiprocess`` extends ``multiprocessing`` to provide enhanced serialization, using `dill`. ``multiprocess`` leverages ``multiprocessing`` to support the spawning of processes using the API of the python standard library's ``threading`` module. ``multiprocessing`` has been distributed as part of the standard library since python 2.6.
 
-``multiprocessing`` is a package for the Python language which supports the
-spawning of processes using the API of the standard library's
-``threading`` module. ``multiprocessing`` has been distributed in the standard
-library since python 2.6.
-
-Features:
-
-* Objects can be transferred between processes using pipes or
-  multi-producer/multi-consumer queues.
-
-* Objects can be shared between processes using a server process or
-  (for simple data) shared memory.
-
-* Equivalents of all the synchronization primitives in ``threading``
-  are available.
-
-* A ``Pool`` class makes it easy to submit tasks to a pool of worker
-  processes.
-
-
-``multiprocess`` is part of ``pathos``, a python framework for heterogeneous computing.
+``multiprocess`` is part of ``pathos``,  a python framework for heterogeneous computing.
 ``multiprocess`` is in active development, so any user feedback, bug reports, comments,
 or suggestions are highly appreciated.  A list of issues is located at https://github.com/uqfoundation/multiprocess/issues, with a legacy list maintained at https://uqfoundation.github.io/project/pathos/query.
 
-NOTE: A C compiler is required to build the included extension module. For python 3.3 and above, a C compiler is suggested, but not required.
 
+Major Features
+--------------
+``multiprocess`` enables:
 
-Major Changes
--------------
+* objects to be transferred between processes using pipes or multi-producer/multi-consumer queues
+* objects to be shared between processes using a server process or (for simple data) shared memory
+
+``multiprocess`` provides:
+
+* equivalents of all the synchronization primitives in ``threading``
+* a ``Pool`` class to facilitate submitting tasks to worker processes
 * enhanced serialization, using ``dill``
 
 
@@ -43,12 +30,10 @@ Current Release
 [![Conda Downloads](https://img.shields.io/conda/dn/conda-forge/multiprocess?color=blue&label=conda%20downloads)](https://anaconda.org/conda-forge/multiprocess)
 [![Stack Overflow](https://img.shields.io/badge/stackoverflow-get%20help-black.svg)](https://stackoverflow.com/questions/tagged/multiprocess)
 ---------------
-This version a fork of ``multiprocessing-0.70a1``.
-
-The latest released version of ``multiprocess`` is available from::
+The latest released version of ``multiprocess`` is available from:
     https://pypi.org/project/multiprocess
 
-``multiprocessing`` is distributed under a BSD license.
+``multiprocess`` is distributed under a 3-clause BSD license, and is a fork of ``multiprocessing``.
 
 
 Development Version
@@ -59,6 +44,25 @@ You can get the latest development version with all the shiny new features at::
     https://github.com/uqfoundation
 
 If you have a new contribution, please submit a pull request.
+
+
+Installation
+------------
+``multiprocess`` can be installed with ``pip``::
+
+    $ pip install multiprocess
+
+For python 2, a C compiler is required to build the included extension module from source. Python 3 and binary installs do not require a C compiler.
+
+
+Requirements
+------------
+``multiprocess`` requires:
+
+* ``python`` (or ``pypy``), **==2.7** or **>=3.7**
+* ``setuptools``, **>=42**
+* ``wheel``, **>=0.1**
+* ``dill``, **>=0.3.4**
 
 
 Basic Usage
@@ -129,8 +133,7 @@ http://multiprocess.rtfd.io. See ``multiprocess.examples`` for a set of example
 scripts. You can also run the test suite with ``python -m multiprocess.tests``.
 Please feel free to submit a ticket on github, or ask a question on
 stackoverflow (**@Mike McKerns**).  If you would like to share how you use
-``multiprocess`` in your work, please post send an email
-(to **mmckerns at uqfoundation dot org**).
+``multiprocess`` in your work, please send an email (to **mmckerns at uqfoundation dot org**).
 
 
 Citation

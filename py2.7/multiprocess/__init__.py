@@ -455,3 +455,15 @@ if sys.platform == 'win32':
         set_executable(executable)
 
     __all__ += ['set_executable']
+
+
+def license():
+    """print license"""
+    print (__license__)
+    return
+
+def citation():
+    """print citation"""
+    print (__doc__[-491:-118])
+    return
+

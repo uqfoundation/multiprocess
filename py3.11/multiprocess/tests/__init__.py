@@ -5748,7 +5748,8 @@ class MiscTestCase(unittest.TestCase):
     def test__all__(self):
         # Just make sure names in not_exported are excluded
         support.check__all__(self, multiprocessing, extra=multiprocessing.__all__,
-                             not_exported=['SUBDEBUG', 'SUBWARNING'])
+                             not_exported=['SUBDEBUG', 'SUBWARNING',
+                                           'license', 'citation'])
 
 
 #

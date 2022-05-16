@@ -5622,7 +5622,10 @@ class MiscTestCase(unittest.TestCase):
     def test__all__(self):
         # Just make sure names in blacklist are excluded
         support.check__all__(self, multiprocessing, extra=multiprocessing.__all__,
-                             blacklist=['SUBDEBUG', 'SUBWARNING'])
+                             blacklist=['SUBDEBUG', 'SUBWARNING',
+                                        'license', 'citation'])
+
+
 #
 # Mixins
 #

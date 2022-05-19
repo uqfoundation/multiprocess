@@ -257,7 +257,7 @@ class BinaryDistribution(Distribution):
         return True
 
 # define dependencies
-dill_version = 'dill>=0.3.4'
+dill_version = 'dill>=0.3.5'
 
 def run_setup(with_extensions=True):
     extensions = []

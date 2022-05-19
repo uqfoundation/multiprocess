@@ -68,13 +68,13 @@ try:
     for line in meta_fh:
         if LONG_DOC:
             if line.startswith(DOC_STOP):
-                LONG_DOC += DOC_STOP.rstrip()
+                LONG_DOC = LONG_DOC.strip().strip("'").strip('"').lstrip()
                 break
             else:
                 LONG_DOC += line
         elif line.startswith('__doc__'):
             DOC_STOP = line.split(' = ')[-1]
-            LONG_DOC += DOC_STOP
+            LONG_DOC = "\n"
     meta['LONG_DOC'] = LONG_DOC
 finally:
     meta_fh.close()
@@ -290,6 +290,11 @@ def run_setup(with_extensions=True):
         platforms = ['Linux', 'Windows', 'Mac'],
         url='https://github.com/uqfoundation/multiprocess',
         download_url = 'https://pypi.org/project/multiprocess/#files',
+        project_urls = {
+            'Documentation':'http://multiprocess.rtfd.io',
+            'Source Code':'https://github.com/uqfoundation/multiprocess',
+            'Bug Tracker':'https://github.com/uqfoundation/multiprocess/issues',
+        },
         python_requires='>=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*, !=3.5.*, !=3.6.*',
         classifiers=[
             'Development Status :: 5 - Production/Stable',
@@ -303,6 +308,7 @@ def run_setup(with_extensions=True):
             'Programming Language :: Python :: 3.8',
             'Programming Language :: Python :: 3.9',
             'Programming Language :: Python :: 3.10',
+            'Programming Language :: Python :: Implementation :: CPython',
             'Programming Language :: Python :: Implementation :: PyPy',
             'Topic :: Scientific/Engineering',
             'Topic :: Software Development',

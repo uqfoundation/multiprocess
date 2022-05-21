@@ -312,7 +312,7 @@ diff Python-3.11.0a4/Lib/multiprocessing/process.py Python-3.11.0a5/Lib/multipro
 429a430
 > del name, signum
 # ----------------------------------------------------------------------
-$ diff Python-3.11.0a5/Lib/test/_test_multiprocessing.py Python-3.11.0a7/Lib/test/_test_multiprocessing.py 
+diff Python-3.11.0a5/Lib/test/_test_multiprocessing.py Python-3.11.0a7/Lib/test/_test_multiprocessing.py 
 75a76,81
 > if support.check_sanitizer(address=True):
 >     # bpo-45200: Skip multiprocessing tests if Python is built with ASAN to
@@ -345,3 +345,116 @@ $ diff Python-3.11.0a5/Lib/test/_test_multiprocessing.py Python-3.11.0a7/Lib/tes
 >     def _test_args(cls, q, arg):
 >         q.put(arg)
 > 
+# ----------------------------------------------------------------------
+diff Python-3.11.0a7/Lib/multiprocessing/connection.py Python-3.11.0b1/Lib/multiprocessing/connection.py
+191d190
+<         # HACK for byte-indexing of non-bytewise buffers (e.g. array.array)
+193,194c192,193
+<             m = memoryview(bytes(m))
+<         n = len(m)
+---
+>             m = m.cast('B')
+>         n = m.nbytes
+Common subdirectories: Python-3.11.0a7/Lib/multiprocessing/dummy and Python-3.11.0b1/Lib/multiprocessing/dummy
+diff Python-3.11.0a7/Lib/multiprocessing/managers.py Python-3.11.0b1/Lib/multiprocessing/managers.py
+500c500
+<                  ctx=None):
+---
+>                  ctx=None, *, shutdown_timeout=1.0):
+509a510
+>         self._shutdown_timeout = shutdown_timeout
+573,574c574,575
+<             args=(self._process, self._address, self._authkey,
+<                   self._state, self._Client),
+---
+>             args=(self._process, self._address, self._authkey, self._state,
+>                   self._Client, self._shutdown_timeout),
+659c660,661
+<     def _finalize_manager(process, address, authkey, state, _Client):
+---
+>     def _finalize_manager(process, address, authkey, state, _Client,
+>                           shutdown_timeout):
+674c676
+<             process.join(timeout=1.0)
+---
+>             process.join(timeout=shutdown_timeout)
+680c682
+<                     process.join(timeout=0.1)
+---
+>                     process.join(timeout=shutdown_timeout)
+682a685,686
+>                         process.kill()
+>                         process.join()
+diff Python-3.11.0a7/Lib/multiprocessing/queues.py Python-3.11.0b1/Lib/multiprocessing/queues.py
+142,148c142,145
+<         try:
+<             self._reader.close()
+<         finally:
+<             close = self._close
+<             if close:
+<                 self._close = None
+<                 close()
+---
+>         close = self._close
+>         if close:
+>             self._close = None
+>             close()
+172,173c169,171
+<                   self._wlock, self._writer.close, self._ignore_epipe,
+<                   self._on_queue_feeder_error, self._sem),
+---
+>                   self._wlock, self._reader.close, self._writer.close,
+>                   self._ignore_epipe, self._on_queue_feeder_error,
+>                   self._sem),
+214,215c212,213
+<     def _feed(buffer, notempty, send_bytes, writelock, close, ignore_epipe,
+<               onerror, queue_sem):
+---
+>     def _feed(buffer, notempty, send_bytes, writelock, reader_close,
+>               writer_close, ignore_epipe, onerror, queue_sem):
+241c239,240
+<                             close()
+---
+>                             reader_close()
+>                             writer_close()
+diff Python-3.11.0a7/Lib/multiprocessing/spawn.py Python-3.11.0b1/Lib/multiprocessing/spawn.py
+36,40d35
+< if WINSERVICE:
+<     _python_exe = os.path.join(sys.exec_prefix, 'python.exe')
+< else:
+<     _python_exe = sys.executable
+< 
+43c38,41
+<     _python_exe = exe
+---
+>     if sys.platform == 'win32':
+>         _python_exe = os.fsdecode(exe)
+>     else:
+>         _python_exe = os.fsencode(exe)
+47a46,50
+> if WINSERVICE:
+>     set_executable(os.path.join(sys.exec_prefix, 'python.exe'))
+> else:
+>     set_executable(sys.executable)
+> 
+89c92,93
+<         return [_python_exe] + opts + ['-c', prog, '--multiprocessing-fork']
+---
+>         exe = get_executable()
+>         return [exe] + opts + ['-c', prog, '--multiprocessing-fork']
+diff Python-3.11.0a7/Lib/multiprocessing/util.py Python-3.11.0b1/Lib/multiprocessing/util.py
+123c123
+<     raise TypeError('address type of {address!r} unrecognized')
+---
+>     raise TypeError(f'address type of {address!r} unrecognized')
+448a449
+>     import subprocess
+453c454
+<             args, [os.fsencode(path)], True, passfds, None, None,
+---
+>             args, [path], True, passfds, None, None,
+455c456,457
+<             False, False, None, None, None, -1, None)
+---
+>             False, False, -1, None, None, None, -1, None,
+>             subprocess._USE_VFORK)

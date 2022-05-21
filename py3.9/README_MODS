@@ -901,3 +901,46 @@ $ diff Python-3.9.10/Lib/test/_test_multiprocessing.py Python-3.9.12/Lib/test/_t
 >     raise unittest.SkipTest("libasan has a pthread_create() dead lock")
 > 
 > 
+# ----------------------------------------------------------------------
+diff Python-3.9.12/Lib/multiprocessing/managers.py Python-3.9.13/Lib/multiprocessing/managers.py
+672c672
+<                     process.join(timeout=0.1)
+---
+>                     process.join(timeout=1.0)
+diff Python-3.9.12/Lib/multiprocessing/queues.py Python-3.9.13/Lib/multiprocessing/queues.py
+142,148c142,145
+<         try:
+<             self._reader.close()
+<         finally:
+<             close = self._close
+<             if close:
+<                 self._close = None
+<                 close()
+---
+>         close = self._close
+>         if close:
+>             self._close = None
+>             close()
+172,173c169,171
+<                   self._wlock, self._writer.close, self._ignore_epipe,
+<                   self._on_queue_feeder_error, self._sem),
+---
+>                   self._wlock, self._reader.close, self._writer.close,
+>                   self._ignore_epipe, self._on_queue_feeder_error,
+>                   self._sem),
+214,215c212,213
+<     def _feed(buffer, notempty, send_bytes, writelock, close, ignore_epipe,
+<               onerror, queue_sem):
+---
+>     def _feed(buffer, notempty, send_bytes, writelock, reader_close,
+>               writer_close, ignore_epipe, onerror, queue_sem):
+241c239,240
+<                             close()
+---
+>                             reader_close()
+>                             writer_close()
+diff Python-3.9.12/Lib/multiprocessing/util.py Python-3.9.13/Lib/multiprocessing/util.py
+123c123
+<     raise TypeError('address type of {address!r} unrecognized')
+---
+>     raise TypeError(f'address type of {address!r} unrecognized')

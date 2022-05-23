@@ -14,7 +14,7 @@
 # Forked by Mike McKerns, to support enhanced serialization.
 
 # author, version, license, and long description
-__version__ = '0.70.13.dev0'
+__version__ = '0.70.13'
 __author__ = 'Mike McKerns'
 
 __doc__ = """

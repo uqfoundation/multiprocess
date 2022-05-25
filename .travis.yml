@@ -3,10 +3,6 @@ language: python
 
 matrix:
     include:
-        - python: '2.7'
-          dist: bionic
-          env:
-
         - python: '3.7'
           env:
             - COVERAGE="true"
@@ -28,19 +24,12 @@ matrix:
             - PYVERSION="3.11"
             - DILL="master"
 
-        - python: 'pypy2.7-7.3.1' # most recent
-          dist: xenial
-          env:
-            - PYPY_VERSION="2.7"
-
         - python: 'pypy3.7-7.3.5' # most recent
           dist: bionic
           env:
             - PYPY_VERSION="3.7"
 
     allow_failures:
-        - python: '2.7'
-        - python: 'pypy2.7-7.3.1'
         - python: '3.11-dev'
     fast_finish: true
 
@@ -58,7 +47,6 @@ install:
 
 script:
     - if [[ $PYVERSION != "3.11" ]]; then PYVERSION=$TRAVIS_PYTHON_VERSION ; fi
-    - if [[ $PYVERSION == "pypy2.7-7.3.1" ]]; then PYVERSION=py$PYPY_VERSION ; fi
     - if [[ $PYVERSION == "pypy3.7-7.3.5" ]]; then PYVERSION=py$PYPY_VERSION ; fi
     - cd py$PYVERSION #XXX: bash script may require tests run from root
     - if [[ $COVERAGE == "true" ]]; then cp ../.coveragerc .coveragerc ; fi

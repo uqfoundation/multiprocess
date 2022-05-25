@@ -16,18 +16,12 @@ import os
 import sys
 import glob
 # drop support for older python
-unsupported = None
-if sys.version_info < (2, 7):
-    unsupported = 'Versions of Python before 2.7 are not supported'
-elif (3, 0) <= sys.version_info < (3, 7):
+if sys.version_info < (3, 7):
     unsupported = 'Versions of Python before 3.7 are not supported'
-if unsupported:
     raise ValueError(unsupported)
 
-is_jython = sys.platform.startswith('java')
+#is_jython = sys.platform.startswith('java')
 is_pypy = hasattr(sys, 'pypy_version_info')
-is_py3k = sys.version_info[0] == 3
-lt_py33 = sys.version_info < (3, 3)
 
 # the code is version-specific, so get the appropriate root directory
 root = 'pypy' if is_pypy else 'py'
@@ -226,23 +220,12 @@ if sys.platform == 'win32':
         '%s/%s.c' % (srcdir, pkgname),
         '%s/semaphore.c' % srcdir,
     ]
-    if lt_py33:
-        multiprocessing_srcs += [
-            '%s/pipe_connection.c' % srcdir,
-            '%s/socket_connection.c' % srcdir,
-            '%s/win32_functions.c' % srcdir,
-        ]
 else:
     multiprocessing_srcs = [ '%s/%s.c' % (srcdir, pkgname) ]
-    if lt_py33:
-        multiprocessing_srcs.append('%s/socket_connection.c' % srcdir)
-
     if macros.get('HAVE_SEM_OPEN', False):
         multiprocessing_srcs.append('%s/semaphore.c' % srcdir)
 
 #meta['long_doc'] = open(os.path.join(HERE, 'README.md')).read()
-#if not is_py3k:
-#    meta['long_doc'] = meta['long_doc'].encode('ascii', 'replace')
 
 # -*- Installation -*-
 def _is_build_command(argv=sys.argv, cmds=('install', 'build', 'bdist')):
@@ -295,14 +278,12 @@ def run_setup(with_extensions=True):
             'Source Code':'https://github.com/uqfoundation/multiprocess',
             'Bug Tracker':'https://github.com/uqfoundation/multiprocess/issues',
         },
-        python_requires='>=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*, !=3.5.*, !=3.6.*',
+        python_requires = '>=3.7',
         classifiers=[
             'Development Status :: 5 - Production/Stable',
             'Intended Audience :: Developers',
             'Intended Audience :: Science/Research',
             'License :: OSI Approved :: BSD License',
-            'Programming Language :: Python :: 2',
-            'Programming Language :: Python :: 2.7',
             'Programming Language :: Python :: 3',
             'Programming Language :: Python :: 3.7',
             'Programming Language :: Python :: 3.8',
@@ -332,15 +313,12 @@ def run_setup(with_extensions=True):
     setup(**setup_kwds)
 
 try:
-    run_setup(not (is_jython or is_pypy) and lt_py33)
+    run_setup(False)
 except BaseException:
     if _is_build_command(sys.argv): #XXX: skip WARNING if is_pypy?
         import traceback
         msg = BUILD_WARNING % '\n'.join(traceback.format_stack())
-        if not is_py3k:
-            exec('print >> sys.stderr, msg')
-        else:
-            exec('print(msg, file=sys.stderr)')
+        exec('print(msg, file=sys.stderr)')
         run_setup(False)
     else:
         raise

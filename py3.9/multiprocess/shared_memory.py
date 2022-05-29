@@ -317,9 +317,6 @@ class ShareableList:
             _recreation_codes = [
                 self._extract_recreation_code(item) for item in sequence
             ]
-            _recreation_codes = [
-                self._extract_recreation_code(item) for item in sequence
-            ]
             requested_size = struct.calcsize(
                 "q" + self._format_size_metainfo +
                 "".join(_formats) +
@@ -425,7 +422,7 @@ class ShareableList:
     def __getitem__(self, position):
         position = position if position >= 0 else position + self._list_len
         try:
-            offset = self._offset_data_start + self._allocated_offsets[position]    
+            offset = self._offset_data_start + self._allocated_offsets[position]
             (v,) = struct.unpack_from(
                 self._get_packing_format(position),
                 self.shm.buf,

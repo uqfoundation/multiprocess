@@ -286,7 +286,7 @@ Miscellaneous
         `NotImplementedError`.
 
     `currentProcess()`
-        An analogue of `threading.currentThread()`.
+        An analogue of `threading.current_thread()`.
 
         Returns the object corresponding to the current process.
 

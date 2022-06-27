@@ -95,7 +95,7 @@ from distutils.errors import CCompilerError, DistutilsExecError, \
                                              DistutilsPlatformError
 
 ext_errors = (CCompilerError, DistutilsExecError, DistutilsPlatformError)
-if sys.platform == 'win32' and sys.version_info >= (2, 6):
+if sys.platform == 'win32':
     # distutils.msvc9compiler can raise IOError if the compiler is missing
     ext_errors += (IOError, )
 

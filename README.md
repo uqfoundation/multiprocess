@@ -42,7 +42,7 @@ Development Version
 [![Build Status](https://travis-ci.com/uqfoundation/multiprocess.svg?label=build&logo=travis&branch=master)](https://travis-ci.com/github/uqfoundation/multiprocess)
 [![codecov](https://codecov.io/gh/uqfoundation/multiprocess/branch/master/graph/badge.svg)](https://codecov.io/gh/uqfoundation/multiprocess)
 -------------------
-You can get the latest development version with all the shiny new features at::
+You can get the latest development version with all the shiny new features at:
     https://github.com/uqfoundation
 
 If you have a new contribution, please submit a pull request.

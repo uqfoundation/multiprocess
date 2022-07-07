@@ -4,6 +4,7 @@ include README*
 include MANIFEST.in
 include pyproject.toml
 include tox.ini
+include version.py
 recursive-include py3.10 *
 recursive-include py3.11 *
 recursive-include py3.7 *

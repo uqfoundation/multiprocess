@@ -72,6 +72,7 @@ def write_info_file(dirpath, modulename, **info):
     with open(infofile, 'w') as fh:
         fh.write(header)
         if doc is not None: fh.write("'''%s'''\n\n" % doc)
+        fh.write("__all__ = []\n") # needed for test_import
         if version is not None: fh.write("__version__ = %r\n" % version)
         if author is not None: fh.write("__author__ = %r\n\n" % author)
         if license is not None: fh.write("__license__ = '''\n%s'''\n" % license)

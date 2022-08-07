@@ -738,4 +738,123 @@ diff Python-3.10.4/Lib/multiprocessing/util.py Python-3.10.5/Lib/multiprocessing
 <     raise TypeError('address type of {address!r} unrecognized')
 ---
 >     raise TypeError(f'address type of {address!r} unrecognized')
+# ----------------------------------------------------------------------
+diff Python-3.10.5/Modules/_multiprocessing/semaphore.c Python-3.10.6/Modules/_multiprocessing/semaphore.c
+455,457c455
+<     SemLockObject *self;
+< 
+<     self = PyObject_New(SemLockObject, type);
+---
+>     SemLockObject *self = (SemLockObject *)type->tp_alloc(type, 0);
+574c572
+<     PyObject_Free(self);
+---
+>     Py_TYPE(self)->tp_free((PyObject*)self);
+diff Python-3.10.5/Lib/multiprocessing/context.py Python-3.10.6/Lib/multiprocessing/context.py
+225a226,229
+>     @staticmethod
+>     def _after_fork():
+>         return _default_context.get_context().Process._after_fork()
+> 
+285a290,294
+>         @staticmethod
+>         def _after_fork():
+>             # process is spawned, nothing to do
+>             pass
+> 
+328a338,342
+>         @staticmethod
+>         def _after_fork():
+>             # process is spawned, nothing to do
+>             pass
+> 
+diff Python-3.10.5/Lib/multiprocessing/pool.py Python-3.10.6/Lib/multiprocessing/pool.py
+205a206,208
+>         if maxtasksperchild is not None:
+>             if not isinstance(maxtasksperchild, int) or maxtasksperchild <= 0:
+>                 raise ValueError("maxtasksperchild must be a positive int or None")
+diff Python-3.10.5/Lib/multiprocessing/process.py Python-3.10.6/Lib/multiprocessing/process.py
+307,308c307
+<                 util._finalizer_registry.clear()
+<                 util._run_after_forkers()
+---
+>                 self._after_fork()
+338a338,344
+>     @staticmethod
+>     def _after_fork():
+>         from . import util
+>         util._finalizer_registry.clear()
+>         util._run_after_forkers()
+> 
+> 
+diff Python-3.10.5/Lib/multiprocessing/shared_memory.py Python-3.10.6/Lib/multiprocessing/shared_memory.py
+25a26
+> from . import resource_tracker
+119,120c120
+<             from .resource_tracker import register
+<             register(self._name, "shared_memory")
+---
+>             resource_tracker.register(self._name, "shared_memory")
+240d239
+<             from .resource_tracker import unregister
+242c241
+<             unregister(self._name, "shared_memory")
+---
+>             resource_tracker.unregister(self._name, "shared_memory")
+$ diff Python-3.10.5/Lib/test/_test_multiprocessing.py Python-3.10.6/Lib/test/_test_multiprocessing.py 
+7a8
+> import textwrap
+2806a2808,2812
+>     def test_pool_maxtasksperchild_invalid(self):
+>         for value in [0, -1, 0.5, "12"]:
+>             with self.assertRaises(ValueError):
+>                 multiprocessing.Pool(3, maxtasksperchild=value)
+> 
+3907c3913
+<             names = ['test01_fn', 'test02_fn']
+---
+>             names = [self._new_shm_name('test03_fn'), self._new_shm_name('test04_fn')]
+5701a5708,5736
+> class TestNamedResource(unittest.TestCase):
+>     def test_global_named_resource_spawn(self):
+>         #
+>         # gh-90549: Check that global named resources in main module
+>         # will not leak by a subprocess, in spawn context.
+>         #
+>         testfn = os_helper.TESTFN
+>         self.addCleanup(os_helper.unlink, testfn)
+>         with open(testfn, 'w', encoding='utf-8') as f:
+>             f.write(textwrap.dedent('''\
+>                 import multiprocessing as mp
+> 
+>                 ctx = mp.get_context('spawn')
+> 
+>                 global_resource = ctx.Semaphore()
+> 
+>                 def submain(): pass
+> 
+>                 if __name__ == '__main__':
+>                     p = ctx.Process(target=submain)
+>                     p.start()
+>                     p.join()
+>             '''))
+>         rc, out, err = test.support.script_helper.assert_python_ok(testfn)
+>         # on error, err = 'UserWarning: resource_tracker: There appear to
+>         # be 1 leaked semaphore objects to clean up at shutdown'
+>         self.assertEqual(err, b'')
+> 
+> 
+5931a5967,5978
+> 
+> 
+> @unittest.skipIf(not hasattr(_multiprocessing, 'SemLock'), 'SemLock not available')
+> @unittest.skipIf(sys.platform != "linux", "Linux only")
+> class SemLockTests(unittest.TestCase):
+> 
+>     def test_semlock_subclass(self):
+>         class SemLock(_multiprocessing.SemLock):
+>             pass
+>         name = f'test_semlock_subclass-{os.getpid()}'
+>         s = SemLock(1, 0, 10, name, 0)
+>         _multiprocessing.sem_unlink(name)
 

@@ -5715,6 +5715,7 @@ class TestSyncManagerTypes(unittest.TestCase):
 
 
 class TestNamedResource(unittest.TestCase):
+    @unittest.skipIf(sys.hexversion <= 0x30a05f0, "SemLock subclass")
     def test_global_named_resource_spawn(self):
         #
         # gh-90549: Check that global named resources in main module
@@ -5978,6 +5979,7 @@ def install_tests_in_module_dict(remote_globs, start_method):
 
 @unittest.skipIf(not hasattr(_multiprocessing, 'SemLock'), 'SemLock not available')
 @unittest.skipIf(sys.platform != "linux", "Linux only")
+@unittest.skipIf(sys.hexversion <= 0x30a05f0, "SemLock subclass")
 class SemLockTests(unittest.TestCase):
 
     def test_semlock_subclass(self):

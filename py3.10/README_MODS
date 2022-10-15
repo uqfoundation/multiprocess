@@ -857,4 +857,23 @@ $ diff Python-3.10.5/Lib/test/_test_multiprocessing.py Python-3.10.6/Lib/test/_t
 >         name = f'test_semlock_subclass-{os.getpid()}'
 >         s = SemLock(1, 0, 10, name, 0)
 >         _multiprocessing.sem_unlink(name)
-
+# ----------------------------------------------------------------------
+diff Python-3.10.6/Lib/multiprocessing/resource_tracker.py Python-3.10.8/Lib/multiprocessing/resource_tracker.py
+164c164
+<         if len(name) > 512:
+---
+>         if len(msg) > 512:
+167c167
+<             raise ValueError('name too long')
+---
+>             raise ValueError('msg too long')
+diff Python-3.10.6/Lib/test/_test_multiprocessing.py Python-3.10.8/Lib/test/_test_multiprocessing.py 
+5379a5380,5387
+>     def test_too_long_name_resource(self):
+>         # gh-96819: Resource names that will make the length of a write to a pipe
+>         # greater than PIPE_BUF are not allowed
+>         rtype = "shared_memory"
+>         too_long_name_resource = "a" * (512 - len(rtype))
+>         with self.assertRaises(ValueError):
+>             resource_tracker.register(too_long_name_resource, rtype)
+> 

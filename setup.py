@@ -282,7 +282,7 @@ def run_setup(with_extensions=True):
     if has_setuptools:
         setup_kwds.update(
             zip_safe=False,
-            distclass=BinaryDistribution,
+            # distclass=BinaryDistribution,
             install_requires=depend,
             # extras_require=extras,
         )

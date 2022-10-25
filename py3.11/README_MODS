@@ -596,3 +596,5 @@ diff Python-3.11.0b5/Lib/multiprocessing/popen_spawn_win32.py Python-3.11.0/Lib/
 69a69,70
 >         cmd = ' '.join('"%s"' % x for x in cmd)
 > 
+# ----------------------------------------------------------------------
+cp Python-3.11.0/Modules/_multiprocessing/clinic/* Modules/_multiprocess/clinic/

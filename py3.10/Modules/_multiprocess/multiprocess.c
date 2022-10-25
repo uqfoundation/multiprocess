@@ -22,7 +22,7 @@ module _multiprocess
 [clinic start generated code]*/
 /*[clinic end generated code: output=da39a3ee5e6b4b0d input=01e0745f380ac6e3]*/
 
-#include "clinic/multiprocess.c.h"
+#include "clinic/multiprocessing.c.h"
 
 /*
  * Function which raises exceptions based on error codes

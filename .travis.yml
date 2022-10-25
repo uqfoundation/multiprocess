@@ -30,7 +30,7 @@ matrix:
             - PYPY_VERSION="3.7"
 
     allow_failures:
-        - python: '3.11-dev'
+        - python:
     fast_finish: true
 
 cache:

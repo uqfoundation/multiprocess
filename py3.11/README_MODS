@@ -578,3 +578,21 @@ diff Python-3.11.0b1/Lib/test/_test_multiprocessing.py Python-3.11.0b5/Lib/test/
 >         name = f'test_semlock_subclass-{os.getpid()}'
 >         s = SemLock(1, 0, 10, name, 0)
 >         _multiprocessing.sem_unlink(name)
+# ----------------------------------------------------------------------
+diff Python-3.11.0b5/Lib/multiprocessing/connection.py Python-3.11.0/Lib/multiprocessing/connection.py
+76,80d75
+<         # Prefer abstract sockets if possible to avoid problems with the address
+<         # size.  When coding portable applications, some implementations have
+<         # sun_path as short as 92 bytes in the sockaddr_un struct.
+<         if util.abstract_sockets_supported:
+<             return f"\0listener-{os.getpid()}-{next(_mmap_counter)}"
+diff Python-3.11.0b5/Lib/multiprocessing/popen_spawn_win32.py Python-3.11.0/Lib/multiprocessing/popen_spawn_win32.py
+57d56
+<         cmd = ' '.join('"%s"' % x for x in cmd)
+64c63
+<             python_exe = sys._base_executable
+---
+>             cmd[0] = python_exe = sys._base_executable
+69a69,70
+>         cmd = ' '.join('"%s"' % x for x in cmd)
+> 

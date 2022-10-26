@@ -1,0 +1,403 @@
+cp -rf py3.11/examples .
+cp -rf py3.11/doc .
+cp -f py3.11/index.html .
+cp -rf py3.11/_multiprocess _multiprocess
+cp -rf py3.11/multiprocess multiprocess
+cp -rf Python-3.11.0/Modules/_multiprocessing Modules/_multiprocess
+# ----------------------------------------------------------------------
+diff Python-3.12.0a1/Modules/_multiprocessing/semaphore.c Modules/_multiprocess/semaphore.c
+10c10
+< #include "multiprocessing.h"
+---
+> #include "multiprocess.h"
+35,36c35,36
+< module _multiprocessing
+< class _multiprocessing.SemLock "SemLockObject *" "&_PyMp_SemLockType"
+---
+> module _multiprocess
+> class _multiprocess.SemLock "SemLockObject *" "&_PyMp_SemLockType"
+80c80
+< _multiprocessing.SemLock.acquire
+---
+> _multiprocess.SemLock.acquire
+89c89
+< _multiprocessing_SemLock_acquire_impl(SemLockObject *self, int blocking,
+---
+> _multiprocess_SemLock_acquire_impl(SemLockObject *self, int blocking,
+171c171
+< _multiprocessing.SemLock.release
+---
+> _multiprocess.SemLock.release
+177c177
+< _multiprocessing_SemLock_release_impl(SemLockObject *self)
+---
+> _multiprocess_SemLock_release_impl(SemLockObject *self)
+232c232
+< #ifndef HAVE_SEM_TIMEDWAIT
+---
+> // ifndef HAVE_SEM_TIMEDWAIT
+293c293
+< #endif /* !HAVE_SEM_TIMEDWAIT */
+---
+> // #endif /* !HAVE_SEM_TIMEDWAIT */
+296c296
+< _multiprocessing.SemLock.acquire
+---
+> _multiprocess.SemLock.acquire
+305c305
+< _multiprocessing_SemLock_acquire_impl(SemLockObject *self, int blocking,
+---
+> _multiprocess_SemLock_acquire_impl(SemLockObject *self, int blocking,
+381c381
+< _multiprocessing.SemLock.release
+---
+> _multiprocess.SemLock.release
+387c387
+< _multiprocessing_SemLock_release_impl(SemLockObject *self)
+---
+> _multiprocess_SemLock_release_impl(SemLockObject *self)
+471c471
+< _multiprocessing.SemLock.__new__
+---
+> _multiprocess.SemLock.__new__
+482c482
+< _multiprocessing_SemLock_impl(PyTypeObject *type, int kind, int value,
+---
+> _multiprocess_SemLock_impl(PyTypeObject *type, int kind, int value,
+530c530
+< _multiprocessing.SemLock._rebuild
+---
+> _multiprocess.SemLock._rebuild
+541c541
+< _multiprocessing_SemLock__rebuild_impl(PyTypeObject *type, SEM_HANDLE handle,
+---
+> _multiprocess_SemLock__rebuild_impl(PyTypeObject *type, SEM_HANDLE handle,
+581c581
+< _multiprocessing.SemLock._count
+---
+> _multiprocess.SemLock._count
+587c587
+< _multiprocessing_SemLock__count_impl(SemLockObject *self)
+---
+> _multiprocess_SemLock__count_impl(SemLockObject *self)
+594c594
+< _multiprocessing.SemLock._is_mine
+---
+> _multiprocess.SemLock._is_mine
+600c600
+< _multiprocessing_SemLock__is_mine_impl(SemLockObject *self)
+---
+> _multiprocess_SemLock__is_mine_impl(SemLockObject *self)
+608c608
+< _multiprocessing.SemLock._get_value
+---
+> _multiprocess.SemLock._get_value
+614c614
+< _multiprocessing_SemLock__get_value_impl(SemLockObject *self)
+---
+> _multiprocess_SemLock__get_value_impl(SemLockObject *self)
+633c633
+< _multiprocessing.SemLock._is_zero
+---
+> _multiprocess.SemLock._is_zero
+639c639
+< _multiprocessing_SemLock__is_zero_impl(SemLockObject *self)
+---
+> _multiprocess_SemLock__is_zero_impl(SemLockObject *self)
+661c661
+< _multiprocessing.SemLock._after_fork
+---
+> _multiprocess.SemLock._after_fork
+667c667
+< _multiprocessing_SemLock__after_fork_impl(SemLockObject *self)
+---
+> _multiprocess_SemLock__after_fork_impl(SemLockObject *self)
+675c675
+< _multiprocessing.SemLock.__enter__
+---
+> _multiprocess.SemLock.__enter__
+681c681
+< _multiprocessing_SemLock___enter___impl(SemLockObject *self)
+---
+> _multiprocess_SemLock___enter___impl(SemLockObject *self)
+684c684
+<     return _multiprocessing_SemLock_acquire_impl(self, 1, Py_None);
+---
+>     return _multiprocess_SemLock_acquire_impl(self, 1, Py_None);
+688c688
+< _multiprocessing.SemLock.__exit__
+---
+> _multiprocess.SemLock.__exit__
+699c699
+< _multiprocessing_SemLock___exit___impl(SemLockObject *self,
+---
+> _multiprocess_SemLock___exit___impl(SemLockObject *self,
+704c704
+<     return _multiprocessing_SemLock_release_impl(self);
+---
+>     return _multiprocess_SemLock_release_impl(self);
+759c759
+<     {Py_tp_new, _multiprocessing_SemLock},
+---
+>     {Py_tp_new, _multiprocess_SemLock},
+767c767
+<     .name = "_multiprocessing.SemLock",
+---
+>     .name = "_multiprocess.SemLock",
+diff Python-3.12.0a1/Modules/_multiprocessing/multiprocessing.c Modules/_multiprocess/multiprocess.c
+2c2
+<  * Extension module used by multiprocessing package
+---
+>  * Extension module used by multiprocess package
+4c4
+<  * multiprocessing.c
+---
+>  * multiprocess.c
+10c10
+< #include "multiprocessing.h"
+---
+> #include "multiprocess.h"
+29c29
+< module _multiprocessing
+---
+> module _multiprocess
+76c76
+< _multiprocessing.closesocket
+---
+> _multiprocess.closesocket
+84c84
+< _multiprocessing_closesocket_impl(PyObject *module, HANDLE handle)
+---
+> _multiprocess_closesocket_impl(PyObject *module, HANDLE handle)
+99c99
+< _multiprocessing.recv
+---
+> _multiprocess.recv
+108c108
+< _multiprocessing_recv_impl(PyObject *module, HANDLE handle, int size)
+---
+> _multiprocess_recv_impl(PyObject *module, HANDLE handle, int size)
+131c131
+< _multiprocessing.send
+---
+> _multiprocess.send
+140c140
+< _multiprocessing_send_impl(PyObject *module, HANDLE handle, Py_buffer *buf)
+---
+> _multiprocess_send_impl(PyObject *module, HANDLE handle, Py_buffer *buf)
+159c159
+< _multiprocessing.sem_unlink
+---
+> _multiprocess.sem_unlink
+167c167
+< _multiprocessing_sem_unlink_impl(PyObject *module, const char *name)
+---
+> _multiprocess_sem_unlink_impl(PyObject *module, const char *name)
+195c195
+< multiprocessing_exec(PyObject *module)
+---
+> multiprocess_exec(PyObject *module)
+277,278c277,278
+< static PyModuleDef_Slot multiprocessing_slots[] = {
+<     {Py_mod_exec, multiprocessing_exec},
+---
+> static PyModuleDef_Slot multiprocess_slots[] = {
+>     {Py_mod_exec, multiprocess_exec},
+282c282
+< static struct PyModuleDef multiprocessing_module = {
+---
+> static struct PyModuleDef multiprocess_module = {
+284c284
+<     .m_name = "_multiprocessing",
+---
+>     .m_name = "_multiprocess",
+287c287
+<     .m_slots = multiprocessing_slots,
+---
+>     .m_slots = multiprocess_slots,
+291c291
+< PyInit__multiprocessing(void)
+---
+> PyInit__multiprocess(void)
+293c293
+<     return PyModuleDef_Init(&multiprocessing_module);
+---
+>     return PyModuleDef_Init(&multiprocess_module);
+# ----------------------------------------------------------------------
+diff Python-3.11.0/Lib/multiprocessing/managers.py Python-3.12.0a1/Lib/multiprocessing/managers.py
+436d435
+<                     obj, exposed, gettypeid = self.id_to_obj[ident]
+diff Python-3.11.0/Lib/multiprocessing/resource_tracker.py Python-3.12.0a1/Lib/multiprocessing/resource_tracker.py
+164c164
+<         if len(name) > 512:
+---
+>         if len(msg) > 512:
+167c167
+<             raise ValueError('name too long')
+---
+>             raise ValueError('msg too long')
+# ----------------------------------------------------------------------
+diff Python-3.11.0/Lib/test/_test_multiprocessing.py Python-3.12.0a1/Lib/test/_test_multiprocessing.py 
+126a127,128
+> WAIT_ACTIVE_CHILDREN_TIMEOUT = 5.0
+> 
+4321,4325c4323,4325
+<             deadline = time.monotonic() + support.LONG_TIMEOUT
+<             t = 0.1
+<             while time.monotonic() < deadline:
+<                 time.sleep(t)
+<                 t = min(t*2, 5)
+---
+>             err_msg = ("A SharedMemory segment was leaked after "
+>                        "a process was abruptly terminated")
+>             for _ in support.sleeping_retry(support.LONG_TIMEOUT, err_msg):
+4330,4332d4329
+<             else:
+<                 raise AssertionError("A SharedMemory segment was leaked after"
+<                                      " a process was abruptly terminated.")
+5295c5292
+<             import time, os, tempfile
+---
+>             import time, os
+5301d5297
+<             rand = tempfile._RandomNameSequence()
+5342,5344c5338,5341
+<                 deadline = time.monotonic() + support.LONG_TIMEOUT
+<                 while time.monotonic() < deadline:
+<                     time.sleep(.5)
+---
+>                 err_msg = (f"A {rtype} resource was leaked after a process was "
+>                            f"abruptly terminated")
+>                 for _ in support.sleeping_retry(support.SHORT_TIMEOUT,
+>                                                   err_msg):
+5352,5355c5349
+<                 else:
+<                     raise AssertionError(
+<                         f"A {rtype} resource was leaked after a process was "
+<                         f"abruptly terminated.")
+---
+> 
+5440a5435,5442
+>     def test_too_long_name_resource(self):
+>         # gh-96819: Resource names that will make the length of a write to a pipe
+>         # greater than PIPE_BUF are not allowed
+>         rtype = "shared_memory"
+>         too_long_name_resource = "a" * (512 - len(rtype))
+>         with self.assertRaises(ValueError):
+>             resource_tracker.register(too_long_name_resource, rtype)
+> 
+5582a5585,5586
+> 
+>         timeout = WAIT_ACTIVE_CHILDREN_TIMEOUT
+5584,5593c5588,5589
+<         t = 0.01
+<         while len(multiprocessing.active_children()) > 1:
+<             time.sleep(t)
+<             t *= 2
+<             dt = time.monotonic() - start_time
+<             if dt >= 5.0:
+<                 test.support.environment_altered = True
+<                 support.print_warning(f"multiprocessing.Manager still has "
+<                                       f"{multiprocessing.active_children()} "
+<                                       f"active children after {dt} seconds")
+---
+>         for _ in support.sleeping_retry(timeout, error=False):
+>             if len(multiprocessing.active_children()) <= 1:
+5594a5591,5596
+>         else:
+>             dt = time.monotonic() - start_time
+>             support.environment_altered = True
+>             support.print_warning(f"multiprocessing.Manager still has "
+>                                   f"{multiprocessing.active_children()} "
+>                                   f"active children after {dt:.1f} seconds")
+5699,5701c5701,5704
+<         assert obj[0] == 5
+<         assert obj.count(5) == 1
+<         assert obj.index(5) == 0
+---
+>         case = unittest.TestCase()
+>         case.assertEqual(obj[0], 5)
+>         case.assertEqual(obj.count(5), 1)
+>         case.assertEqual(obj.index(5), 0)
+5706,5707c5709,5710
+<         assert len(obj) == 1
+<         assert obj.pop(0) == 5
+---
+>         case.assertEqual(len(obj), 1)
+>         case.assertEqual(obj.pop(0), 5)
+5713c5716
+<         assert not o
+---
+>         self.assertIsNotNone(o)
+5718,5725c5721,5729
+<         assert len(obj) == 1
+<         assert obj['foo'] == 5
+<         assert obj.get('foo') == 5
+<         assert list(obj.items()) == [('foo', 5)]
+<         assert list(obj.keys()) == ['foo']
+<         assert list(obj.values()) == [5]
+<         assert obj.copy() == {'foo': 5}
+<         assert obj.popitem() == ('foo', 5)
+---
+>         case = unittest.TestCase()
+>         case.assertEqual(len(obj), 1)
+>         case.assertEqual(obj['foo'], 5)
+>         case.assertEqual(obj.get('foo'), 5)
+>         case.assertListEqual(list(obj.items()), [('foo', 5)])
+>         case.assertListEqual(list(obj.keys()), ['foo'])
+>         case.assertListEqual(list(obj.values()), [5])
+>         case.assertDictEqual(obj.copy(), {'foo': 5})
+>         case.assertTupleEqual(obj.popitem(), ('foo', 5))
+5731c5735
+<         assert not o
+---
+>         self.assertIsNotNone(o)
+5736,5737c5740,5742
+<         assert obj.value == 1
+<         assert obj.get() == 1
+---
+>         case = unittest.TestCase()
+>         case.assertEqual(obj.value, 1)
+>         case.assertEqual(obj.get(), 1)
+5748,5751c5753,5757
+<         assert obj[0] == 0
+<         assert obj[1] == 1
+<         assert len(obj) == 2
+<         assert list(obj) == [0, 1]
+---
+>         case = unittest.TestCase()
+>         case.assertEqual(obj[0], 0)
+>         case.assertEqual(obj[1], 1)
+>         case.assertEqual(len(obj), 2)
+>         case.assertListEqual(list(obj), [0, 1])
+5759,5760c5765,5767
+<         assert obj.x == 0
+<         assert obj.y == 1
+---
+>         case = unittest.TestCase()
+>         case.assertEqual(obj.x, 0)
+>         case.assertEqual(obj.y, 1)
+5890a5898
+>         timeout = WAIT_ACTIVE_CHILDREN_TIMEOUT
+5892,5901c5900,5901
+<         t = 0.01
+<         while len(multiprocessing.active_children()) > 1:
+<             time.sleep(t)
+<             t *= 2
+<             dt = time.monotonic() - start_time
+<             if dt >= 5.0:
+<                 test.support.environment_altered = True
+<                 support.print_warning(f"multiprocessing.Manager still has "
+<                                       f"{multiprocessing.active_children()} "
+<                                       f"active children after {dt} seconds")
+---
+>         for _ in support.sleeping_retry(timeout, error=False):
+>             if len(multiprocessing.active_children()) <= 1:
+5902a5903,5908
+>         else:
+>             dt = time.monotonic() - start_time
+>             support.environment_altered = True
+>             support.print_warning(f"multiprocessing.Manager still has "
+>                                   f"{multiprocessing.active_children()} "
+>                                   f"active children after {dt:.1f} seconds")
+

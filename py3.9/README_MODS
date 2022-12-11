@@ -944,3 +944,12 @@ diff Python-3.9.12/Lib/multiprocessing/util.py Python-3.9.13/Lib/multiprocessing
 <     raise TypeError('address type of {address!r} unrecognized')
 ---
 >     raise TypeError(f'address type of {address!r} unrecognized')
+# ----------------------------------------------------------------------
+diff Python-3.9.13/Lib/multiprocessing/connection.py Python-3.9.16/Lib/multiprocessing/connection.py
+76,80d75
+<         # Prefer abstract sockets if possible to avoid problems with the address
+<         # size.  When coding portable applications, some implementations have
+<         # sun_path as short as 92 bytes in the sockaddr_un struct.
+<         if util.abstract_sockets_supported:
+<             return f"\0listener-{os.getpid()}-{next(_mmap_counter)}"
+

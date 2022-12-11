@@ -5447,6 +5447,14 @@ class TestResourceTracker(unittest.TestCase):
 
         self.assertTrue(is_resource_tracker_reused)
 
+    def test_too_long_name_resource(self):
+        # gh-96819: Resource names that will make the length of a write to a pipe
+        # greater than PIPE_BUF are not allowed
+        rtype = "shared_memory"
+        too_long_name_resource = "a" * (512 - len(rtype))
+        with self.assertRaises(ValueError):
+            resource_tracker.register(too_long_name_resource, rtype)
+
 
 class TestSimpleQueue(unittest.TestCase):
 
@@ -6046,5 +6054,5 @@ class SemLockTests(unittest.TestCase):
         class SemLock(_multiprocessing.SemLock):
             pass
         name = f'test_semlock_subclass-{os.getpid()}'
-        s = SemLock(1, 0, 10, name, 0)
+        s = SemLock(1, 0, 10, name, False)
         _multiprocessing.sem_unlink(name)

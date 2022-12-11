@@ -400,4 +400,140 @@ diff Python-3.11.0/Lib/test/_test_multiprocessing.py Python-3.12.0a1/Lib/test/_t
 >             support.print_warning(f"multiprocessing.Manager still has "
 >                                   f"{multiprocessing.active_children()} "
 >                                   f"active children after {dt:.1f} seconds")
-
+# ----------------------------------------------------------------------
+diff Python-3.12.0a2/Modules/_multiprocessing/semaphore.c Python-3.12.0a3/Modules/_multiprocessing/semaphore.c
+82c82
+<     block as blocking: bool(accept={int}) = True
+---
+>     block as blocking: bool = True
+91c91
+< /*[clinic end generated code: output=f9998f0b6b0b0872 input=86f05662cf753eb4]*/
+---
+> /*[clinic end generated code: output=f9998f0b6b0b0872 input=e5b45f5cbb775166]*/
+298c298
+<     block as blocking: bool(accept={int}) = True
+---
+>     block as blocking: bool = True
+307c307
+< /*[clinic end generated code: output=f9998f0b6b0b0872 input=86f05662cf753eb4]*/
+---
+> /*[clinic end generated code: output=f9998f0b6b0b0872 input=e5b45f5cbb775166]*/
+477c477
+<     unlink: bool(accept={int})
+---
+>     unlink: bool
+484c484
+< /*[clinic end generated code: output=30727e38f5f7577a input=b378c3ee27d3a0fa]*/
+---
+> /*[clinic end generated code: output=30727e38f5f7577a input=fdaeb69814471c5b]*/
+diff Python-3.12.0a2/Modules/_multiprocessing/clinic/semaphore.c.h Python-3.12.0a3/Modules/_multiprocessing/clinic/semaphore.c.h
+68,69c68,69
+<         blocking = _PyLong_AsInt(args[0]);
+<         if (blocking == -1 && PyErr_Occurred()) {
+---
+>         blocking = PyObject_IsTrue(args[0]);
+>         if (blocking < 0) {
+165,166c165,166
+<         blocking = _PyLong_AsInt(args[0]);
+<         if (blocking == -1 && PyErr_Occurred()) {
+---
+>         blocking = PyObject_IsTrue(args[0]);
+>         if (blocking < 0) {
+278,279c278,279
+<     unlink = _PyLong_AsInt(fastargs[4]);
+<     if (unlink == -1 && PyErr_Occurred()) {
+---
+>     unlink = PyObject_IsTrue(fastargs[4]);
+>     if (unlink < 0) {
+545c545
+< /*[clinic end generated code: output=720d7d0066dc0954 input=a9049054013a1b77]*/
+---
+> /*[clinic end generated code: output=dae57a702cc01512 input=a9049054013a1b77]*/
+diff Python-3.12.0a2/Lib/multiprocessing/connection.py Python-3.12.0a3/Lib/multiprocessing/connection.py
+730a731,798
+> # multiprocessing.connection Authentication Handshake Protocol Description
+> # (as documented for reference after reading the existing code)
+> # =============================================================================
+> #
+> # On Windows: native pipes with "overlapped IO" are used to send the bytes,
+> # instead of the length prefix SIZE scheme described below. (ie: the OS deals
+> # with message sizes for us)
+> #
+> # Protocol error behaviors:
+> #
+> # On POSIX, any failure to receive the length prefix into SIZE, for SIZE greater
+> # than the requested maxsize to receive, or receiving fewer than SIZE bytes
+> # results in the connection being closed and auth to fail.
+> #
+> # On Windows, receiving too few bytes is never a low level _recv_bytes read
+> # error, receiving too many will trigger an error only if receive maxsize
+> # value was larger than 128 OR the if the data arrived in smaller pieces.
+> #
+> #      Serving side                           Client side
+> #     ------------------------------  ---------------------------------------
+> # 0.                                  Open a connection on the pipe.
+> # 1.  Accept connection.
+> # 2.  New random 20 bytes -> MESSAGE
+> # 3.  send 4 byte length (net order)
+> #     prefix followed by:
+> #       b'#CHALLENGE#' + MESSAGE
+> # 4.                                  Receive 4 bytes, parse as network byte
+> #                                     order integer. If it is -1, receive an
+> #                                     additional 8 bytes, parse that as network
+> #                                     byte order. The result is the length of
+> #                                     the data that follows -> SIZE.
+> # 5.                                  Receive min(SIZE, 256) bytes -> M1
+> # 6.                                  Assert that M1 starts with:
+> #                                       b'#CHALLENGE#'
+> # 7.                                  Strip that prefix from M1 into -> M2
+> # 8.                                  Compute HMAC-MD5 of AUTHKEY, M2 -> C_DIGEST
+> # 9.                                  Send 4 byte length prefix (net order)
+> #                                     followed by C_DIGEST bytes.
+> # 10. Compute HMAC-MD5 of AUTHKEY,
+> #     MESSAGE into -> M_DIGEST.
+> # 11. Receive 4 or 4+8 byte length
+> #     prefix (#4 dance) -> SIZE.
+> # 12. Receive min(SIZE, 256) -> C_D.
+> # 13. Compare M_DIGEST == C_D:
+> # 14a: Match? Send length prefix &
+> #       b'#WELCOME#'
+> #    <- RETURN
+> # 14b: Mismatch? Send len prefix &
+> #       b'#FAILURE#'
+> #    <- CLOSE & AuthenticationError
+> # 15.                                 Receive 4 or 4+8 byte length prefix (net
+> #                                     order) again as in #4 into -> SIZE.
+> # 16.                                 Receive min(SIZE, 256) bytes -> M3.
+> # 17.                                 Compare M3 == b'#WELCOME#':
+> # 17a.                                Match? <- RETURN
+> # 17b.                                Mismatch? <- CLOSE & AuthenticationError
+> #
+> # If this RETURNed, the connection remains open: it has been authenticated.
+> #
+> # Length prefixes are used consistently even though every step so far has
+> # always been a singular specific fixed length.  This may help us evolve
+> # the protocol in the future without breaking backwards compatibility.
+> #
+> # Similarly the initial challenge message from the serving side has always
+> # been 20 bytes, but clients can accept a 100+ so using the length of the
+> # opening challenge message as an indicator of protocol version may work.
+> 
+> 
+diff Python-3.12.0a2/Lib/multiprocessing/pool.py Python-3.12.0a3/Lib/multiprocessing/pool.py
+699c699
+<                 "Cannot have cache with result_hander not alive")
+---
+>                 "Cannot have cache with result_handler not alive")
+diff Python-3.12.0a2/Lib/multiprocessing/shared_memory.py Python-3.12.0a3/Lib/multiprocessing/shared_memory.py
+176c176,179
+<                 size = _winapi.VirtualQuerySize(p_buf)
+---
+>                 try:
+>                     size = _winapi.VirtualQuerySize(p_buf)
+>                 finally:
+>                     _winapi.UnmapViewOfFile(p_buf)
+diff Python-3.12.0a2/Lib/test/_test_multiprocessing.py Python-3.12.0a3/Lib/test/_test_multiprocessing.py 
+6045c6045
+<         s = SemLock(1, 0, 10, name, 0)
+---
+>         s = SemLock(1, 0, 10, name, False)

@@ -877,3 +877,25 @@ diff Python-3.10.6/Lib/test/_test_multiprocessing.py Python-3.10.8/Lib/test/_tes
 >         with self.assertRaises(ValueError):
 >             resource_tracker.register(too_long_name_resource, rtype)
 > 
+# ----------------------------------------------------------------------
+diff Python-3.10.8/Lib/multiprocessing/connection.py Python-3.10.9/Lib/multiprocessing/connection.py
+76,80d75
+<         # Prefer abstract sockets if possible to avoid problems with the address
+<         # size.  When coding portable applications, some implementations have
+<         # sun_path as short as 92 bytes in the sockaddr_un struct.
+<         if util.abstract_sockets_supported:
+<             return f"\0listener-{os.getpid()}-{next(_mmap_counter)}"
+Common subdirectories: Python-3.10.8/Lib/multiprocessing/dummy and Python-3.10.9/Lib/multiprocessing/dummy
+diff Python-3.10.8/Lib/multiprocessing/shared_memory.py Python-3.10.9/Lib/multiprocessing/shared_memory.py
+176c176,179
+<                 size = _winapi.VirtualQuerySize(p_buf)
+---
+>                 try:
+>                     size = _winapi.VirtualQuerySize(p_buf)
+>                 finally:
+>                     _winapi.UnmapViewOfFile(p_buf)
+diff Python-3.10.8/Lib/test/_test_multiprocessing.py Python-3.10.9/Lib/test/_test_multiprocessing.py 
+5985c5985
+<         s = SemLock(1, 0, 10, name, 0)
+---
+>         s = SemLock(1, 0, 10, name, False)

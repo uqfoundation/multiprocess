@@ -598,3 +598,35 @@ diff Python-3.11.0b5/Lib/multiprocessing/popen_spawn_win32.py Python-3.11.0/Lib/
 > 
 # ----------------------------------------------------------------------
 cp Python-3.11.0/Modules/_multiprocessing/clinic/* Modules/_multiprocess/clinic/
+# ----------------------------------------------------------------------
+diff Python-3.11.0/Lib/multiprocessing/resource_tracker.py Python-3.11.1/Lib/multiprocessing/resource_tracker.py
+164c164
+<         if len(name) > 512:
+---
+>         if len(msg) > 512:
+167c167
+<             raise ValueError('name too long')
+---
+>             raise ValueError('msg too long')
+diff Python-3.11.0/Lib/multiprocessing/shared_memory.py Python-3.11.1/Lib/multiprocessing/shared_memory.py
+176c176,179
+<                 size = _winapi.VirtualQuerySize(p_buf)
+---
+>                 try:
+>                     size = _winapi.VirtualQuerySize(p_buf)
+>                 finally:
+>                     _winapi.UnmapViewOfFile(p_buf)
+diff Python-3.11.0/Lib/test/_test_multiprocessing.py Python-3.11.1/Lib/test/_test_multiprocessing.py 
+5440a5441,5448
+>     def test_too_long_name_resource(self):
+>         # gh-96819: Resource names that will make the length of a write to a pipe
+>         # greater than PIPE_BUF are not allowed
+>         rtype = "shared_memory"
+>         too_long_name_resource = "a" * (512 - len(rtype))
+>         with self.assertRaises(ValueError):
+>             resource_tracker.register(too_long_name_resource, rtype)
+> 
+6039c6047
+<         s = SemLock(1, 0, 10, name, 0)
+---
+>         s = SemLock(1, 0, 10, name, False)

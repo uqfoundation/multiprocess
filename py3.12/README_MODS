@@ -537,3 +537,8 @@ diff Python-3.12.0a2/Lib/test/_test_multiprocessing.py Python-3.12.0a3/Lib/test/
 <         s = SemLock(1, 0, 10, name, 0)
 ---
 >         s = SemLock(1, 0, 10, name, False)
+# ----------------------------------------------------------------------
+diff Python-3.12.0a3/Lib/multiprocessing/queues.py Python-3.12.0a4/Lib/multiprocessing/queues.py
+282a283,284
+>     __class_getitem__ = classmethod(types.GenericAlias)
+> 

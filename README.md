@@ -130,11 +130,19 @@ for example ::
 More Information
 ----------------
 Probably the best way to get started is to look at the documentation at
-http://multiprocess.rtfd.io. See ``multiprocess.examples`` for a set of example
-scripts. You can also run the test suite with ``python -m multiprocess.tests``.
-Please feel free to submit a ticket on github, or ask a question on
-stackoverflow (**@Mike McKerns**).  If you would like to share how you use
-``multiprocess`` in your work, please send an email (to **mmckerns at uqfoundation dot org**).
+http://multiprocess.rtfd.io. Also see ``multiprocess.tests`` for scripts that
+demonstrate how ``multiprocess`` can be used to leverge multiple processes
+to execute python in parallel. You can run the test suite with
+``python -m multiprocess.tests``. As ``multiprocess`` conforms to the
+``multiprocessing`` interface, the examples and documentation found at
+http://docs.python.org/library/multiprocessing.html also apply to
+``multiprocess`` if one will ``import multiprocessing as multiprocess``.
+See https://github.com/uqfoundation/multiprocess/tree/master/py3.11/examples
+for a set of examples that demonstrate some basic use cases and benchmarking
+for running python code in parallel. Please feel free to submit a ticket on
+github, or ask a question on stackoverflow (**@Mike McKerns**). If you would
+like to share how you use ``multiprocess`` in your work, please send an email
+(to **mmckerns at uqfoundation dot org**).
 
 
 Citation

@@ -368,7 +368,7 @@ class _ParentProcess(BaseProcess):
         self._config = {}
 
     def is_alive(self):
-        from multiprocessing.connection import wait
+        from multiprocess.connection import wait
         return not wait([self._sentinel], timeout=0)
 
     @property
@@ -379,7 +379,7 @@ class _ParentProcess(BaseProcess):
         '''
         Wait until parent process terminates
         '''
-        from multiprocessing.connection import wait
+        from multiprocess.connection import wait
         wait([self._sentinel], timeout=timeout)
 
     pid = ident

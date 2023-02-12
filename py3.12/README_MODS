@@ -542,3 +542,31 @@ diff Python-3.12.0a3/Lib/multiprocessing/queues.py Python-3.12.0a4/Lib/multiproc
 282a283,284
 >     __class_getitem__ = classmethod(types.GenericAlias)
 > 
+# ----------------------------------------------------------------------
+diff Python-3.12.0a4/Lib/multiprocessing/context.py Python-3.12.0a5/Lib/multiprocessing/context.py
+260a261
+>         """Returns a list of the supported start methods, default first."""
+# ----------------------------------------------------------------------
+diff Python-3.12.0a4/Lib/test/_test_multiprocessing.py Python-3.12.0a5/Lib/test/_test_multiprocessing.py 
+4970c4970
+<     def run_in_child(cls):
+---
+>     def run_in_child(cls, start_method):
+4972,4974c4972,4976
+<         r, w = multiprocessing.Pipe(duplex=False)
+<         p = multiprocessing.Process(target=cls.run_in_grandchild, args=(w,))
+<         p.start()
+---
+>         mp = multiprocessing.get_context(start_method)
+>         r, w = mp.Pipe(duplex=False)
+>         p = mp.Process(target=cls.run_in_grandchild, args=(w,))
+>         with warnings.catch_warnings(category=DeprecationWarning):
+>             p.start()
+4985,4986c4987,4990
+<         prog = ('from test._test_multiprocessing import TestFlags; ' +
+<                 'TestFlags.run_in_child()')
+---
+>         prog = (
+>             'from test._test_multiprocessing import TestFlags; '
+>             f'TestFlags.run_in_child({multiprocessing.get_start_method()!r})'
+>         )

@@ -1,5 +1,5 @@
 import unittest
-import __init__ as _test_multiprocessing
+from multiprocess.tests import install_tests_in_module_dict
 
 import sys
 from test import support
@@ -13,7 +13,7 @@ if sys.platform == "win32":
 if sys.platform == 'darwin':
     raise unittest.SkipTest("test may crash on macOS (bpo-33725)")
 
-_test_multiprocessing.install_tests_in_module_dict(globals(), 'fork')
+install_tests_in_module_dict(globals(), 'fork')
 
 if __name__ == '__main__':
     unittest.main()

@@ -64,6 +64,9 @@ except ImportError:
 #
 #
 
+# Don't ignore user's installed packages
+ENV = dict(__cleanenv = False, __isolated = False)
+
 # Timeout to wait until a process completes #XXX: travis-ci
 TIMEOUT = (90.0 if os.environ.get('COVERAGE') else 60.0) # seconds
 
@@ -4271,7 +4274,7 @@ class TestNoForkBomb(unittest.TestCase):
             self.assertEqual(out, b'')
             self.assertIn(b'RuntimeError', err)
         else:
-            rc, out, err = test.support.script_helper.assert_python_ok(name, sm)
+            rc, out, err = test.support.script_helper.assert_python_ok(name, sm, **ENV)
             self.assertEqual(out.rstrip(), b'123')
             self.assertEqual(err, b'')
 
@@ -4504,7 +4507,7 @@ class TestStartMethod(unittest.TestCase):
         if multiprocess.get_start_method() != 'forkserver':
             self.skipTest("test only relevant for 'forkserver' method")
         name = os.path.join(os.path.dirname(__file__), 'mp_preload.py')
-        rc, out, err = test.support.script_helper.assert_python_ok(name)
+        rc, out, err = test.support.script_helper.assert_python_ok(name, **ENV)
         out = out.decode()
         err = err.decode()
         if out.rstrip() != 'ok' or err != '':

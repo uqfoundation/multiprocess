@@ -1960,6 +1960,7 @@ class _TestBarrier(BaseTestCase):
         except threading.BrokenBarrierError:
             results.append(True)
 
+    @unittest.skipIf(True, 'bad timeout in pypy3')
     def test_default_timeout(self):
         """
         Test the barrier's default timeout

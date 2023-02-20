@@ -1,12 +1,12 @@
 multiprocess
 ============
-better multiprocessing and multithreading in python
+better multiprocessing and multithreading in Python
 
 About Multiprocess
 ------------------
-``multiprocess`` is a fork of ``multiprocessing``. ``multiprocess`` extends ``multiprocessing`` to provide enhanced serialization, using `dill`. ``multiprocess`` leverages ``multiprocessing`` to support the spawning of processes using the API of the python standard library's ``threading`` module. ``multiprocessing`` has been distributed as part of the standard library since python 2.6.
+``multiprocess`` is a fork of ``multiprocessing``. ``multiprocess`` extends ``multiprocessing`` to provide enhanced serialization, using `dill`. ``multiprocess`` leverages ``multiprocessing`` to support the spawning of processes using the API of the Python standard library's ``threading`` module. ``multiprocessing`` has been distributed as part of the standard library since Python 2.6.
 
-``multiprocess`` is part of ``pathos``,  a python framework for heterogeneous computing.
+``multiprocess`` is part of ``pathos``,  a Python framework for heterogeneous computing.
 ``multiprocess`` is in active development, so any user feedback, bug reports, comments,
 or suggestions are highly appreciated.  A list of issues is located at https://github.com/uqfoundation/multiprocess/issues, with a legacy list maintained at https://uqfoundation.github.io/project/pathos/query.
 
@@ -54,7 +54,7 @@ Installation
 
     $ pip install multiprocess
 
-For python 2, a C compiler is required to build the included extension module from source. Python 3 and binary installs do not require a C compiler.
+For Python 2, a C compiler is required to build the included extension module from source. Python 3 and binary installs do not require a C compiler.
 
 
 Requirements
@@ -132,14 +132,14 @@ More Information
 Probably the best way to get started is to look at the documentation at
 http://multiprocess.rtfd.io. Also see ``multiprocess.tests`` for scripts that
 demonstrate how ``multiprocess`` can be used to leverge multiple processes
-to execute python in parallel. You can run the test suite with
+to execute Python in parallel. You can run the test suite with
 ``python -m multiprocess.tests``. As ``multiprocess`` conforms to the
 ``multiprocessing`` interface, the examples and documentation found at
 http://docs.python.org/library/multiprocessing.html also apply to
 ``multiprocess`` if one will ``import multiprocessing as multiprocess``.
 See https://github.com/uqfoundation/multiprocess/tree/master/py3.11/examples
 for a set of examples that demonstrate some basic use cases and benchmarking
-for running python code in parallel. Please feel free to submit a ticket on
+for running Python code in parallel. Please feel free to submit a ticket on
 github, or ask a question on stackoverflow (**@Mike McKerns**). If you would
 like to share how you use ``multiprocess`` in your work, please send an email
 (to **mmckerns at uqfoundation dot org**).

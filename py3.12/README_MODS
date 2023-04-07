@@ -570,3 +570,12 @@ diff Python-3.12.0a4/Lib/test/_test_multiprocessing.py Python-3.12.0a5/Lib/test/
 >             'from test._test_multiprocessing import TestFlags; '
 >             f'TestFlags.run_in_child({multiprocessing.get_start_method()!r})'
 >         )
+# ----------------------------------------------------------------------
+diff Python-3.12.0a5/Modules/_multiprocessing/multiprocessing.h Python-3.12.0a7/Modules/_multiprocessing/multiprocessing.h
+15c15,17
+< #  define WIN32_LEAN_AND_MEAN
+---
+> #  ifndef WIN32_LEAN_AND_MEAN
+> #    define WIN32_LEAN_AND_MEAN
+> #  endif
+

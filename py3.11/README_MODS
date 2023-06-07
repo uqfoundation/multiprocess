@@ -630,3 +630,9 @@ diff Python-3.11.0/Lib/test/_test_multiprocessing.py Python-3.11.1/Lib/test/_tes
 <         s = SemLock(1, 0, 10, name, 0)
 ---
 >         s = SemLock(1, 0, 10, name, False)
+# ----------------------------------------------------------------------
+diff Python-3.11.1/Lib/multiprocessing/process.py Python-3.11.4/Lib/multiprocessing/process.py
+64c64
+<         if p._popen.poll() is not None:
+---
+>         if (child_popen := p._popen) and child_popen.poll() is not None:

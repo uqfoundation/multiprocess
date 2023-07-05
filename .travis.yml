@@ -41,6 +41,8 @@ matrix:
             - PYPY_VERSION="3.9"
 
     allow_failures:
+        - python: 'pypy3.8-7.3.9' # is 7.3.11
+        - python: 'pypy3.9-7.3.9' # is 7.3.11
         - python: '3.12-dev'
     fast_finish: true
 

@@ -100,6 +100,85 @@ $ diff pypy3.9-v7.3.8-src/lib-python/3/test/_test_multiprocessing.py pypy3.9-v7.
 >     raise unittest.SkipTest("libasan has a pthread_create() dead lock")
 > 
 # ----------------------------------------------------------------------
+diff pypy3.9-v7.3.9-src/pypy/module/_multiprocessing/interp_memory.py pypy3.9-v7.3.10-src/pypy/module/_multiprocessing/interp_memory.py
+10,11c10,11
+<         return space.newtuple([space.newint(address),
+<                                space.newint(mmap.mmap.size)])
+---
+>         return space.newtuple2(space.newint(address),
+>                                space.newint(mmap.mmap.size))
+# ----------------------------------------------------------------------
+diff pypy3.9-v7.3.9-src/lib-python/3/multiprocessing/connection.py pypy3.9-v7.3.10-src/lib-python/3/multiprocessing/connection.py
+76,80d75
+<         # Prefer abstract sockets if possible to avoid problems with the address
+<         # size.  When coding portable applications, some implementations have
+<         # sun_path as short as 92 bytes in the sockaddr_un struct.
+<         if util.abstract_sockets_supported:
+<             return f"\0listener-{os.getpid()}-{next(_mmap_counter)}"
+diff pypy3.9-v7.3.9-src/lib-python/3/multiprocessing/managers.py pypy3.9-v7.3.10-src/lib-python/3/multiprocessing/managers.py
+672c672
+<                     process.join(timeout=0.1)
+---
+>                     process.join(timeout=1.0)
+diff pypy3.9-v7.3.9-src/lib-python/3/multiprocessing/queues.py pypy3.9-v7.3.10-src/lib-python/3/multiprocessing/queues.py
+142,148c142,145
+<         try:
+<             self._reader.close()
+<         finally:
+<             close = self._close
+<             if close:
+<                 self._close = None
+<                 close()
+---
+>         close = self._close
+>         if close:
+>             self._close = None
+>             close()
+172,173c169,171
+<                   self._wlock, self._writer.close, self._ignore_epipe,
+<                   self._on_queue_feeder_error, self._sem),
+---
+>                   self._wlock, self._reader.close, self._writer.close,
+>                   self._ignore_epipe, self._on_queue_feeder_error,
+>                   self._sem),
+214,215c212,213
+<     def _feed(buffer, notempty, send_bytes, writelock, close, ignore_epipe,
+<               onerror, queue_sem):
+---
+>     def _feed(buffer, notempty, send_bytes, writelock, reader_close,
+>               writer_close, ignore_epipe, onerror, queue_sem):
+241c239,240
+<                             close()
+---
+>                             reader_close()
+>                             writer_close()
+diff pypy3.9-v7.3.9-src/lib-python/3/multiprocessing/util.py pypy3.9-v7.3.10-src/lib-python/3/multiprocessing/util.py
+123c123
+<     raise TypeError('address type of {address!r} unrecognized')
+---
+>     raise TypeError(f'address type of {address!r} unrecognized')
+# ----------------------------------------------------------------------
+diff pypy3.9-v7.3.9-src/pypy/module/_multiprocessing/test/test_interp_semaphore.py pypy3.9-v7.3.11-src/pypy/module/_multiprocessing/test/test_interp_semaphore.py
+5d4
+< from pypy.tool.pytest.objspace import gettestobjspace
+15a15
+> @pytest.mark.skipif(sys.platform == 'darwin', reason="Hangs on macOSX")
+diff pypy3.9-v7.3.9-src/pypy/module/_multiprocessing/test/test_semaphore.py pypy3.9-v7.3.11-src/pypy/module/_multiprocessing/test/test_semaphore.py
+2a3
+> import pytest
+70a72
+>     @pytest.mark.skipif(sys.platform == 'darwin', reason="Hangs on macOSX")
+92a95
+>     @pytest.mark.skipif(sys.platform == 'darwin', reason="Hangs on macOSX")
+117a121
+>     @pytest.mark.skipif(sys.platform == 'darwin', reason="Hangs on macOSX")
+129a134
+>     @pytest.mark.skipif(sys.platform == 'darwin', reason="Hangs on macOSX")
+151a157
+>     @pytest.mark.skipif(sys.platform == 'darwin', reason="Hangs on macOSX")
+167a174
+>     @pytest.mark.skipif(sys.platform == 'darwin', reason="Hangs on macOSX")
+# ----------------------------------------------------------------------
 NOTE: semaphore_tracker throws KeyError in multiprocess and multiprocessing
 
 Traceback (most recent call last):

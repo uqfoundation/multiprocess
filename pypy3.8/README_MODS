@@ -126,8 +126,37 @@ $ diff pypy3.8-v7.3.8-src/lib-python/3/test/_test_multiprocessing.py pypy3.8-v7.
 ---
 >             self.assertEqual(name_duplicate, sl_copy.shm.name)
 # ----------------------------------------------------------------------
+diff pypy3.8-v7.3.9-src/pypy/module/_multiprocessing/interp_memory.py pypy3.9-v7.3.10-src/pypy/module/_multiprocessing/interp_memory.py
+10,11c10,11
+<         return space.newtuple([space.newint(address),
+<                                space.newint(mmap.mmap.size)])
+---
+>         return space.newtuple2(space.newint(address),
+>                                space.newint(mmap.mmap.size))
+# ----------------------------------------------------------------------
+diff pypy3.8-v7.3.9-src/pypy/module/_multiprocessing/test/test_interp_semaphore.py pypy3.8-v7.3.11-src/pypy/module/_multiprocessing/test/test_interp_semaphore.py
+5d4
+< from pypy.tool.pytest.objspace import gettestobjspace
+15a15
+> @pytest.mark.skipif(sys.platform == 'darwin', reason="Hangs on macOSX")
+diff pypy3.8-v7.3.9-src/pypy/module/_multiprocessing/test/test_semaphore.py pypy3.8-v7.3.11-src/pypy/module/_multiprocessing/test/test_semaphore.py
+2a3
+> import pytest
+70a72
+>     @pytest.mark.skipif(sys.platform == 'darwin', reason="Hangs on macOSX")
+92a95
+>     @pytest.mark.skipif(sys.platform == 'darwin', reason="Hangs on macOSX")
+117a121
+>     @pytest.mark.skipif(sys.platform == 'darwin', reason="Hangs on macOSX")
+129a134
+>     @pytest.mark.skipif(sys.platform == 'darwin', reason="Hangs on macOSX")
+151a157
+>     @pytest.mark.skipif(sys.platform == 'darwin', reason="Hangs on macOSX")
+167a174
+>     @pytest.mark.skipif(sys.platform == 'darwin', reason="Hangs on macOSX")
 NOTE: semaphore_tracker throws KeyError in multiprocess and multiprocessing
-
+NOTE: semaphore_tracker throws KeyError in multiprocess and multiprocessing
+# ----------------------------------------------------------------------
 Traceback (most recent call last):
   File "multiprocess/resource_tracker.py", line 204, in main
     cache[rtype].remove(name)

@@ -3,14 +3,15 @@
 multiprocess package documentation
 ==================================
 
+.. toctree::
+    :hidden:
+    :maxdepth: 2
+
+    self
+    multiprocess
+
 .. automodule:: multiprocess
 ..  :exclude-members: +
-
-.. toctree::
-    :maxdepth: 2
-    :caption: Contents:
-
-    multiprocess
 
 Indices and tables
 ==================

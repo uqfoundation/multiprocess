@@ -16,14 +16,14 @@ context module
 dummy module
 ------------
 
-.. automodule:: multiprocess.dummy
-..  :exclude-members: +
-
 .. toctree::
+    :titlesonly:
     :maxdepth: 2
-    :caption: Contents:
 
     dummy
+
+.. automodule:: multiprocess.dummy
+..  :exclude-members: +
 
 forkserver module
 -----------------

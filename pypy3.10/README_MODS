@@ -1,0 +1,39 @@
+cp -rf pypy3.9/examples .
+cp -rf pypy3.9/doc .
+cp -f pypy3.9/index.html .
+cp -rf pypy3.9/module .
+cp -rf py3.10/multiprocess .
+cp -rf pypy3.9/_multiprocess .
+# ----------------------------------------------------------------------
+$ diff Python-3.10.9/Lib/test/_test_multiprocessing.py pypy3.10-v7.3.12-src/lib-python/3/test/_test_multiprocessing.py 
+621c621,622
+<         gc.collect()  # For PyPy or other GCs.
+---
+>         for i in range(3):
+>             gc.collect()
+2678c2679,2680
+<         gc.collect()  # For PyPy or other GCs.
+---
+>         for i in range(3):
+>             gc.collect()
+2766a2769,2771
+>         sm = multiprocessing.get_start_method()
+>         if sm == 'fork' and sys.implementation.name == 'pypy':
+>             self.skipTest("race condition on PyPy")
+2980c2985,2986
+<         self.assertRaises(Exception, queue.put, time.sleep)
+---
+>         # Changed on PyPy: passing functions to xmlrpc is broken
+>         #self.assertRaises(Exception, queue.put, time.sleep)
+3677a3684,3685
+>         support.gc_collect() # for PyPy and other GCs
+> 
+3683a3692
+>     @test.support.cpython_only
+4302c4311,4312
+<         gc.collect()  # For PyPy or other GCs.
+---
+>         for i in range(3):
+>             gc.collect()
+4356a4367
+>     @test.support.cpython_only

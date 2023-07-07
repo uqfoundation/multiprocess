@@ -21,7 +21,6 @@ matrix:
 
         - python: '3.11'
           env:
-            - PYVERSION="3.11"
 
         - python: '3.12-dev'
           env:
@@ -32,18 +31,21 @@ matrix:
           env:
             - PYPY_VERSION="3.7"
 
-        - python: 'pypy3.8-7.3.9'
+        - python: 'pypy3.8-7.3.9' # is 7.3.11
           env:
             - PYPY_VERSION="3.8"
 
-        - python: 'pypy3.9-7.3.9'
+        - python: 'pypy3.9-7.3.9' # is 7.3.12
           env:
             - PYPY_VERSION="3.9"
 
+        - python: 'pypy3.10-7.3.12'
+          env:
+            - PYPY_VERSION="3.10"
+
     allow_failures:
-        - python: 'pypy3.8-7.3.9' # is 7.3.11
-        - python: 'pypy3.9-7.3.9' # is 7.3.11
         - python: '3.12-dev'
+        - python: 'pypy3.10-7.3.12' # CI missing
     fast_finish: true
 
 cache:
@@ -59,10 +61,11 @@ install:
     - python -m pip install .
 
 script:
-    - if [[ $PYVERSION != "3.11" && $PYVERSION != "3.12" ]]; then PYVERSION=$TRAVIS_PYTHON_VERSION ; fi
+    - if [[ $PYVERSION != "3.12" ]]; then PYVERSION=$TRAVIS_PYTHON_VERSION ; fi
     - if [[ $PYVERSION == "pypy3.7-7.3.9" ]]; then PYVERSION=py$PYPY_VERSION ; fi
     - if [[ $PYVERSION == "pypy3.8-7.3.9" ]]; then PYVERSION=py$PYPY_VERSION ; fi
     - if [[ $PYVERSION == "pypy3.9-7.3.9" ]]; then PYVERSION=py$PYPY_VERSION ; fi
+    - if [[ $PYVERSION == "pypy3.10-7.3.12" ]]; then PYVERSION=py$PYPY_VERSION ; fi
     - cd py$PYVERSION #XXX: bash script may require tests run from root
     - if [[ $COVERAGE == "true" ]]; then cp ../.coveragerc .coveragerc ; fi
     - for test in multiprocess/tests/__init__.py; do echo $test ; if [[ $COVERAGE == "true" ]]; then coverage run -a $test > /dev/null; else python $test > /dev/null; fi ; done

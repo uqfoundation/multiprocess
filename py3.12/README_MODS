@@ -578,4 +578,312 @@ diff Python-3.12.0a5/Modules/_multiprocessing/multiprocessing.h Python-3.12.0a7/
 > #  ifndef WIN32_LEAN_AND_MEAN
 > #    define WIN32_LEAN_AND_MEAN
 > #  endif
-
+# ----------------------------------------------------------------------
+diff Python-3.12.0a7/Modules/_multiprocessing/multiprocessing.c Python-3.12.0b1/Modules/_multiprocessing/multiprocessing.c
+278a279
+>     {Py_mod_multiple_interpreters, Py_MOD_PER_INTERPRETER_GIL_SUPPORTED},
+diff Python-3.12.0a7/Modules/_multiprocessing/posixshmem.c Python-3.12.0b1/Modules/_multiprocessing/posixshmem.c
+112a113,118
+> static PyModuleDef_Slot module_slots[] = {
+>     {Py_mod_multiple_interpreters, Py_MOD_PER_INTERPRETER_GIL_SUPPORTED},
+>     {0, NULL}
+> };
+> 
+> 
+118a125
+>     .m_slots = module_slots,
+diff Python-3.12.0a7/Lib/multiprocessing/connection.py Python-3.12.0b1/Lib/multiprocessing/connection.py
+725c725
+< MESSAGE_LENGTH = 20
+---
+> MESSAGE_LENGTH = 40  # MUST be > 20
+727,729c727,729
+< CHALLENGE = b'#CHALLENGE#'
+< WELCOME = b'#WELCOME#'
+< FAILURE = b'#FAILURE#'
+---
+> _CHALLENGE = b'#CHALLENGE#'
+> _WELCOME = b'#WELCOME#'
+> _FAILURE = b'#FAILURE#'
+753c753,758
+< # 2.  New random 20 bytes -> MESSAGE
+---
+> # 2.  Random 20+ bytes -> MESSAGE
+> #     Modern servers always send
+> #     more than 20 bytes and include
+> #     a {digest} prefix on it with
+> #     their preferred HMAC digest.
+> #     Legacy ones send ==20 bytes.
+766c771,778
+< # 8.                                  Compute HMAC-MD5 of AUTHKEY, M2 -> C_DIGEST
+---
+> # 7.1.                                Parse M2: if it is exactly 20 bytes in
+> #                                     length this indicates a legacy server
+> #                                     supporting only HMAC-MD5. Otherwise the
+> # 7.2.                                preferred digest is looked up from an
+> #                                     expected "{digest}" prefix on M2. No prefix
+> #                                     or unsupported digest? <- AuthenticationError
+> # 7.3.                                Put divined algorithm name in -> D_NAME
+> # 8.                                  Compute HMAC-D_NAME of AUTHKEY, M2 -> C_DIGEST
+769,771c781
+< # 10. Compute HMAC-MD5 of AUTHKEY,
+< #     MESSAGE into -> M_DIGEST.
+< # 11. Receive 4 or 4+8 byte length
+---
+> # 10. Receive 4 or 4+8 byte length
+773c783,796
+< # 12. Receive min(SIZE, 256) -> C_D.
+---
+> # 11. Receive min(SIZE, 256) -> C_D.
+> # 11.1. Parse C_D: legacy servers
+> #     accept it as is, "md5" -> D_NAME
+> # 11.2. modern servers check the length
+> #     of C_D, IF it is 16 bytes?
+> # 11.2.1. "md5" -> D_NAME
+> #         and skip to step 12.
+> # 11.3. longer? expect and parse a "{digest}"
+> #     prefix into -> D_NAME.
+> #     Strip the prefix and store remaining
+> #     bytes in -> C_D.
+> # 11.4. Don't like D_NAME? <- AuthenticationError
+> # 12. Compute HMAC-D_NAME of AUTHKEY,
+> #     MESSAGE into -> M_DIGEST.
+790,796c813,863
+< # Length prefixes are used consistently even though every step so far has
+< # always been a singular specific fixed length.  This may help us evolve
+< # the protocol in the future without breaking backwards compatibility.
+< #
+< # Similarly the initial challenge message from the serving side has always
+< # been 20 bytes, but clients can accept a 100+ so using the length of the
+< # opening challenge message as an indicator of protocol version may work.
+---
+> # Length prefixes are used consistently. Even on the legacy protocol, this
+> # was good fortune and allowed us to evolve the protocol by using the length
+> # of the opening challenge or length of the returned digest as a signal as
+> # to which protocol the other end supports.
+> 
+> _ALLOWED_DIGESTS = frozenset(
+>         {b'md5', b'sha256', b'sha384', b'sha3_256', b'sha3_384'})
+> _MAX_DIGEST_LEN = max(len(_) for _ in _ALLOWED_DIGESTS)
+> 
+> # Old hmac-md5 only server versions from Python <=3.11 sent a message of this
+> # length. It happens to not match the length of any supported digest so we can
+> # use a message of this length to indicate that we should work in backwards
+> # compatible md5-only mode without a {digest_name} prefix on our response.
+> _MD5ONLY_MESSAGE_LENGTH = 20
+> _MD5_DIGEST_LEN = 16
+> _LEGACY_LENGTHS = (_MD5ONLY_MESSAGE_LENGTH, _MD5_DIGEST_LEN)
+> 
+> 
+> def _get_digest_name_and_payload(message: bytes) -> (str, bytes):
+>     """Returns a digest name and the payload for a response hash.
+> 
+>     If a legacy protocol is detected based on the message length
+>     or contents the digest name returned will be empty to indicate
+>     legacy mode where MD5 and no digest prefix should be sent.
+>     """
+>     # modern message format: b"{digest}payload" longer than 20 bytes
+>     # legacy message format: 16 or 20 byte b"payload"
+>     if len(message) in _LEGACY_LENGTHS:
+>         # Either this was a legacy server challenge, or we're processing
+>         # a reply from a legacy client that sent an unprefixed 16-byte
+>         # HMAC-MD5 response. All messages using the modern protocol will
+>         # be longer than either of these lengths.
+>         return '', message
+>     if (message.startswith(b'{') and
+>         (curly := message.find(b'}', 1, _MAX_DIGEST_LEN+2)) > 0):
+>         digest = message[1:curly]
+>         if digest in _ALLOWED_DIGESTS:
+>             payload = message[curly+1:]
+>             return digest.decode('ascii'), payload
+>     raise AuthenticationError(
+>             'unsupported message length, missing digest prefix, '
+>             f'or unsupported digest: {message=}')
+> 
+> 
+> def _create_response(authkey, message):
+>     """Create a MAC based on authkey and message
+> 
+>     The MAC algorithm defaults to HMAC-MD5, unless MD5 is not available or
+>     the message has a '{digest_name}' prefix. For legacy HMAC-MD5, the response
+>     is the raw MAC, otherwise the response is prefixed with '{digest_name}',
+>     e.g. b'{sha256}abcdefg...'
+798,799c865,894
+< 
+< def deliver_challenge(connection, authkey):
+---
+>     Note: The MAC protects the entire message including the digest_name prefix.
+>     """
+>     import hmac
+>     digest_name = _get_digest_name_and_payload(message)[0]
+>     # The MAC protects the entire message: digest header and payload.
+>     if not digest_name:
+>         # Legacy server without a {digest} prefix on message.
+>         # Generate a legacy non-prefixed HMAC-MD5 reply.
+>         try:
+>             return hmac.new(authkey, message, 'md5').digest()
+>         except ValueError:
+>             # HMAC-MD5 is not available (FIPS mode?), fall back to
+>             # HMAC-SHA2-256 modern protocol. The legacy server probably
+>             # doesn't support it and will reject us anyways. :shrug:
+>             digest_name = 'sha256'
+>     # Modern protocol, indicate the digest used in the reply.
+>     response = hmac.new(authkey, message, digest_name).digest()
+>     return b'{%s}%s' % (digest_name.encode('ascii'), response)
+> 
+> 
+> def _verify_challenge(authkey, message, response):
+>     """Verify MAC challenge
+> 
+>     If our message did not include a digest_name prefix, the client is allowed
+>     to select a stronger digest_name from _ALLOWED_DIGESTS.
+> 
+>     In case our message is prefixed, a client cannot downgrade to a weaker
+>     algorithm, because the MAC is calculated over the entire message
+>     including the '{digest_name}' prefix.
+>     """
+800a896,910
+>     response_digest, response_mac = _get_digest_name_and_payload(response)
+>     response_digest = response_digest or 'md5'
+>     try:
+>         expected = hmac.new(authkey, message, response_digest).digest()
+>     except ValueError:
+>         raise AuthenticationError(f'{response_digest=} unsupported')
+>     if len(expected) != len(response_mac):
+>         raise AuthenticationError(
+>                 f'expected {response_digest!r} of length {len(expected)} '
+>                 f'got {len(response_mac)}')
+>     if not hmac.compare_digest(expected, response_mac):
+>         raise AuthenticationError('digest received was wrong')
+> 
+> 
+> def deliver_challenge(connection, authkey: bytes, digest_name='sha256'):
+803a914
+>     assert MESSAGE_LENGTH > _MD5ONLY_MESSAGE_LENGTH, "protocol constraint"
+805,806c916,920
+<     connection.send_bytes(CHALLENGE + message)
+<     digest = hmac.new(authkey, message, 'md5').digest()
+---
+>     message = b'{%s}%s' % (digest_name.encode('ascii'), message)
+>     # Even when sending a challenge to a legacy client that does not support
+>     # digest prefixes, they'll take the entire thing as a challenge and
+>     # respond to it with a raw HMAC-MD5.
+>     connection.send_bytes(_CHALLENGE + message)
+808,809c922,926
+<     if response == digest:
+<         connection.send_bytes(WELCOME)
+---
+>     try:
+>         _verify_challenge(authkey, message, response)
+>     except AuthenticationError:
+>         connection.send_bytes(_FAILURE)
+>         raise
+811,812c928
+<         connection.send_bytes(FAILURE)
+<         raise AuthenticationError('digest received was wrong')
+---
+>         connection.send_bytes(_WELCOME)
+814,815c930,931
+< def answer_challenge(connection, authkey):
+<     import hmac
+---
+> 
+> def answer_challenge(connection, authkey: bytes):
+820,822c936,942
+<     assert message[:len(CHALLENGE)] == CHALLENGE, 'message = %r' % message
+<     message = message[len(CHALLENGE):]
+<     digest = hmac.new(authkey, message, 'md5').digest()
+---
+>     if not message.startswith(_CHALLENGE):
+>         raise AuthenticationError(
+>                 f'Protocol error, expected challenge: {message=}')
+>     message = message[len(_CHALLENGE):]
+>     if len(message) < _MD5ONLY_MESSAGE_LENGTH:
+>         raise AuthenticationError('challenge too short: {len(message)} bytes')
+>     digest = _create_response(authkey, message)
+825c945
+<     if response != WELCOME:
+---
+>     if response != _WELCOME:
+diff Python-3.12.0a7/Lib/multiprocessing/process.py Python-3.12.0b1/Lib/multiprocessing/process.py
+64c64
+<         if p._popen.poll() is not None:
+---
+>         if (child_popen := p._popen) and child_popen.poll() is not None:
+diff Python-3.12.0a7/Lib/test/_test_multiprocessing.py Python-3.12.0b1/Lib/test/_test_multiprocessing.py 
+50a51
+> from multiprocessing.connection import wait, AuthenticationError
+134,135d134
+< from multiprocessing.connection import wait
+< 
+3045c3044
+< @hashlib_helper.requires_hashdigest('md5')
+---
+> @hashlib_helper.requires_hashdigest('sha256')
+3534c3533
+< @hashlib_helper.requires_hashdigest('md5')
+---
+> @hashlib_helper.requires_hashdigest('sha256')
+3837c3836
+< @hashlib_helper.requires_hashdigest('md5')
+---
+> @hashlib_helper.requires_hashdigest('sha256')
+4639c4638
+< @hashlib_helper.requires_hashdigest('md5')
+---
+> @hashlib_helper.requires_hashdigest('sha256')
+4659c4658
+<                     return multiprocessing.connection.CHALLENGE
+---
+>                     return multiprocessing.connection._CHALLENGE
+4668a4668,4705
+> 
+> @hashlib_helper.requires_hashdigest('md5')
+> @hashlib_helper.requires_hashdigest('sha256')
+> class ChallengeResponseTest(unittest.TestCase):
+>     authkey = b'supadupasecretkey'
+> 
+>     def create_response(self, message):
+>         return multiprocessing.connection._create_response(
+>             self.authkey, message
+>         )
+> 
+>     def verify_challenge(self, message, response):
+>         return multiprocessing.connection._verify_challenge(
+>             self.authkey, message, response
+>         )
+> 
+>     def test_challengeresponse(self):
+>         for algo in [None, "md5", "sha256"]:
+>             with self.subTest(f"{algo=}"):
+>                 msg = b'is-twenty-bytes-long'  # The length of a legacy message.
+>                 if algo:
+>                     prefix = b'{%s}' % algo.encode("ascii")
+>                 else:
+>                     prefix = b''
+>                 msg = prefix + msg
+>                 response = self.create_response(msg)
+>                 if not response.startswith(prefix):
+>                     self.fail(response)
+>                 self.verify_challenge(msg, response)
+> 
+>     # TODO(gpshead): We need integration tests for handshakes between modern
+>     # deliver_challenge() and verify_response() code and connections running a
+>     # test-local copy of the legacy Python <=3.11 implementations.
+> 
+>     # TODO(gpshead): properly annotate tests for requires_hashdigest rather than
+>     # only running these on a platform supporting everything.  otherwise logic
+>     # issues preventing it from working on FIPS mode setups will be hidden.
+> 
+4676c4713
+< @hashlib_helper.requires_hashdigest('md5')
+---
+> @hashlib_helper.requires_hashdigest('sha256')
+5540c5577
+< @hashlib_helper.requires_hashdigest('md5')
+---
+> @hashlib_helper.requires_hashdigest('sha256')
+5972c6009
+<                     Temp = hashlib_helper.requires_hashdigest('md5')(Temp)
+---
+>                     Temp = hashlib_helper.requires_hashdigest('sha256')(Temp)

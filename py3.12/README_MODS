@@ -887,3 +887,111 @@ diff Python-3.12.0a7/Lib/test/_test_multiprocessing.py Python-3.12.0b1/Lib/test/
 <                     Temp = hashlib_helper.requires_hashdigest('md5')(Temp)
 ---
 >                     Temp = hashlib_helper.requires_hashdigest('sha256')(Temp)
+# ----------------------------------------------------------------------
+diff Python-3.12.0b1/Lib/multiprocessing/spawn.py Python-3.12.0b4/Lib/multiprocessing/spawn.py
+34c34
+<     WINSERVICE = sys.executable.lower().endswith("pythonservice.exe")
+---
+>     WINSERVICE = sys.executable and sys.executable.lower().endswith("pythonservice.exe")
+38c38,40
+<     if sys.platform == 'win32':
+---
+>     if exe is None:
+>         _python_exe = exe
+>     elif sys.platform == 'win32':
+diff Python-3.12.0b1/Lib/test/_test_multiprocessing.py Python-3.12.0b4/Lib/test/_test_multiprocessing.py 
+15a16
+> import functools
+33a35
+> from test.support import script_helper
+173a176,228
+> def only_run_in_spawn_testsuite(reason):
+>     """Returns a decorator: raises SkipTest when SM != spawn at test time.
+> 
+>     This can be useful to save overall Python test suite execution time.
+>     "spawn" is the universal mode available on all platforms so this limits the
+>     decorated test to only execute within test_multiprocessing_spawn.
+> 
+>     This would not be necessary if we refactored our test suite to split things
+>     into other test files when they are not start method specific to be rerun
+>     under all start methods.
+>     """
+> 
+>     def decorator(test_item):
+> 
+>         @functools.wraps(test_item)
+>         def spawn_check_wrapper(*args, **kwargs):
+>             if (start_method := multiprocessing.get_start_method()) != "spawn":
+>                 raise unittest.SkipTest(f"{start_method=}, not 'spawn'; {reason}")
+>             return test_item(*args, **kwargs)
+> 
+>         return spawn_check_wrapper
+> 
+>     return decorator
+> 
+> 
+> class TestInternalDecorators(unittest.TestCase):
+>     """Logic within a test suite that could errantly skip tests? Test it!"""
+> 
+>     @unittest.skipIf(sys.platform == "win32", "test requires that fork exists.")
+>     def test_only_run_in_spawn_testsuite(self):
+>         if multiprocessing.get_start_method() != "spawn":
+>             raise unittest.SkipTest("only run in test_multiprocessing_spawn.")
+> 
+>         try:
+>             @only_run_in_spawn_testsuite("testing this decorator")
+>             def return_four_if_spawn():
+>                 return 4
+>         except Exception as err:
+>             self.fail(f"expected decorated `def` not to raise; caught {err}")
+> 
+>         orig_start_method = multiprocessing.get_start_method(allow_none=True)
+>         try:
+>             multiprocessing.set_start_method("spawn", force=True)
+>             self.assertEqual(return_four_if_spawn(), 4)
+>             multiprocessing.set_start_method("fork", force=True)
+>             with self.assertRaises(unittest.SkipTest) as ctx:
+>                 return_four_if_spawn()
+>             self.assertIn("testing this decorator", str(ctx.exception))
+>             self.assertIn("start_method=", str(ctx.exception))
+>         finally:
+>             multiprocessing.set_start_method(orig_start_method, force=True)
+> 
+> 
+5817a5873
+>     @only_run_in_spawn_testsuite("spawn specific test.")
+5828d5883
+< 
+5830d5884
+< 
+5832d5885
+< 
+5834d5886
+< 
+5840c5892
+<         rc, out, err = test.support.script_helper.assert_python_ok(testfn)
+---
+>         rc, out, err = script_helper.assert_python_ok(testfn)
+5843c5895
+<         self.assertEqual(err, b'')
+---
+>         self.assertFalse(err, msg=err.decode('utf-8'))
+5851a5904,5921
+>     @only_run_in_spawn_testsuite("avoids redundant testing.")
+>     def test_spawn_sys_executable_none_allows_import(self):
+>         # Regression test for a bug introduced in
+>         # https://github.com/python/cpython/issues/90876 that caused an
+>         # ImportError in multiprocessing when sys.executable was None.
+>         # This can be true in embedded environments.
+>         rc, out, err = script_helper.assert_python_ok(
+>             "-c",
+>             """if 1:
+>             import sys
+>             sys.executable = None
+>             assert "multiprocessing" not in sys.modules, "already imported!"
+>             import multiprocessing
+>             import multiprocessing.spawn  # This should not fail\n""",
+>         )
+>         self.assertEqual(rc, 0)
+>         self.assertFalse(err, msg=err.decode('utf-8'))
+> 

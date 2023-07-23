@@ -63,7 +63,7 @@ Requirements
 
 * ``python`` (or ``pypy``), **>=3.7**
 * ``setuptools``, **>=42**
-* ``dill``, **>=0.3.6**
+* ``dill``, **>=0.3.7**
 
 
 Basic Usage

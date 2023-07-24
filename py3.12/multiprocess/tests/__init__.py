@@ -5880,7 +5880,7 @@ class TestSyncManagerTypes(unittest.TestCase):
 
 
 class TestNamedResource(unittest.TestCase):
-    @unittest.skipIf(sys.hexversion < 0x30c00b4, "ModuleNotFoundError")
+    @unittest.skipIf(sys.hexversion <= 0x30c00b4, "ModuleNotFoundError")
     @only_run_in_spawn_testsuite("spawn specific test.")
     def test_global_named_resource_spawn(self):
         #
@@ -5914,7 +5914,7 @@ class MiscTestCase(unittest.TestCase):
                                            'license', 'citation'])
 
 
-    @unittest.skipIf(sys.hexversion < 0x30c00b4, "ModuleNotFoundError")
+    @unittest.skipIf(sys.hexversion <= 0x30c00b4, "ModuleNotFoundError")
     @only_run_in_spawn_testsuite("avoids redundant testing.")
     def test_spawn_sys_executable_none_allows_import(self):
         # Regression test for a bug introduced in

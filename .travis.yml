@@ -3,10 +3,6 @@ language: python
 
 matrix:
     include:
-        - python: '3.7'
-          env:
-            - COVERAGE="true"
-
         - python: '3.8'
           env:
             - COVERAGE="true"
@@ -26,10 +22,6 @@ matrix:
           env:
             - PYVERSION="3.12"
             - DILL="master"
-
-        - python: 'pypy3.7-7.3.9'
-          env:
-            - PYPY_VERSION="3.7"
 
         - python: 'pypy3.8-7.3.9' # is 7.3.11
           env:
@@ -62,7 +54,6 @@ install:
 
 script:
     - if [[ $PYVERSION != "3.12" ]]; then PYVERSION=$TRAVIS_PYTHON_VERSION ; fi
-    - if [[ $PYVERSION == "pypy3.7-7.3.9" ]]; then PYVERSION=py$PYPY_VERSION ; fi
     - if [[ $PYVERSION == "pypy3.8-7.3.9" ]]; then PYVERSION=py$PYPY_VERSION ; fi
     - if [[ $PYVERSION == "pypy3.9-7.3.9" ]]; then PYVERSION=py$PYPY_VERSION ; fi
     - if [[ $PYVERSION == "pypy3.10-7.3.12" ]]; then PYVERSION=py$PYPY_VERSION ; fi

@@ -16,8 +16,8 @@ import os
 import sys
 import glob
 # drop support for older python
-if sys.version_info < (3, 7):
-    unsupported = 'Versions of Python before 3.7 are not supported'
+if sys.version_info < (3, 8):
+    unsupported = 'Versions of Python before 3.8 are not supported'
     raise ValueError(unsupported)
 
 #is_jython = sys.platform.startswith('java')
@@ -255,14 +255,13 @@ def run_setup(with_extensions=True):
             'Source Code':'https://github.com/uqfoundation/multiprocess',
             'Bug Tracker':'https://github.com/uqfoundation/multiprocess/issues',
         },
-        python_requires = '>=3.7',
+        python_requires = '>=3.8',
         classifiers=[
             'Development Status :: 5 - Production/Stable',
             'Intended Audience :: Developers',
             'Intended Audience :: Science/Research',
             'License :: OSI Approved :: BSD License',
             'Programming Language :: Python :: 3',
-            'Programming Language :: Python :: 3.7',
             'Programming Language :: Python :: 3.8',
             'Programming Language :: Python :: 3.9',
             'Programming Language :: Python :: 3.10',

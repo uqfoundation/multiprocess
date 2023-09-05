@@ -636,3 +636,170 @@ diff Python-3.11.1/Lib/multiprocessing/process.py Python-3.11.4/Lib/multiprocess
 <         if p._popen.poll() is not None:
 ---
 >         if (child_popen := p._popen) and child_popen.poll() is not None:
+# ----------------------------------------------------------------------
+diff Python-3.11.4/Lib/multiprocessing/forkserver.py Python-3.11.5/Lib/multiprocessing/forkserver.py
+64c64
+<         if not all(type(mod) is str for mod in self._preload_modules):
+---
+>         if not all(type(mod) is str for mod in modules_names):
+diff Python-3.11.4/Lib/multiprocessing/spawn.py Python-3.11.5/Lib/multiprocessing/spawn.py
+34c34
+<     WINSERVICE = sys.executable.lower().endswith("pythonservice.exe")
+---
+>     WINSERVICE = sys.executable and sys.executable.lower().endswith("pythonservice.exe")
+38c38,40
+<     if sys.platform == 'win32':
+---
+>     if exe is None:
+>         _python_exe = exe
+>     elif sys.platform == 'win32':
+151c153,157
+<         is not going to be frozen to produce an executable.''')
+---
+>         is not going to be frozen to produce an executable.
+> 
+>         To fix this issue, refer to the "Safe importing of main module"
+>         section in https://docs.python.org/3/library/multiprocessing.html
+>         ''')
+diff Python-3.11.4/Lib/multiprocessing/synchronize.py Python-3.11.5/Lib/multiprocessing/synchronize.py
+53,54c53,54
+<         name = ctx.get_start_method()
+<         unlink_now = sys.platform == 'win32' or name == 'fork'
+---
+>         self.is_fork_ctx = ctx.get_start_method() == 'fork'
+>         unlink_now = sys.platform == 'win32' or self.is_fork_ctx
+105a106,110
+>             if self.is_fork_ctx:
+>                 raise RuntimeError('A SemLock created in a fork context is being '
+>                                    'shared with a process in a spawn context. This is '
+>                                    'not supported. Please use the same context to create '
+>                                    'multiprocessing objects and Process.')
+# ----------------------------------------------------------------------
+diff Python-3.11.4/Lib/test/_test_multiprocessing.py Python-3.11.5/Lib/test/_test_multiprocessing.py 
+15a16
+> import functools
+33a35
+> from test.support import script_helper
+172a175,227
+> def only_run_in_spawn_testsuite(reason):
+>     """Returns a decorator: raises SkipTest when SM != spawn at test time.
+> 
+>     This can be useful to save overall Python test suite execution time.
+>     "spawn" is the universal mode available on all platforms so this limits the
+>     decorated test to only execute within test_multiprocessing_spawn.
+> 
+>     This would not be necessary if we refactored our test suite to split things
+>     into other test files when they are not start method specific to be rerun
+>     under all start methods.
+>     """
+> 
+>     def decorator(test_item):
+> 
+>         @functools.wraps(test_item)
+>         def spawn_check_wrapper(*args, **kwargs):
+>             if (start_method := multiprocessing.get_start_method()) != "spawn":
+>                 raise unittest.SkipTest(f"{start_method=}, not 'spawn'; {reason}")
+>             return test_item(*args, **kwargs)
+> 
+>         return spawn_check_wrapper
+> 
+>     return decorator
+> 
+> 
+> class TestInternalDecorators(unittest.TestCase):
+>     """Logic within a test suite that could errantly skip tests? Test it!"""
+> 
+>     @unittest.skipIf(sys.platform == "win32", "test requires that fork exists.")
+>     def test_only_run_in_spawn_testsuite(self):
+>         if multiprocessing.get_start_method() != "spawn":
+>             raise unittest.SkipTest("only run in test_multiprocessing_spawn.")
+> 
+>         try:
+>             @only_run_in_spawn_testsuite("testing this decorator")
+>             def return_four_if_spawn():
+>                 return 4
+>         except Exception as err:
+>             self.fail(f"expected decorated `def` not to raise; caught {err}")
+> 
+>         orig_start_method = multiprocessing.get_start_method(allow_none=True)
+>         try:
+>             multiprocessing.set_start_method("spawn", force=True)
+>             self.assertEqual(return_four_if_spawn(), 4)
+>             multiprocessing.set_start_method("fork", force=True)
+>             with self.assertRaises(unittest.SkipTest) as ctx:
+>                 return_four_if_spawn()
+>             self.assertIn("testing this decorator", str(ctx.exception))
+>             self.assertIn("start_method=", str(ctx.exception))
+>         finally:
+>             multiprocessing.set_start_method(orig_start_method, force=True)
+> 
+> 
+5240a5296,5303
+>     def test_context_check_module_types(self):
+>         try:
+>             ctx = multiprocessing.get_context('forkserver')
+>         except ValueError:
+>             raise unittest.SkipTest('forkserver should be available')
+>         with self.assertRaisesRegex(TypeError, 'module_names must be a list of strings'):
+>             ctx.set_forkserver_preload([1, 2, 3])
+> 
+5284a5348,5369
+>     @unittest.skipIf(sys.platform == "win32",
+>                      "Only Spawn on windows so no risk of mixing")
+>     @only_run_in_spawn_testsuite("avoids redundant testing.")
+>     def test_mixed_startmethod(self):
+>         # Fork-based locks cannot be used with spawned process
+>         for process_method in ["spawn", "forkserver"]:
+>             queue = multiprocessing.get_context("fork").Queue()
+>             process_ctx = multiprocessing.get_context(process_method)
+>             p = process_ctx.Process(target=close_queue, args=(queue,))
+>             err_msg = "A SemLock created in a fork"
+>             with self.assertRaisesRegex(RuntimeError, err_msg):
+>                 p.start()
+> 
+>         # non-fork-based locks can be used with all other start methods
+>         for queue_method in ["spawn", "forkserver"]:
+>             for process_method in multiprocessing.get_all_start_methods():
+>                 queue = multiprocessing.get_context(queue_method).Queue()
+>                 process_ctx = multiprocessing.get_context(process_method)
+>                 p = process_ctx.Process(target=close_queue, args=(queue,))
+>                 p.start()
+>                 p.join()
+> 
+5777a5863
+>     @only_run_in_spawn_testsuite("spawn specific test.")
+5788d5873
+< 
+5790d5874
+< 
+5792d5875
+< 
+5794d5876
+< 
+5800c5882
+<         rc, out, err = test.support.script_helper.assert_python_ok(testfn)
+---
+>         rc, out, err = script_helper.assert_python_ok(testfn)
+5803c5885
+<         self.assertEqual(err, b'')
+---
+>         self.assertFalse(err, msg=err.decode('utf-8'))
+5811a5894,5911
+>     @only_run_in_spawn_testsuite("avoids redundant testing.")
+>     def test_spawn_sys_executable_none_allows_import(self):
+>         # Regression test for a bug introduced in
+>         # https://github.com/python/cpython/issues/90876 that caused an
+>         # ImportError in multiprocessing when sys.executable was None.
+>         # This can be true in embedded environments.
+>         rc, out, err = script_helper.assert_python_ok(
+>             "-c",
+>             """if 1:
+>             import sys
+>             sys.executable = None
+>             assert "multiprocessing" not in sys.modules, "already imported!"
+>             import multiprocessing
+>             import multiprocessing.spawn  # This should not fail\n""",
+>         )
+>         self.assertEqual(rc, 0)
+>         self.assertFalse(err, msg=err.decode('utf-8'))
+> 

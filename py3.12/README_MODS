@@ -1118,3 +1118,11 @@ diff Python-3.12.0b4/Lib/test/_test_multiprocessing.py Python-3.12.0rc2/Lib/test
 >             if only_type:
 >                 continue
 > 
+# ----------------------------------------------------------------------
+$ diff Python-3.12.0rc2/Lib/test/_test_multiprocessing.py  Python-3.12.0rc3/Lib/test/_test_multiprocessing.py 
+677a678
+>     @support.requires_resource('walltime')
+4955a4957
+>     @support.requires_resource('walltime')
+4983a4986
+>     @support.requires_resource('walltime')

@@ -18,9 +18,8 @@ except ImportError:
 shell = sys.platform[:3] == 'win'
 
 suite = os.path.dirname(__file__) or os.path.curdir
-tests = glob.glob(suite + os.path.sep + 'test_*.py')
 tests = glob.glob(suite + os.path.sep + '__init__.py') + \
-        [i for i in tests if 'main' not in i]
+        glob.glob(suite + os.path.sep + '*' + os.path.sep + '__init__.py')
 
 
 if __name__ == '__main__':

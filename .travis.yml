@@ -60,7 +60,7 @@ script:
     - cd py$PYVERSION #XXX: bash script may require tests run from root
     - if [[ $COVERAGE == "true" ]]; then cp ../.coveragerc .coveragerc ; fi
     - for test in multiprocess/tests/__init__.py; do echo $test ; if [[ $COVERAGE == "true" ]]; then coverage run -a $test > /dev/null; else python $test > /dev/null; fi ; done
-    - if [[ $PYVERSION == *"py3"* ]]; then for test in multiprocess/tests/test_multiprocessing_fork.py multiprocess/tests/test_multiprocessing_fork/*.py; do echo $test ; if [[ $COVERAGE == "true" ]]; then coverage run -a $test > /dev/null; else python $test > /dev/null; fi ; done ; else for test in multiprocess/tests/*.py multiprocess/tests/test_*/*.py; do if [[ $test != *"__"* && $test != *"mp_"* ]]; then echo $test ; if [[ $COVERAGE == "true" ]]; then coverage run -a $test > /dev/null; else python $test > /dev/null; fi ; fi; done ; fi
+    - if [[ $PYVERSION == *"py3"* ]]; then for test in multiprocess/tests/test_multiprocessing_fork.py; do echo $test ; if [[ $COVERAGE == "true" ]]; then coverage run -a $test > /dev/null; else python $test > /dev/null; fi ; done ; elif [[ $PYVERSION == "3.11" || $PYVERSION == "3.12" ]] for test in multiprocess/tests/*.py multiprocess/tests/test_*/*.py; do if [[ $test != *"__"* && $test != *"mp_"* ]]; then echo $test ; if [[ $COVERAGE == "true" ]]; then coverage run -a $test > /dev/null; else python $test > /dev/null; fi ; fi ; done ; else for test in multiprocess/tests/*.py; do if [[ $test != *"__"* && $test != *"mp_"* ]]; then echo $test ; if [[ $COVERAGE == "true" ]]; then coverage run -a $test > /dev/null; else python $test > /dev/null; fi ; fi; done ; fi
     - cd ..
 
 after_success:

@@ -7,7 +7,6 @@ omit =
     */_multiprocess/*
     */examples/*
     */multiprocess/tests/*
-    */multiprocess/tests/test_*/*
 branch = true
 # timid = true
 # parallel = true

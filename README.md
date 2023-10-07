@@ -137,7 +137,7 @@ to execute Python in parallel. You can run the test suite with
 ``multiprocessing`` interface, the examples and documentation found at
 http://docs.python.org/library/multiprocessing.html also apply to
 ``multiprocess`` if one will ``import multiprocessing as multiprocess``.
-See https://github.com/uqfoundation/multiprocess/tree/master/py3.11/examples
+See https://github.com/uqfoundation/multiprocess/tree/master/py3.12/examples
 for a set of examples that demonstrate some basic use cases and benchmarking
 for running Python code in parallel. Please feel free to submit a ticket on
 github, or ask a question on stackoverflow (**@Mike McKerns**). If you would

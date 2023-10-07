@@ -803,3 +803,184 @@ diff Python-3.11.4/Lib/test/_test_multiprocessing.py Python-3.11.5/Lib/test/_tes
 >         self.assertEqual(rc, 0)
 >         self.assertFalse(err, msg=err.decode('utf-8'))
 > 
+# ----------------------------------------------------------------------
+diff Python-3.11.5/Modules/_multiprocessing/semaphore.c Python-3.11.6/Modules/_multiprocessing/semaphore.c
+519,521d518
+<     if (handle != SEM_FAILED)
+<         SEM_CLOSE(handle);
+<     PyMem_Free(name_copy);
+524a522,524
+>     if (handle != SEM_FAILED)
+>         SEM_CLOSE(handle);
+>     PyMem_Free(name_copy);
+558a559
+>             PyErr_SetFromErrno(PyExc_OSError);
+560c561
+<             return PyErr_SetFromErrno(PyExc_OSError);
+---
+>             return NULL;
+diff Python-3.11.5/Lib/multiprocessing/connection.py Python-3.11.6/Lib/multiprocessing/connection.py
+11a12
+> import errno
+273a275
+>         _send_ov = None
+275a278,281
+>             ov = self._send_ov
+>             if ov is not None:
+>                 # Interrupt WaitForMultipleObjects() in _send_bytes()
+>                 ov.cancel()
+278a285,288
+>             if self._send_ov is not None:
+>                 # A connection should only be used by a single thread
+>                 raise ValueError("concurrent send_bytes() calls "
+>                                  "are not supported")
+279a290
+>             self._send_ov = ov
+288a300
+>                 self._send_ov = None
+289a302,306
+>             if err == _winapi.ERROR_OPERATION_ABORTED:
+>                 # close() was called by another thread while
+>                 # WaitForMultipleObjects() was waiting for the overlapped
+>                 # operation.
+>                 raise OSError(errno.EPIPE, "handle is closed")
+diff Python-3.11.5/Lib/multiprocessing/popen_spawn_win32.py Python-3.11.6/Lib/multiprocessing/popen_spawn_win32.py
+16a17
+> # Exit code used by Popen.terminate()
+125,126c126,130
+<             except OSError:
+<                 if self.wait(timeout=1.0) is None:
+---
+>             except PermissionError:
+>                 # ERROR_ACCESS_DENIED (winerror 5) is received when the
+>                 # process already died.
+>                 code = _winapi.GetExitCodeProcess(int(self._handle))
+>                 if code == _winapi.STILL_ACTIVE:
+127a132,134
+>                 self.returncode = code
+>             else:
+>                 self.returncode = -signal.SIGTERM
+diff Python-3.11.5/Lib/multiprocessing/resource_tracker.py Python-3.11.6/Lib/multiprocessing/resource_tracker.py
+53a54,57
+> class ReentrantCallError(RuntimeError):
+>     pass
+> 
+> 
+57c61
+<         self._lock = threading.Lock()
+---
+>         self._lock = threading.RLock()
+60a65,72
+>     def _reentrant_call_error(self):
+>         # gh-109629: this happens if an explicit call to the ResourceTracker
+>         # gets interrupted by a garbage collection, invoking a finalizer (*)
+>         # that itself calls back into ResourceTracker.
+>         #   (*) for example the SemLock finalizer
+>         raise ReentrantCallError(
+>             "Reentrant call into the multiprocessing resource tracker")
+> 
+62a75,78
+>             # This should not happen (_stop() isn't called by a finalizer)
+>             # but we check for it anyway.
+>             if self._lock._recursion_count() > 1:
+>                 return self._reentrant_call_error()
+83a100,102
+>             if self._lock._recursion_count() > 1:
+>                 # The code below is certainly not reentrant-safe, so bail out
+>                 return self._reentrant_call_error()
+162c181,191
+<         self.ensure_running()
+---
+>         try:
+>             self.ensure_running()
+>         except ReentrantCallError:
+>             # The code below might or might not work, depending on whether
+>             # the resource tracker was already running and still alive.
+>             # Better warn the user.
+>             # (XXX is warnings.warn itself reentrant-safe? :-)
+>             warnings.warn(
+>                 f"ResourceTracker called reentrantly for resource cleanup, "
+>                 f"which is unsupported. "
+>                 f"The {rtype} object {name!r} might leak.")
+178a208
+> 
+diff Python-3.11.5/Lib/multiprocessing/synchronize.py Python-3.11.6/Lib/multiprocessing/synchronize.py
+53,54c53,54
+<         self.is_fork_ctx = ctx.get_start_method() == 'fork'
+<         unlink_now = sys.platform == 'win32' or self.is_fork_ctx
+---
+>         self._is_fork_ctx = ctx.get_start_method() == 'fork'
+>         unlink_now = sys.platform == 'win32' or self._is_fork_ctx
+106c106
+<             if self.is_fork_ctx:
+---
+>             if self._is_fork_ctx:
+117a118,119
+>         # Ensure that deserialized SemLock can be serialized again (gh-108520).
+>         self._is_fork_ctx = False
+diff Python-3.11.5/Lib/test/_test_multiprocessing.py Python-3.11.6/Lib/test/_test_multiprocessing.py 
+81c81
+<     # bpo-45200: Skip multiprocessing tests if Python is built with ASAN to
+---
+>     # gh-89363: Skip multiprocessing tests if Python is built with ASAN to
+330a331
+>     @support.requires_resource('cpu')
+558,559c559
+<         if os.name != 'nt':
+<             self.assertEqual(exitcode, -signal.SIGTERM)
+---
+>         self.assertEqual(exitcode, -signal.SIGTERM)
+564a565,566
+>         else:
+>             self.assertEqual(exitcode, -signal.SIGTERM)
+675a678
+>     @support.requires_resource('walltime')
+4472a4476
+>     @support.requires_resource('cpu')
+4919a4924
+>     @support.requires_resource('walltime')
+4947a4953
+>     @support.requires_resource('walltime')
+5369a5376,5403
+>     @classmethod
+>     def _put_one_in_queue(cls, queue):
+>         queue.put(1)
+> 
+>     @classmethod
+>     def _put_two_and_nest_once(cls, queue):
+>         queue.put(2)
+>         process = multiprocessing.Process(target=cls._put_one_in_queue, args=(queue,))
+>         process.start()
+>         process.join()
+> 
+>     def test_nested_startmethod(self):
+>         # gh-108520: Regression test to ensure that child process can send its
+>         # arguments to another process
+>         queue = multiprocessing.Queue()
+> 
+>         process = multiprocessing.Process(target=self._put_two_and_nest_once, args=(queue,))
+>         process.start()
+>         process.join()
+> 
+>         results = []
+>         while not queue.empty():
+>             results.append(queue.get())
+> 
+>         # gh-109706: queue.put(1) can write into the queue before queue.put(2),
+>         # there is no synchronization in the test.
+>         self.assertSetEqual(set(results), set([2, 1]))
+> 
+6052c6086,6087
+< def install_tests_in_module_dict(remote_globs, start_method):
+---
+> def install_tests_in_module_dict(remote_globs, start_method,
+>                                  only_type=None, exclude_types=False):
+6064a6100,6103
+>                 if only_type and type_ != only_type:
+>                     continue
+>                 if exclude_types:
+>                     continue
+6074a6114,6116
+>             if only_type:
+>                 continue
+> 

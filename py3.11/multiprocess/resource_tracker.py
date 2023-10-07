@@ -77,7 +77,7 @@ class ResourceTracker(object):
         with self._lock:
             # This should not happen (_stop() isn't called by a finalizer)
             # but we check for it anyway.
-            if self._lock._recursion_count() > 1:
+            if getattr(self._lock, "_recursion_count", int)() > 1:
                 return self._reentrant_call_error()
             if self._fd is None:
                 # not running
@@ -100,7 +100,7 @@ class ResourceTracker(object):
         This can be run from any process.  Usually a child process will use
         the resource created by its parent.'''
         with self._lock:
-            if self._lock._recursion_count() > 1:
+            if getattr(self._lock, "_recursion_count", int)() > 1:
                 # The code below is certainly not reentrant-safe, so bail out
                 return self._reentrant_call_error()
             if self._fd is not None:

@@ -8,6 +8,7 @@ include version.py
 recursive-include py3.10 *
 recursive-include py3.11 *
 recursive-include py3.12 *
+recursive-include py3.13 *
 recursive-include py3.8 *
 recursive-include py3.9 *
 recursive-include pypy3.10 *

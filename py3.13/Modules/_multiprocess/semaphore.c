@@ -9,6 +9,10 @@
 
 #include "multiprocess.h"
 
+#ifdef HAVE_SYS_TIME_H
+#  include <sys/time.h>           // gettimeofday()
+#endif
+
 #ifdef HAVE_MP_SEMAPHORE
 
 enum { RECURSIVE_MUTEX, SEMAPHORE };
@@ -229,7 +233,7 @@ _multiprocess_SemLock_release_impl(SemLockObject *self)
 #  define sem_unlink(name) 0
 #endif
 
-// ifndef HAVE_SEM_TIMEDWAIT
+#ifndef HAVE_SEM_TIMEDWAIT
 #  define sem_timedwait(sem,deadline) sem_timedwait_save(sem,deadline,_save)
 
 static int
@@ -290,7 +294,7 @@ sem_timedwait_save(sem_t *sem, struct timespec *deadline, PyThreadState *_save)
     }
 }
 
-// #endif /* !HAVE_SEM_TIMEDWAIT */
+#endif /* !HAVE_SEM_TIMEDWAIT */
 
 /*[clinic input]
 _multiprocess.SemLock.acquire
@@ -735,13 +739,13 @@ static PyMethodDef semlock_methods[] = {
  */
 
 static PyMemberDef semlock_members[] = {
-    {"handle", T_SEM_HANDLE, offsetof(SemLockObject, handle), READONLY,
+    {"handle", T_SEM_HANDLE, offsetof(SemLockObject, handle), Py_READONLY,
      ""},
-    {"kind", T_INT, offsetof(SemLockObject, kind), READONLY,
+    {"kind", Py_T_INT, offsetof(SemLockObject, kind), Py_READONLY,
      ""},
-    {"maxvalue", T_INT, offsetof(SemLockObject, maxvalue), READONLY,
+    {"maxvalue", Py_T_INT, offsetof(SemLockObject, maxvalue), Py_READONLY,
      ""},
-    {"name", T_STRING, offsetof(SemLockObject, name), READONLY,
+    {"name", Py_T_STRING, offsetof(SemLockObject, name), Py_READONLY,
      ""},
     {NULL}
 };

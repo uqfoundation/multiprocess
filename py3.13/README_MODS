@@ -545,3 +545,236 @@ diff Python-3.12.0rc3/Lib/test/_test_multiprocessing.py Python-3.13.0a1/Lib/test
 >         # gh-109706: queue.put(1) can write into the queue before queue.put(2),
 >         # there is no synchronization in the test.
 >         self.assertSetEqual(set(results), set([2, 1]))
+# ----------------------------------------------------------------------
+diff Python-3.13.0a1/Modules/_multiprocessing/clinic/posixshmem.c.h Python-3.13.0a2/Modules/_multiprocessing/clinic/posixshmem.c.h
+5,9d4
+< #if defined(Py_BUILD_CORE) && !defined(Py_BUILD_CORE_MODULE)
+< #  include "pycore_gc.h"          // PyGC_Head
+< #  include "pycore_runtime.h"     // _Py_ID()
+< #endif
+< 
+19c14
+<     {"shm_open", _PyCFunction_CAST(_posixshmem_shm_open), METH_FASTCALL|METH_KEYWORDS, _posixshmem_shm_open__doc__},
+---
+>     {"shm_open", (PyCFunction)(void(*)(void))_posixshmem_shm_open, METH_VARARGS|METH_KEYWORDS, _posixshmem_shm_open__doc__},
+26c21
+< _posixshmem_shm_open(PyObject *module, PyObject *const *args, Py_ssize_t nargs, PyObject *kwnames)
+---
+> _posixshmem_shm_open(PyObject *module, PyObject *args, PyObject *kwargs)
+29,55c24
+<     #if defined(Py_BUILD_CORE) && !defined(Py_BUILD_CORE_MODULE)
+< 
+<     #define NUM_KEYWORDS 3
+<     static struct {
+<         PyGC_Head _this_is_not_used;
+<         PyObject_VAR_HEAD
+<         PyObject *ob_item[NUM_KEYWORDS];
+<     } _kwtuple = {
+<         .ob_base = PyVarObject_HEAD_INIT(&PyTuple_Type, NUM_KEYWORDS)
+<         .ob_item = { &_Py_ID(path), &_Py_ID(flags), &_Py_ID(mode), },
+<     };
+<     #undef NUM_KEYWORDS
+<     #define KWTUPLE (&_kwtuple.ob_base.ob_base)
+< 
+<     #else  // !Py_BUILD_CORE
+<     #  define KWTUPLE NULL
+<     #endif  // !Py_BUILD_CORE
+< 
+<     static const char * const _keywords[] = {"path", "flags", "mode", NULL};
+<     static _PyArg_Parser _parser = {
+<         .keywords = _keywords,
+<         .fname = "shm_open",
+<         .kwtuple = KWTUPLE,
+<     };
+<     #undef KWTUPLE
+<     PyObject *argsbuf[3];
+<     Py_ssize_t noptargs = nargs + (kwnames ? PyTuple_GET_SIZE(kwnames) : 0) - 2;
+---
+>     static char *_keywords[] = {"path", "flags", "mode", NULL};
+61,78c30,31
+<     args = _PyArg_UnpackKeywords(args, nargs, NULL, kwnames, &_parser, 2, 3, 0, argsbuf);
+<     if (!args) {
+<         goto exit;
+<     }
+<     if (!PyUnicode_Check(args[0])) {
+<         _PyArg_BadArgument("shm_open", "argument 'path'", "str", args[0]);
+<         goto exit;
+<     }
+<     path = args[0];
+<     flags = PyLong_AsInt(args[1]);
+<     if (flags == -1 && PyErr_Occurred()) {
+<         goto exit;
+<     }
+<     if (!noptargs) {
+<         goto skip_optional_pos;
+<     }
+<     mode = PyLong_AsInt(args[2]);
+<     if (mode == -1 && PyErr_Occurred()) {
+---
+>     if (!PyArg_ParseTupleAndKeywords(args, kwargs, "Ui|i:shm_open", _keywords,
+>         &path, &flags, &mode))
+80,81d32
+<     }
+< skip_optional_pos:
+107c58
+<     {"shm_unlink", _PyCFunction_CAST(_posixshmem_shm_unlink), METH_FASTCALL|METH_KEYWORDS, _posixshmem_shm_unlink__doc__},
+---
+>     {"shm_unlink", (PyCFunction)(void(*)(void))_posixshmem_shm_unlink, METH_VARARGS|METH_KEYWORDS, _posixshmem_shm_unlink__doc__},
+113c64
+< _posixshmem_shm_unlink(PyObject *module, PyObject *const *args, Py_ssize_t nargs, PyObject *kwnames)
+---
+> _posixshmem_shm_unlink(PyObject *module, PyObject *args, PyObject *kwargs)
+116,141c67
+<     #if defined(Py_BUILD_CORE) && !defined(Py_BUILD_CORE_MODULE)
+< 
+<     #define NUM_KEYWORDS 1
+<     static struct {
+<         PyGC_Head _this_is_not_used;
+<         PyObject_VAR_HEAD
+<         PyObject *ob_item[NUM_KEYWORDS];
+<     } _kwtuple = {
+<         .ob_base = PyVarObject_HEAD_INIT(&PyTuple_Type, NUM_KEYWORDS)
+<         .ob_item = { &_Py_ID(path), },
+<     };
+<     #undef NUM_KEYWORDS
+<     #define KWTUPLE (&_kwtuple.ob_base.ob_base)
+< 
+<     #else  // !Py_BUILD_CORE
+<     #  define KWTUPLE NULL
+<     #endif  // !Py_BUILD_CORE
+< 
+<     static const char * const _keywords[] = {"path", NULL};
+<     static _PyArg_Parser _parser = {
+<         .keywords = _keywords,
+<         .fname = "shm_unlink",
+<         .kwtuple = KWTUPLE,
+<     };
+<     #undef KWTUPLE
+<     PyObject *argsbuf[1];
+---
+>     static char *_keywords[] = {"path", NULL};
+144,145c70,71
+<     args = _PyArg_UnpackKeywords(args, nargs, NULL, kwnames, &_parser, 1, 1, 0, argsbuf);
+<     if (!args) {
+---
+>     if (!PyArg_ParseTupleAndKeywords(args, kwargs, "U:shm_unlink", _keywords,
+>         &path))
+147,152d72
+<     }
+<     if (!PyUnicode_Check(args[0])) {
+<         _PyArg_BadArgument("shm_unlink", "argument 'path'", "str", args[0]);
+<         goto exit;
+<     }
+<     path = args[0];
+168c88
+< /*[clinic end generated code: output=2f356903a281d857 input=a9049054013a1b77]*/
+---
+> /*[clinic end generated code: output=be0661dbed83ea23 input=a9049054013a1b77]*/
+diff Python-3.13.0a1/Modules/_multiprocessing/clinic/semaphore.c.h Python-3.13.0a2/Modules/_multiprocessing/clinic/semaphore.c.h
+8a9
+> #include "pycore_modsupport.h"    // _PyArg_UnpackKeywords()
+544c545
+< /*[clinic end generated code: output=e8ea65f8cba8e173 input=a9049054013a1b77]*/
+---
+> /*[clinic end generated code: output=d57992037e6770b6 input=a9049054013a1b77]*/
+diff Python-3.13.0a1/Modules/_multiprocessing/clinic/multiprocessing.c.h Python-3.13.0a2/Modules/_multiprocessing/clinic/multiprocessing.c.h
+4a5,6
+> #include "pycore_modsupport.h"    // _PyArg_CheckPositional()
+> 
+105,108d106
+<     if (!PyBuffer_IsContiguous(&buf, 'C')) {
+<         _PyArg_BadArgument("send", "argument 2", "contiguous buffer", args[1]);
+<         goto exit;
+<     }
+169c167
+< /*[clinic end generated code: output=8b91c020d4353cc5 input=a9049054013a1b77]*/
+---
+> /*[clinic end generated code: output=73b4cb8428d816da input=a9049054013a1b77]*/
+# ----------------------------------------------------------------------
+diff Python-3.13.0a1/Modules/_multiprocessing/posixshmem.c Python-3.13.0a2/Modules/_multiprocessing/posixshmem.c
+4a5,11
+> #include "pyconfig.h"   // Py_GIL_DISABLED
+> 
+> #ifndef Py_GIL_DISABLED
+> // Need limited C API version 3.12 for Py_MOD_PER_INTERPRETER_GIL_SUPPORTED
+> #define Py_LIMITED_API 0x030c0000
+> #endif
+> 
+7c14
+< // for shm_open() and shm_unlink()
+---
+> #include <errno.h>                // EINTR
+9c16
+< #include <sys/mman.h>
+---
+> #  include <sys/mman.h>           // shm_open(), shm_unlink()
+11a19
+> 
+43c51
+<     const char *name = PyUnicode_AsUTF8(path);
+---
+>     const char *name = PyUnicode_AsUTF8AndSize(path, NULL);
+82c90
+<     const char *name = PyUnicode_AsUTF8(path);
+---
+>     const char *name = PyUnicode_AsUTF8AndSize(path, NULL);
+# ----------------------------------------------------------------------
+diff Python-3.13.0a1/Lib/multiprocessing/managers.py Python-3.13.0a2/Lib/multiprocessing/managers.py
+1167a1168
+>     __class_getitem__ = classmethod(types.GenericAlias)
+1169c1170,1171
+< DictProxy = MakeProxyType('DictProxy', (
+---
+> 
+> _BaseDictProxy = MakeProxyType('DictProxy', (
+1174c1176
+< DictProxy._method_to_typeid_ = {
+---
+> _BaseDictProxy._method_to_typeid_ = {
+1176a1179,1180
+> class DictProxy(_BaseDictProxy):
+>     __class_getitem__ = classmethod(types.GenericAlias)
+# ----------------------------------------------------------------------
+diff Python-3.13.0a1/Lib/test/_test_multiprocessing.py Python-3.13.0a2/Lib/test/_test_multiprocessing.py 
+2441,2442c2441,2445
+< def sqr(x, wait=0.0):
+<     time.sleep(wait)
+---
+> def sqr(x, wait=0.0, event=None):
+>     if event is None:
+>         time.sleep(wait)
+>     else:
+>         event.wait(wait)
+2581,2584c2584,2595
+<         res = self.pool.apply_async(sqr, (6, TIMEOUT2 + support.SHORT_TIMEOUT))
+<         get = TimingWrapper(res.get)
+<         self.assertRaises(multiprocessing.TimeoutError, get, timeout=TIMEOUT2)
+<         self.assertTimingAlmostEqual(get.elapsed, TIMEOUT2)
+---
+>         p = self.Pool(3)
+>         try:
+>             event = threading.Event() if self.TYPE == 'threads' else None
+>             res = p.apply_async(sqr, (6, TIMEOUT2 + support.SHORT_TIMEOUT, event))
+>             get = TimingWrapper(res.get)
+>             self.assertRaises(multiprocessing.TimeoutError, get, timeout=TIMEOUT2)
+>             self.assertTimingAlmostEqual(get.elapsed, TIMEOUT2)
+>         finally:
+>             if event is not None:
+>                 event.set()
+>             p.terminate()
+>             p.join()
+2684a2696,2698
+>         if self.TYPE == 'threads':
+>             self.skipTest("Threads cannot be terminated")
+> 
+2685a2700
+>         p = self.Pool(3)
+2687,2689c2702,2704
+<         result = self.pool.map_async(time.sleep, args, chunksize=1)
+<         self.pool.terminate()
+<         self.pool.join()
+---
+>         result = p.map_async(time.sleep, args, chunksize=1)
+>         p.terminate()
+>         p.join()
+

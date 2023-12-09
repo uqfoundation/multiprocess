@@ -984,3 +984,177 @@ diff Python-3.11.5/Lib/test/_test_multiprocessing.py Python-3.11.6/Lib/test/_tes
 >             if only_type:
 >                 continue
 > 
+# ----------------------------------------------------------------------
+diff Python-3.11.6/Lib/test/_test_multiprocessing.py Python-3.11.7/Lib/test/_test_multiprocessing.py 
+80c80
+< if support.check_sanitizer(address=True):
+---
+> if support.HAVE_ASAN_FORK_BUG:
+83c83,88
+<     raise unittest.SkipTest("libasan has a pthread_create() dead lock")
+---
+>     raise unittest.SkipTest("libasan has a pthread_create() dead lock related to thread+fork")
+> 
+> 
+> # gh-110666: Tolerate a difference of 100 ms when comparing timings
+> # (clock resolution)
+> CLOCK_RES = 0.100
+1653c1658
+<             expected = 0.1
+---
+>             expected = 0.100
+1657,1658c1662
+<             # borrow logic in assertTimeout() from test/lock_tests.py
+<             if not result and expected * 0.6 < dt < expected * 10.0:
+---
+>             if not result and (expected - CLOCK_RES) <= dt:
+1677c1681
+<             time.sleep(0.01)
+---
+>             time.sleep(0.010)
+2436,2437c2440,2444
+< def sqr(x, wait=0.0):
+<     time.sleep(wait)
+---
+> def sqr(x, wait=0.0, event=None):
+>     if event is None:
+>         time.sleep(wait)
+>     else:
+>         event.wait(wait)
+2576,2579c2583,2594
+<         res = self.pool.apply_async(sqr, (6, TIMEOUT2 + 1.0))
+<         get = TimingWrapper(res.get)
+<         self.assertRaises(multiprocessing.TimeoutError, get, timeout=TIMEOUT2)
+<         self.assertTimingAlmostEqual(get.elapsed, TIMEOUT2)
+---
+>         p = self.Pool(3)
+>         try:
+>             event = threading.Event() if self.TYPE == 'threads' else None
+>             res = p.apply_async(sqr, (6, TIMEOUT2 + support.SHORT_TIMEOUT, event))
+>             get = TimingWrapper(res.get)
+>             self.assertRaises(multiprocessing.TimeoutError, get, timeout=TIMEOUT2)
+>             self.assertTimingAlmostEqual(get.elapsed, TIMEOUT2)
+>         finally:
+>             if event is not None:
+>                 event.set()
+>             p.terminate()
+>             p.join()
+2680,2687c2695,2700
+<         result = self.pool.map_async(
+<             time.sleep, [0.1 for i in range(10000)], chunksize=1
+<             )
+<         self.pool.terminate()
+<         join = TimingWrapper(self.pool.join)
+<         join()
+<         # Sanity check the pool didn't wait for all tasks to finish
+<         self.assertLess(join.elapsed, 2.0)
+---
+>         # Simulate slow tasks which take "forever" to complete
+>         p = self.Pool(3)
+>         args = [support.LONG_TIMEOUT for i in range(10_000)]
+>         result = p.map_async(time.sleep, args, chunksize=1)
+>         p.terminate()
+>         p.join()
+4379,4383c4392,4394
+<             deadline = time.monotonic() + support.LONG_TIMEOUT
+<             t = 0.1
+<             while time.monotonic() < deadline:
+<                 time.sleep(t)
+<                 t = min(t*2, 5)
+---
+>             err_msg = ("A SharedMemory segment was leaked after "
+>                        "a process was abruptly terminated")
+>             for _ in support.sleeping_retry(support.LONG_TIMEOUT, err_msg):
+4388,4390d4398
+<             else:
+<                 raise AssertionError("A SharedMemory segment was leaked after"
+<                                      " a process was abruptly terminated.")
+4839c4847
+<                 time.sleep(random.random()*0.1)
+---
+>                 time.sleep(random.random() * 0.100)
+4879c4887
+<                 time.sleep(random.random()*0.1)
+---
+>                 time.sleep(random.random() * 0.100)
+4928c4936
+<         expected = 5
+---
+>         timeout = 5.0  # seconds
+4932c4940
+<         res = wait([a, b], expected)
+---
+>         res = wait([a, b], timeout)
+4936,4937c4944
+<         self.assertLess(delta, expected * 2)
+<         self.assertGreater(delta, expected * 0.5)
+---
+>         self.assertGreater(delta, timeout - CLOCK_RES)
+4940,4941d4946
+< 
+<         start = time.monotonic()
+4943,4944d4947
+<         delta = time.monotonic() - start
+< 
+4946d4948
+<         self.assertLess(delta, 0.4)
+5461,5463c5463,5466
+<                 deadline = time.monotonic() + support.LONG_TIMEOUT
+<                 while time.monotonic() < deadline:
+<                     time.sleep(.5)
+---
+>                 err_msg = (f"A {rtype} resource was leaked after a process was "
+>                            f"abruptly terminated")
+>                 for _ in support.sleeping_retry(support.SHORT_TIMEOUT,
+>                                                   err_msg):
+5471,5474c5474
+<                 else:
+<                     raise AssertionError(
+<                         f"A {rtype} resource was leaked after a process was "
+<                         f"abruptly terminated.")
+---
+> 
+5709a5710
+> 
+5711,5720c5712,5713
+<         t = 0.01
+<         while len(multiprocessing.active_children()) > 1:
+<             time.sleep(t)
+<             t *= 2
+<             dt = time.monotonic() - start_time
+<             if dt >= 5.0:
+<                 test.support.environment_altered = True
+<                 support.print_warning(f"multiprocessing.Manager still has "
+<                                       f"{multiprocessing.active_children()} "
+<                                       f"active children after {dt} seconds")
+---
+>         for _ in support.sleeping_retry(5.0, error=False):
+>             if len(multiprocessing.active_children()) <= 1:
+5721a5715,5720
+>         else:
+>             dt = time.monotonic() - start_time
+>             support.environment_altered = True
+>             support.print_warning(f"multiprocessing.Manager still has "
+>                                   f"{multiprocessing.active_children()} "
+>                                   f"active children after {dt:.1f} seconds")
+6034,6043c6033,6034
+<         t = 0.01
+<         while len(multiprocessing.active_children()) > 1:
+<             time.sleep(t)
+<             t *= 2
+<             dt = time.monotonic() - start_time
+<             if dt >= 5.0:
+<                 test.support.environment_altered = True
+<                 support.print_warning(f"multiprocessing.Manager still has "
+<                                       f"{multiprocessing.active_children()} "
+<                                       f"active children after {dt} seconds")
+---
+>         for _ in support.sleeping_retry(5.0, error=False):
+>             if len(multiprocessing.active_children()) <= 1:
+6044a6036,6041
+>         else:
+>             dt = time.monotonic() - start_time
+>             support.environment_altered = True
+>             support.print_warning(f"multiprocessing.Manager still has "
+>                                   f"{multiprocessing.active_children()} "
+>                                   f"active children after {dt:.1f} seconds")

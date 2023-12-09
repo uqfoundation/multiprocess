@@ -1126,3 +1126,236 @@ $ diff Python-3.12.0rc2/Lib/test/_test_multiprocessing.py  Python-3.12.0rc3/Lib/
 >     @support.requires_resource('walltime')
 4983a4986
 >     @support.requires_resource('walltime')
+# ----------------------------------------------------------------------
+diff Python-3.12.0rc3/Lib/multiprocessing/connection.py Python-3.12.1/Lib/multiprocessing/connection.py
+11a12
+> import errno
+273a275
+>         _send_ov = None
+275a278,281
+>             ov = self._send_ov
+>             if ov is not None:
+>                 # Interrupt WaitForMultipleObjects() in _send_bytes()
+>                 ov.cancel()
+278a285,288
+>             if self._send_ov is not None:
+>                 # A connection should only be used by a single thread
+>                 raise ValueError("concurrent send_bytes() calls "
+>                                  "are not supported")
+279a290
+>             self._send_ov = ov
+288a300
+>                 self._send_ov = None
+289a302,306
+>             if err == _winapi.ERROR_OPERATION_ABORTED:
+>                 # close() was called by another thread while
+>                 # WaitForMultipleObjects() was waiting for the overlapped
+>                 # operation.
+>                 raise OSError(errno.EPIPE, "handle is closed")
+diff Python-3.12.0rc3/Lib/multiprocessing/popen_spawn_win32.py Python-3.12.1/Lib/multiprocessing/popen_spawn_win32.py
+16a17
+> # Exit code used by Popen.terminate()
+125,126c126,130
+<             except OSError:
+<                 if self.wait(timeout=1.0) is None:
+---
+>             except PermissionError:
+>                 # ERROR_ACCESS_DENIED (winerror 5) is received when the
+>                 # process already died.
+>                 code = _winapi.GetExitCodeProcess(int(self._handle))
+>                 if code == _winapi.STILL_ACTIVE:
+127a132,134
+>                 self.returncode = code
+>             else:
+>                 self.returncode = -signal.SIGTERM
+diff Python-3.12.0rc3/Lib/multiprocessing/queues.py Python-3.12.1/Lib/multiprocessing/queues.py
+160a161,169
+>     def _terminate_broken(self):
+>         # Close a Queue on error.
+> 
+>         # gh-94777: Prevent queue writing to a pipe which is no longer read.
+>         self._reader.close()
+> 
+>         self.close()
+>         self.join_thread()
+> 
+172c181,182
+<             name='QueueFeederThread'
+---
+>             name='QueueFeederThread',
+>             daemon=True,
+174d183
+<         self._thread.daemon = True
+176,178c185,193
+<         debug('doing self._thread.start()')
+<         self._thread.start()
+<         debug('... done self._thread.start()')
+---
+>         try:
+>             debug('doing self._thread.start()')
+>             self._thread.start()
+>             debug('... done self._thread.start()')
+>         except:
+>             # gh-109047: During Python finalization, creating a thread
+>             # can fail with RuntimeError.
+>             self._thread = None
+>             raise
+diff Python-3.12.0rc3/Lib/multiprocessing/resource_tracker.py Python-3.12.1/Lib/multiprocessing/resource_tracker.py
+53a54,57
+> class ReentrantCallError(RuntimeError):
+>     pass
+> 
+> 
+57c61
+<         self._lock = threading.Lock()
+---
+>         self._lock = threading.RLock()
+60a65,72
+>     def _reentrant_call_error(self):
+>         # gh-109629: this happens if an explicit call to the ResourceTracker
+>         # gets interrupted by a garbage collection, invoking a finalizer (*)
+>         # that itself calls back into ResourceTracker.
+>         #   (*) for example the SemLock finalizer
+>         raise ReentrantCallError(
+>             "Reentrant call into the multiprocessing resource tracker")
+> 
+62a75,78
+>             # This should not happen (_stop() isn't called by a finalizer)
+>             # but we check for it anyway.
+>             if self._lock._recursion_count() > 1:
+>                 return self._reentrant_call_error()
+83a100,102
+>             if self._lock._recursion_count() > 1:
+>                 # The code below is certainly not reentrant-safe, so bail out
+>                 return self._reentrant_call_error()
+162c181,191
+<         self.ensure_running()
+---
+>         try:
+>             self.ensure_running()
+>         except ReentrantCallError:
+>             # The code below might or might not work, depending on whether
+>             # the resource tracker was already running and still alive.
+>             # Better warn the user.
+>             # (XXX is warnings.warn itself reentrant-safe? :-)
+>             warnings.warn(
+>                 f"ResourceTracker called reentrantly for resource cleanup, "
+>                 f"which is unsupported. "
+>                 f"The {rtype} object {name!r} might leak.")
+178a208
+> 
+diff Python-3.12.0rc3/Lib/test/_test_multiprocessing.py Python-3.12.1/Lib/test/_test_multiprocessing.py 
+81,82c81,82
+< if support.check_sanitizer(address=True):
+<     # bpo-45200: Skip multiprocessing tests if Python is built with ASAN to
+---
+> if support.HAVE_ASAN_FORK_BUG:
+>     # gh-89363: Skip multiprocessing tests if Python is built with ASAN to
+84c84,89
+<     raise unittest.SkipTest("libasan has a pthread_create() dead lock")
+---
+>     raise unittest.SkipTest("libasan has a pthread_create() dead lock related to thread+fork")
+> 
+> 
+> # gh-110666: Tolerate a difference of 100 ms when comparing timings
+> # (clock resolution)
+> CLOCK_RES = 0.100
+560,561c565
+<         if os.name != 'nt':
+<             self.assertEqual(exitcode, -signal.SIGTERM)
+---
+>         self.assertEqual(exitcode, -signal.SIGTERM)
+566a571,572
+>         else:
+>             self.assertEqual(exitcode, -signal.SIGTERM)
+1653c1659
+<             expected = 0.1
+---
+>             expected = 0.100
+1657,1658c1663
+<             # borrow logic in assertTimeout() from test/lock_tests.py
+<             if not result and expected * 0.6 < dt < expected * 10.0:
+---
+>             if not result and (expected - CLOCK_RES) <= dt:
+1677c1682
+<             time.sleep(0.01)
+---
+>             time.sleep(0.010)
+2436,2437c2441,2445
+< def sqr(x, wait=0.0):
+<     time.sleep(wait)
+---
+> def sqr(x, wait=0.0, event=None):
+>     if event is None:
+>         time.sleep(wait)
+>     else:
+>         event.wait(wait)
+2576,2579c2584,2595
+<         res = self.pool.apply_async(sqr, (6, TIMEOUT2 + 1.0))
+<         get = TimingWrapper(res.get)
+<         self.assertRaises(multiprocessing.TimeoutError, get, timeout=TIMEOUT2)
+<         self.assertTimingAlmostEqual(get.elapsed, TIMEOUT2)
+---
+>         p = self.Pool(3)
+>         try:
+>             event = threading.Event() if self.TYPE == 'threads' else None
+>             res = p.apply_async(sqr, (6, TIMEOUT2 + support.SHORT_TIMEOUT, event))
+>             get = TimingWrapper(res.get)
+>             self.assertRaises(multiprocessing.TimeoutError, get, timeout=TIMEOUT2)
+>             self.assertTimingAlmostEqual(get.elapsed, TIMEOUT2)
+>         finally:
+>             if event is not None:
+>                 event.set()
+>             p.terminate()
+>             p.join()
+2680,2687c2696,2701
+<         result = self.pool.map_async(
+<             time.sleep, [0.1 for i in range(10000)], chunksize=1
+<             )
+<         self.pool.terminate()
+<         join = TimingWrapper(self.pool.join)
+<         join()
+<         # Sanity check the pool didn't wait for all tasks to finish
+<         self.assertLess(join.elapsed, 2.0)
+---
+>         # Simulate slow tasks which take "forever" to complete
+>         p = self.Pool(3)
+>         args = [support.LONG_TIMEOUT for i in range(10_000)]
+>         result = p.map_async(time.sleep, args, chunksize=1)
+>         p.terminate()
+>         p.join()
+4872c4886
+<                 time.sleep(random.random()*0.1)
+---
+>                 time.sleep(random.random() * 0.100)
+4912c4926
+<                 time.sleep(random.random()*0.1)
+---
+>                 time.sleep(random.random() * 0.100)
+4961c4975
+<         expected = 5
+---
+>         timeout = 5.0  # seconds
+4965c4979
+<         res = wait([a, b], expected)
+---
+>         res = wait([a, b], timeout)
+4969,4970c4983
+<         self.assertLess(delta, expected * 2)
+<         self.assertGreater(delta, expected * 0.5)
+---
+>         self.assertGreater(delta, timeout - CLOCK_RES)
+4973,4974d4985
+< 
+<         start = time.monotonic()
+4976,4977d4986
+<         delta = time.monotonic() - start
+< 
+4979d4987
+<         self.assertLess(delta, 0.4)
+5437c5445,5447
+<         self.assertEqual(results, [2, 1])
+---
+>         # gh-109706: queue.put(1) can write into the queue before queue.put(2),
+>         # there is no synchronization in the test.
+>         self.assertSetEqual(set(results), set([2, 1]))

@@ -777,4 +777,206 @@ diff Python-3.13.0a1/Lib/test/_test_multiprocessing.py Python-3.13.0a2/Lib/test/
 >         result = p.map_async(time.sleep, args, chunksize=1)
 >         p.terminate()
 >         p.join()
+# ----------------------------------------------------------------------
+diff Python-3.13.0a2/Lib/multiprocessing/managers.py Python-3.13.0a3/Lib/multiprocessing/managers.py
+159c159
+<         self.listener = Listener(address=address, backlog=16)
+---
+>         self.listener = Listener(address=address, backlog=128)
+diff Python-3.13.0a2/Lib/multiprocessing/popen_spawn_win32.py Python-3.13.0a3/Lib/multiprocessing/popen_spawn_win32.py
+104,115c104,117
+<         if self.returncode is None:
+<             if timeout is None:
+<                 msecs = _winapi.INFINITE
+<             else:
+<                 msecs = max(0, int(timeout * 1000 + 0.5))
+< 
+<             res = _winapi.WaitForSingleObject(int(self._handle), msecs)
+<             if res == _winapi.WAIT_OBJECT_0:
+<                 code = _winapi.GetExitCodeProcess(self._handle)
+<                 if code == TERMINATE:
+<                     code = -signal.SIGTERM
+<                 self.returncode = code
+---
+>         if self.returncode is not None:
+>             return self.returncode
+> 
+>         if timeout is None:
+>             msecs = _winapi.INFINITE
+>         else:
+>             msecs = max(0, int(timeout * 1000 + 0.5))
+> 
+>         res = _winapi.WaitForSingleObject(int(self._handle), msecs)
+>         if res == _winapi.WAIT_OBJECT_0:
+>             code = _winapi.GetExitCodeProcess(self._handle)
+>             if code == TERMINATE:
+>                 code = -signal.SIGTERM
+>             self.returncode = code
+123,134c125,140
+<         if self.returncode is None:
+<             try:
+<                 _winapi.TerminateProcess(int(self._handle), TERMINATE)
+<             except PermissionError:
+<                 # ERROR_ACCESS_DENIED (winerror 5) is received when the
+<                 # process already died.
+<                 code = _winapi.GetExitCodeProcess(int(self._handle))
+<                 if code == _winapi.STILL_ACTIVE:
+<                     raise
+<                 self.returncode = code
+<             else:
+<                 self.returncode = -signal.SIGTERM
+---
+>         if self.returncode is not None:
+>             return
+> 
+>         try:
+>             _winapi.TerminateProcess(int(self._handle), TERMINATE)
+>         except PermissionError:
+>             # ERROR_ACCESS_DENIED (winerror 5) is received when the
+>             # process already died.
+>             code = _winapi.GetExitCodeProcess(int(self._handle))
+>             if code == _winapi.STILL_ACTIVE:
+>                 raise
+> 
+>         # gh-113009: Don't set self.returncode. Even if GetExitCodeProcess()
+>         # returns an exit code different than STILL_ACTIVE, the process can
+>         # still be running. Only set self.returncode once WaitForSingleObject()
+>         # returns WAIT_OBJECT_0 in wait().
+diff Python-3.13.0a2/Lib/multiprocessing/resource_sharer.py Python-3.13.0a3/Lib/multiprocessing/resource_sharer.py
+126c126
+<         self._listener = Listener(authkey=process.current_process().authkey)
+---
+>         self._listener = Listener(authkey=process.current_process().authkey, backlog=128)
+diff Python-3.13.0a2/Lib/multiprocessing/shared_memory.py Python-3.13.0a3/Lib/multiprocessing/shared_memory.py
+73a74
+>     _track = True
+75c76
+<     def __init__(self, name=None, create=False, size=0):
+---
+>     def __init__(self, name=None, create=False, size=0, *, track=True):
+84a86
+>         self._track = track
+119,120c121,122
+< 
+<             resource_tracker.register(self._name, "shared_memory")
+---
+>             if self._track:
+>                 resource_tracker.register(self._name, "shared_memory")
+239,241c241,250
+<         In order to ensure proper cleanup of resources, unlink should be
+<         called once (and only once) across all processes which have access
+<         to the shared memory block."""
+---
+>         Unlink should be called once (and only once) across all handles
+>         which have access to the shared memory block, even if these
+>         handles belong to different processes. Closing and unlinking may
+>         happen in any order, but trying to access data inside a shared
+>         memory block after unlinking may result in memory errors,
+>         depending on platform.
+> 
+>         This method has no effect on Windows, where the only way to
+>         delete a shared memory block is to close all handles."""
+> 
+244c253,254
+<             resource_tracker.unregister(self._name, "shared_memory")
+---
+>             if self._track:
+>                 resource_tracker.unregister(self._name, "shared_memory")
+diff Python-3.13.0a2/Lib/multiprocessing/util.py Python-3.13.0a3/Lib/multiprocessing/util.py
+46c46
+<         _logger.log(SUBDEBUG, msg, *args)
+---
+>         _logger.log(SUBDEBUG, msg, *args, stacklevel=2)
+50c50
+<         _logger.log(DEBUG, msg, *args)
+---
+>         _logger.log(DEBUG, msg, *args, stacklevel=2)
+54c54
+<         _logger.log(INFO, msg, *args)
+---
+>         _logger.log(INFO, msg, *args, stacklevel=2)
+58c58
+<         _logger.log(SUBWARNING, msg, *args)
+---
+>         _logger.log(SUBWARNING, msg, *args, stacklevel=2)
+# ----------------------------------------------------------------------
+diff Python-3.13.0a2/Lib/test/_test_multiprocessing.py Python-3.13.0a3/Lib/test/_test_multiprocessing.py 
+4457a4458,4510
+>     @unittest.skipIf(os.name != "posix", "resource_tracker is posix only")
+>     def test_shared_memory_untracking(self):
+>         # gh-82300: When a separate Python process accesses shared memory
+>         # with track=False, it must not cause the memory to be deleted
+>         # when terminating.
+>         cmd = '''if 1:
+>             import sys
+>             from multiprocessing.shared_memory import SharedMemory
+>             mem = SharedMemory(create=False, name=sys.argv[1], track=False)
+>             mem.close()
+>         '''
+>         mem = shared_memory.SharedMemory(create=True, size=10)
+>         # The resource tracker shares pipes with the subprocess, and so
+>         # err existing means that the tracker process has terminated now.
+>         try:
+>             rc, out, err = script_helper.assert_python_ok("-c", cmd, mem.name)
+>             self.assertNotIn(b"resource_tracker", err)
+>             self.assertEqual(rc, 0)
+>             mem2 = shared_memory.SharedMemory(create=False, name=mem.name)
+>             mem2.close()
+>         finally:
+>             try:
+>                 mem.unlink()
+>             except OSError:
+>                 pass
+>             mem.close()
+> 
+>     @unittest.skipIf(os.name != "posix", "resource_tracker is posix only")
+>     def test_shared_memory_tracking(self):
+>         # gh-82300: When a separate Python process accesses shared memory
+>         # with track=True, it must cause the memory to be deleted when
+>         # terminating.
+>         cmd = '''if 1:
+>             import sys
+>             from multiprocessing.shared_memory import SharedMemory
+>             mem = SharedMemory(create=False, name=sys.argv[1], track=True)
+>             mem.close()
+>         '''
+>         mem = shared_memory.SharedMemory(create=True, size=10)
+>         try:
+>             rc, out, err = script_helper.assert_python_ok("-c", cmd, mem.name)
+>             self.assertEqual(rc, 0)
+>             self.assertIn(
+>                 b"resource_tracker: There appear to be 1 leaked "
+>                 b"shared_memory objects to clean up at shutdown", err)
+>         finally:
+>             try:
+>                 mem.unlink()
+>             except OSError:
+>                 pass
+>             resource_tracker.unregister(mem._name, "shared_memory")
+>             mem.close()
+> 
+4673a4727,4749
+>     def test_filename(self):
+>         logger = multiprocessing.get_logger()
+>         original_level = logger.level
+>         try:
+>             logger.setLevel(util.DEBUG)
+>             stream = io.StringIO()
+>             handler = logging.StreamHandler(stream)
+>             logging_format = '[%(levelname)s] [%(filename)s] %(message)s'
+>             handler.setFormatter(logging.Formatter(logging_format))
+>             logger.addHandler(handler)
+>             logger.info('1')
+>             util.info('2')
+>             logger.debug('3')
+>             filename = os.path.basename(__file__)
+>             log_record = stream.getvalue()
+>             self.assertIn(f'[INFO] [{filename}] 1', log_record)
+>             self.assertIn(f'[INFO] [{filename}] 2', log_record)
+>             self.assertIn(f'[DEBUG] [{filename}] 3', log_record)
+>         finally:
+>             logger.setLevel(original_level)
+>             logger.removeHandler(handler)
+>             handler.close()
+> 
 

@@ -1359,3 +1359,144 @@ diff Python-3.12.0rc3/Lib/test/_test_multiprocessing.py Python-3.12.1/Lib/test/_
 >         # gh-109706: queue.put(1) can write into the queue before queue.put(2),
 >         # there is no synchronization in the test.
 >         self.assertSetEqual(set(results), set([2, 1]))
+# ----------------------------------------------------------------------
+diff Python-3.12.1/Lib/multiprocessing/managers.py Python-3.12.2/Lib/multiprocessing/managers.py
+156c156
+<         self.listener = Listener(address=address, backlog=16)
+---
+>         self.listener = Listener(address=address, backlog=128)
+diff Python-3.12.1/Lib/multiprocessing/popen_spawn_win32.py Python-3.12.2/Lib/multiprocessing/popen_spawn_win32.py
+104,115c104,117
+<         if self.returncode is None:
+<             if timeout is None:
+<                 msecs = _winapi.INFINITE
+<             else:
+<                 msecs = max(0, int(timeout * 1000 + 0.5))
+< 
+<             res = _winapi.WaitForSingleObject(int(self._handle), msecs)
+<             if res == _winapi.WAIT_OBJECT_0:
+<                 code = _winapi.GetExitCodeProcess(self._handle)
+<                 if code == TERMINATE:
+<                     code = -signal.SIGTERM
+<                 self.returncode = code
+---
+>         if self.returncode is not None:
+>             return self.returncode
+> 
+>         if timeout is None:
+>             msecs = _winapi.INFINITE
+>         else:
+>             msecs = max(0, int(timeout * 1000 + 0.5))
+> 
+>         res = _winapi.WaitForSingleObject(int(self._handle), msecs)
+>         if res == _winapi.WAIT_OBJECT_0:
+>             code = _winapi.GetExitCodeProcess(self._handle)
+>             if code == TERMINATE:
+>                 code = -signal.SIGTERM
+>             self.returncode = code
+123,134c125,140
+<         if self.returncode is None:
+<             try:
+<                 _winapi.TerminateProcess(int(self._handle), TERMINATE)
+<             except PermissionError:
+<                 # ERROR_ACCESS_DENIED (winerror 5) is received when the
+<                 # process already died.
+<                 code = _winapi.GetExitCodeProcess(int(self._handle))
+<                 if code == _winapi.STILL_ACTIVE:
+<                     raise
+<                 self.returncode = code
+<             else:
+<                 self.returncode = -signal.SIGTERM
+---
+>         if self.returncode is not None:
+>             return
+> 
+>         try:
+>             _winapi.TerminateProcess(int(self._handle), TERMINATE)
+>         except PermissionError:
+>             # ERROR_ACCESS_DENIED (winerror 5) is received when the
+>             # process already died.
+>             code = _winapi.GetExitCodeProcess(int(self._handle))
+>             if code == _winapi.STILL_ACTIVE:
+>                 raise
+> 
+>         # gh-113009: Don't set self.returncode. Even if GetExitCodeProcess()
+>         # returns an exit code different than STILL_ACTIVE, the process can
+>         # still be running. Only set self.returncode once WaitForSingleObject()
+>         # returns WAIT_OBJECT_0 in wait().
+diff Python-3.12.1/Lib/multiprocessing/queues.py Python-3.12.2/Lib/multiprocessing/queues.py
+166a167,171
+>         # gh-107219: Close the connection writer which can unblock
+>         # Queue._feed() if it was stuck in send_bytes().
+>         if sys.platform == 'win32':
+>             self._writer.close()
+> 
+diff Python-3.12.1/Lib/multiprocessing/resource_sharer.py Python-3.12.2/Lib/multiprocessing/resource_sharer.py
+126c126
+<         self._listener = Listener(authkey=process.current_process().authkey)
+---
+>         self._listener = Listener(authkey=process.current_process().authkey, backlog=128)
+diff Python-3.12.1/Lib/multiprocessing/util.py Python-3.12.2/Lib/multiprocessing/util.py
+46c46
+<         _logger.log(SUBDEBUG, msg, *args)
+---
+>         _logger.log(SUBDEBUG, msg, *args, stacklevel=2)
+50c50
+<         _logger.log(DEBUG, msg, *args)
+---
+>         _logger.log(DEBUG, msg, *args, stacklevel=2)
+54c54
+<         _logger.log(INFO, msg, *args)
+---
+>         _logger.log(INFO, msg, *args, stacklevel=2)
+58c58
+<         _logger.log(SUBWARNING, msg, *args)
+---
+>         _logger.log(SUBWARNING, msg, *args, stacklevel=2)
+133c133,136
+<     rmtree(tempdir)
+---
+>     def onerror(func, path, err_info):
+>         if not issubclass(err_info[0], FileNotFoundError):
+>             raise
+>     rmtree(tempdir, onerror=onerror)
+diff Python-3.12.1/Lib/test/_test_multiprocessing.py Python-3.12.2/Lib/test/_test_multiprocessing.py 
+2696a2697,2704
+>         sleep_time = support.LONG_TIMEOUT
+> 
+>         if self.TYPE == 'threads':
+>             # Thread pool workers can't be forced to quit, so if the first
+>             # task starts early enough, we will end up waiting for it.
+>             # Sleep for a shorter time, so the test doesn't block.
+>             sleep_time = 1
+> 
+2698c2706
+<         args = [support.LONG_TIMEOUT for i in range(10_000)]
+---
+>         args = [sleep_time for i in range(10_000)]
+2699a2708
+>         time.sleep(0.2)  # give some tasks a chance to start
+4632a4642,4664
+>     def test_filename(self):
+>         logger = multiprocessing.get_logger()
+>         original_level = logger.level
+>         try:
+>             logger.setLevel(util.DEBUG)
+>             stream = io.StringIO()
+>             handler = logging.StreamHandler(stream)
+>             logging_format = '[%(levelname)s] [%(filename)s] %(message)s'
+>             handler.setFormatter(logging.Formatter(logging_format))
+>             logger.addHandler(handler)
+>             logger.info('1')
+>             util.info('2')
+>             logger.debug('3')
+>             filename = os.path.basename(__file__)
+>             log_record = stream.getvalue()
+>             self.assertIn(f'[INFO] [{filename}] 1', log_record)
+>             self.assertIn(f'[INFO] [{filename}] 2', log_record)
+>             self.assertIn(f'[DEBUG] [{filename}] 3', log_record)
+>         finally:
+>             logger.setLevel(original_level)
+>             logger.removeHandler(handler)
+>             handler.close()
+> 

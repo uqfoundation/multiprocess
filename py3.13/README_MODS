@@ -979,4 +979,65 @@ diff Python-3.13.0a2/Lib/test/_test_multiprocessing.py Python-3.13.0a3/Lib/test/
 >             logger.removeHandler(handler)
 >             handler.close()
 > 
-
+# ----------------------------------------------------------------------
+diff Python-3.13.0a3/Lib/multiprocessing/connection.py Python-3.13.0a4/Lib/multiprocessing/connection.py
+22d21
+< import _multiprocessing
+30a30
+>     import _multiprocessing
+1013a1014,1024
+>         # Windows limits WaitForMultipleObjects at 64 handles, and we use a
+>         # few for synchronisation, so we switch to batched waits at 60.
+>         if len(L) > 60:
+>             try:
+>                 res = _winapi.BatchedWaitForMultipleObjects(L, False, timeout)
+>             except TimeoutError:
+>                 return []
+>             ready.extend(L[i] for i in res)
+>             if res:
+>                 L = [h for i, h in enumerate(L) if i > res[0] & i not in res]
+>             timeout = 0
+1015c1026,1027
+<             res = _winapi.WaitForMultipleObjects(L, False, timeout)
+---
+>             short_L = L[:60] if len(L) > 60 else L
+>             res = _winapi.WaitForMultipleObjects(short_L, False, timeout)
+diff Python-3.13.0a3/Lib/test/_test_multiprocessing.py Python-3.13.0a4/Lib/test/_test_multiprocessing.py 
+2695a2696,2698
+>         # Simulate slow tasks which take "forever" to complete
+>         sleep_time = support.LONG_TIMEOUT
+> 
+2697c2700,2703
+<             self.skipTest("Threads cannot be terminated")
+---
+>             # Thread pool workers can't be forced to quit, so if the first
+>             # task starts early enough, we will end up waiting for it.
+>             # Sleep for a shorter time, so the test doesn't block.
+>             sleep_time = 1
+2699d2704
+<         # Simulate slow tasks which take "forever" to complete
+2701c2706
+<         args = [support.LONG_TIMEOUT for i in range(10_000)]
+---
+>         args = [sleep_time for i in range(10_000)]
+2702a2708
+>         time.sleep(0.2)  # give some tasks a chance to start
+6109a6116,6133
+>     def test_large_pool(self):
+>         #
+>         # gh-89240: Check that large pools are always okay
+>         #
+>         testfn = os_helper.TESTFN
+>         self.addCleanup(os_helper.unlink, testfn)
+>         with open(testfn, 'w', encoding='utf-8') as f:
+>             f.write(textwrap.dedent('''\
+>                 import multiprocessing
+>                 def f(x): return x*x
+>                 if __name__ == '__main__':
+>                     with multiprocessing.Pool(200) as p:
+>                         print(sum(p.map(f, range(1000))))
+>             '''))
+>         rc, out, err = script_helper.assert_python_ok(testfn)
+>         self.assertEqual("332833500", out.decode('utf-8').strip())
+>         self.assertFalse(err, msg=err.decode('utf-8'))
+> 

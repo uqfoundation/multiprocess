@@ -244,9 +244,10 @@ class SharedMemory:
         happen in any order, but trying to access data inside a shared
         memory block after unlinking may result in memory errors,
         depending on platform.
-        
+
         This method has no effect on Windows, where the only way to
         delete a shared memory block is to close all handles."""
+
         if _USE_POSIX and self._name:
             _posixshmem.shm_unlink(self._name)
             if self._track:

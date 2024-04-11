@@ -1237,3 +1237,40 @@ diff Python-3.13.0a4/Lib/test/_test_multiprocessing.py Python-3.13.0a5/Lib/test/
 >                 self._test_resource_tracker_leak_resources(
 >                     cleanup=cleanup,
 >                 )
+# ----------------------------------------------------------------------
+diff Python-3.13.0a5/Modules/_multiprocessing/semaphore.c Python-3.13.0a6/Modules/_multiprocessing/semaphore.c
+83a84
+> @critical_section
+95c96
+< /*[clinic end generated code: output=f9998f0b6b0b0872 input=e5b45f5cbb775166]*/
+---
+> /*[clinic end generated code: output=f9998f0b6b0b0872 input=079ca779975f3ad6]*/
+174a176
+> @critical_section
+182c184
+< /*[clinic end generated code: output=b22f53ba96b0d1db input=ba7e63a961885d3d]*/
+---
+> /*[clinic end generated code: output=b22f53ba96b0d1db input=9bd62d3645e7a531]*/
+299a302
+> @critical_section
+311c314
+< /*[clinic end generated code: output=f9998f0b6b0b0872 input=e5b45f5cbb775166]*/
+---
+> /*[clinic end generated code: output=f9998f0b6b0b0872 input=079ca779975f3ad6]*/
+384a388
+> @critical_section
+392c396
+< /*[clinic end generated code: output=b22f53ba96b0d1db input=ba7e63a961885d3d]*/
+---
+> /*[clinic end generated code: output=b22f53ba96b0d1db input=9bd62d3645e7a531]*/
+585a590
+> @critical_section
+593c598
+< /*[clinic end generated code: output=5ba8213900e517bb input=36fc59b1cd1025ab]*/
+---
+> /*[clinic end generated code: output=5ba8213900e517bb input=9fa6e0b321b16935]*/
+diff Python-3.13.0a5/Lib/test/_test_multiprocessing.py Python-3.13.0a6/Lib/test/_test_multiprocessing.py 
+4665c4665
+<             sys.setswitchinterval(1e-6)
+---
+>             support.setswitchinterval(1e-6)

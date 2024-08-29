@@ -1274,3 +1274,156 @@ diff Python-3.13.0a5/Lib/test/_test_multiprocessing.py Python-3.13.0a6/Lib/test/
 <             sys.setswitchinterval(1e-6)
 ---
 >             support.setswitchinterval(1e-6)
+# ----------------------------------------------------------------------
+diff Python-3.13.0a6/Modules/_multiprocessing/multiprocessing.c Python-3.13.0b1/Modules/_multiprocessing/multiprocessing.c
+279a280
+>     {Py_mod_gil, Py_MOD_GIL_NOT_USED},
+diff Python-3.13.0a6/Modules/_multiprocessing/posixshmem.c Python-3.13.0b1/Modules/_multiprocessing/posixshmem.c
+5c5
+< // Need limited C API version 3.12 for Py_MOD_PER_INTERPRETER_GIL_SUPPORTED
+---
+> // Need limited C API version 3.13 for Py_mod_gil
+8c8
+< #  define Py_LIMITED_API 0x030c0000
+---
+> #  define Py_LIMITED_API 0x030d0000
+130a131
+>     {Py_mod_gil, Py_MOD_GIL_NOT_USED},
+diff Python-3.13.0a6/Lib/multiprocessing/forkserver.py Python-3.13.0b1/Lib/multiprocessing/forkserver.py
+0a1
+> import atexit
+273a275,276
+>                                 atexit._clear()
+>                                 atexit.register(util._exit_function)
+280a284
+>                                 atexit._run_exitfuncs()
+diff Python-3.13.0a6/Lib/multiprocessing/popen_fork.py Python-3.13.0b1/Lib/multiprocessing/popen_fork.py
+0a1
+> import atexit
+68a70,71
+>                 atexit._clear()
+>                 atexit.register(util._exit_function)
+72a76
+>                 atexit._run_exitfuncs()
+diff Python-3.13.0a6/Lib/multiprocessing/popen_spawn_win32.py Python-3.13.0b1/Lib/multiprocessing/popen_spawn_win32.py
+5a6
+> from subprocess import STARTUPINFO, STARTF_FORCEOFFFEEDBACK
+77c78,79
+<                     None, None, False, 0, env, None, None)
+---
+>                     None, None, False, 0, env, None,
+>                     STARTUPINFO(dwFlags=STARTF_FORCEOFFFEEDBACK))
+diff Python-3.13.0a6/Lib/multiprocessing/process.py Python-3.13.0b1/Lib/multiprocessing/process.py
+313,317c313,314
+<             try:
+<                 self.run()
+<                 exitcode = 0
+<             finally:
+<                 util._exit_function()
+---
+>             self.run()
+>             exitcode = 0
+diff Python-3.13.0a6/Lib/test/_test_multiprocessing.py Python-3.13.0b1/Lib/test/_test_multiprocessing.py 
+2815d2814
+<         gc.collect()  # For PyPy or other GCs.
+2816a2816
+>         support.gc_collect()  # For PyPy or other GCs.
+6163a6164,6186
+> class _TestAtExit(BaseTestCase):
+> 
+>     ALLOWED_TYPES = ('processes',)
+> 
+>     @classmethod
+>     def _write_file_at_exit(self, output_path):
+>         import atexit
+>         def exit_handler():
+>             with open(output_path, 'w') as f:
+>                 f.write("deadbeef")
+>         atexit.register(exit_handler)
+> 
+>     def test_atexit(self):
+>         # gh-83856
+>         with os_helper.temp_dir() as temp_dir:
+>             output_path = os.path.join(temp_dir, 'output.txt')
+>             p = self.Process(target=self._write_file_at_exit, args=(output_path,))
+>             p.start()
+>             p.join()
+>             with open(output_path) as f:
+>                 self.assertEqual(f.read(), 'deadbeef')
+> 
+> 
+# ----------------------------------------------------------------------
+diff Python-3.13.0b1/Modules/_multiprocessing Python-3.13.0rc1/Modules/_multiprocessing/
+diff Python-3.13.0b1/Modules/_multiprocessing/semaphore.c Python-3.13.0rc1/Modules/_multiprocessing/semaphore.c
+684a685
+> @critical_section
+692c693
+< /*[clinic end generated code: output=beeb2f07c858511f input=c5e27d594284690b]*/
+---
+> /*[clinic end generated code: output=beeb2f07c858511f input=d35c9860992ee790]*/
+697a699
+> @critical_section
+712c714
+< /*[clinic end generated code: output=3b37c1a9f8b91a03 input=7d644b64a89903f8]*/
+---
+> /*[clinic end generated code: output=3b37c1a9f8b91a03 input=1610c8cc3e0e337e]*/
+# ----------------------------------------------------------------------
+diff Python-3.13.0b1/Modules/_multiprocessing/clinic/ Python-3.13.0rc1/Modules/_multiprocessing/clinic/
+diff Python-3.13.0b1/Modules/_multiprocessing/clinic/semaphore.c.h Python-3.13.0rc1/Modules/_multiprocessing/clinic/semaphore.c.h
+476c476,482
+<     return _multiprocessing_SemLock___enter___impl(self);
+---
+>     PyObject *return_value = NULL;
+> 
+>     Py_BEGIN_CRITICAL_SECTION(self);
+>     return_value = _multiprocessing_SemLock___enter___impl(self);
+>     Py_END_CRITICAL_SECTION();
+> 
+>     return return_value;
+520a527
+>     Py_BEGIN_CRITICAL_SECTION(self);
+521a529
+>     Py_END_CRITICAL_SECTION();
+568c576
+< /*[clinic end generated code: output=713b597256233716 input=a9049054013a1b77]*/
+---
+> /*[clinic end generated code: output=dea36482d23a355f input=a9049054013a1b77]*/
+# ----------------------------------------------------------------------
+diff Python-3.13.0b1/Lib/test/_test_multiprocessing.py Python-3.13.0rc1/Lib/test/_test_multiprocessing.py 
+25d24
+< import pathlib
+327,328c326,328
+<             sys.executable.encode(),      # bytes
+<             pathlib.Path(sys.executable)  # os.PathLike
+---
+>             os.fsencode(sys.executable),  # bytes
+>             os_helper.FakePath(sys.executable),  # os.PathLike
+>             os_helper.FakePath(os.fsencode(sys.executable)),  # os.PathLike bytes
+1334a1335,1351
+>     def test_closed_queue_empty_exceptions(self):
+>         # Assert that checking the emptiness of an unused closed queue
+>         # does not raise an OSError. The rationale is that q.close() is
+>         # a no-op upon construction and becomes effective once the queue
+>         # has been used (e.g., by calling q.put()).
+>         for q in multiprocessing.Queue(), multiprocessing.JoinableQueue():
+>             q.close()  # this is a no-op since the feeder thread is None
+>             q.join_thread()  # this is also a no-op
+>             self.assertTrue(q.empty())
+> 
+>         for q in multiprocessing.Queue(), multiprocessing.JoinableQueue():
+>             q.put('foo')  # make sure that the queue is 'used'
+>             q.close()  # close the feeder thread
+>             q.join_thread()  # make sure to join the feeder thread
+>             with self.assertRaisesRegex(OSError, 'is closed'):
+>                 q.empty()
+> 
+5817a5835,5843
+>     def test_empty_exceptions(self):
+>         # Assert that checking emptiness of a closed queue raises
+>         # an OSError, independently of whether the queue was used
+>         # or not. This differs from Queue and JoinableQueue.
+>         q = multiprocessing.SimpleQueue()
+>         q.close()  # close the pipe
+>         with self.assertRaisesRegex(OSError, 'is closed'):
+>             q.empty()
+> 

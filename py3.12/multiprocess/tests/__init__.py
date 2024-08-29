@@ -22,7 +22,6 @@ import logging
 import subprocess
 import struct
 import operator
-import pathlib
 import pickle #XXX: use dill?
 import weakref
 import warnings
@@ -331,8 +330,9 @@ class _TestProcess(BaseTestCase):
             self.skipTest(f'test not appropriate for {self.TYPE}')
         paths = [
             sys.executable,               # str
-            sys.executable.encode(),      # bytes
-            pathlib.Path(sys.executable)  # os.PathLike
+            os.fsencode(sys.executable),  # bytes
+            os_helper.FakePath(sys.executable),  # os.PathLike
+            os_helper.FakePath(os.fsencode(sys.executable)),  # os.PathLike bytes
         ]
         for path in paths:
             self.set_executable(path)
@@ -1339,6 +1339,23 @@ class _TestQueue(BaseTestCase):
         # Assert that the serialization and the hook have been called correctly
         self.assertTrue(not_serializable_obj.reduce_was_called)
         self.assertTrue(not_serializable_obj.on_queue_feeder_error_was_called)
+
+    def test_closed_queue_empty_exceptions(self):
+        # Assert that checking the emptiness of an unused closed queue
+        # does not raise an OSError. The rationale is that q.close() is
+        # a no-op upon construction and becomes effective once the queue
+        # has been used (e.g., by calling q.put()).
+        for q in multiprocessing.Queue(), multiprocessing.JoinableQueue():
+            q.close()  # this is a no-op since the feeder thread is None
+            q.join_thread()  # this is also a no-op
+            self.assertTrue(q.empty())
+
+        for q in multiprocessing.Queue(), multiprocessing.JoinableQueue():
+            q.put('foo')  # make sure that the queue is 'used'
+            q.close()  # close the feeder thread
+            q.join_thread()  # make sure to join the feeder thread
+            with self.assertRaisesRegex(OSError, 'is closed'):
+                q.empty()
 
     def test_closed_queue_put_get_exceptions(self):
         for q in multiprocessing.Queue(), multiprocessing.JoinableQueue():
@@ -5702,6 +5719,15 @@ class TestSimpleQueue(unittest.TestCase):
             queue.put(queue.empty())
         finally:
             parent_can_continue.set()
+
+    def test_empty_exceptions(self):
+        # Assert that checking emptiness of a closed queue raises
+        # an OSError, independently of whether the queue was used
+        # or not. This differs from Queue and JoinableQueue.
+        q = multiprocessing.SimpleQueue()
+        q.close()  # close the pipe
+        with self.assertRaisesRegex(OSError, 'is closed'):
+            q.empty()
 
     def test_empty(self):
         queue = multiprocessing.SimpleQueue()

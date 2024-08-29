@@ -5750,9 +5750,7 @@ class TestNamedResource(unittest.TestCase):
         with open(testfn, 'w', encoding='utf-8') as f:
             f.write(textwrap.dedent('''\
                 import multiprocess as mp
-
                 ctx = mp.get_context('spawn')
-
                 global_resource = ctx.Semaphore()
 
                 def submain(): pass

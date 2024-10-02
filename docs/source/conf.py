@@ -18,7 +18,8 @@
 #
 import os
 from datetime import datetime
-#import sys
+import sys
+sys.path.insert(0, os.path.abspath('../..'))
 # sys.path.insert(0, os.path.abspath('../../scripts'))
 
 # Import the project
@@ -242,14 +243,14 @@ texinfo_documents = [
 
 
 # Example configuration for intersphinx: refer to the Python standard library.
-intersphinx_mapping = {'https://docs.python.org/3/': None}
-#    {'python': {'https://docs.python.org/': None},
-#     'mystic': {'https://mystic.readthedocs.io/en/latest/', None},
-#     'pathos': {'https://pathos.readthedocs.io/en/latest/', None},
-#     'pox': {'https://pox.readthedocs.io/en/latest/', None},
-#     'dill': {'https://dill.readthedocs.io/en/latest/', None},
-#     'ppft': {'https://ppft.readthedocs.io/en/latest/', None},
-#     'klepto': {'https://klepto.readthedocs.io/en/latest/', None},
-#     'pyina': {'https://pyina.readthedocs.io/en/latest/', None},
-#    }
+intersphinx_mapping = {
+    'python': ('https://docs.python.org/', None),
+#   'mystic': ('https://mystic.readthedocs.io/en/latest/', None),
+#   'pathos': ('https://pathos.readthedocs.io/en/latest/', None),
+#   'pox': ('https://pox.readthedocs.io/en/latest/', None),
+#   'dill': ('https://dill.readthedocs.io/en/latest/', None),
+#   'ppft': ('https://ppft.readthedocs.io/en/latest/', None),
+#   'klepto': ('https://klepto.readthedocs.io/en/latest/', None),
+#   'pyina': ('https://pyina.readthedocs.io/en/latest/', None),
+}
 

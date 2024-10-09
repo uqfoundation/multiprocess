@@ -221,6 +221,7 @@ dill_version = 'dill>=0.4.1'
 
 def run_setup(with_extensions=True):
     extensions = []
+    options = {}
     if with_extensions:
         extensions = [
             Extension(
@@ -232,6 +233,18 @@ def run_setup(with_extensions=True):
                 depends=glob.glob('%s/*.h' % srcdir) + ['setup.py'],
             ),
         ]
+    else:
+        import packaging.tags
+
+        if not is_pypy:
+            tag_version = packaging.tags.interpreter_version()
+            options['bdist_wheel'] = {
+                'python_tag': 'py' + tag_version,
+            }
+        elif sys.platform.startswith('linux'):
+            options['bdist_wheel'] = {
+                'plat_name': 'manylinux_2_28_x86_64',
+            }
     packages = find_packages(
         where=pkgdir,
         exclude=['ez_setup', 'examples', 'doc',],
@@ -284,9 +297,10 @@ def run_setup(with_extensions=True):
     if has_setuptools:
         setup_kwds.update(
             zip_safe=False,
-            # distclass=BinaryDistribution,
+            distclass=BinaryDistribution if is_pypy else Distribution,
             install_requires=depend,
             # extras_require=extras,
+            options=options,
         )
     # call setup
     setup(**setup_kwds)

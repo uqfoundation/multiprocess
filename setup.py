@@ -221,6 +221,7 @@ dill_version = 'dill>=0.3.9'
 
 def run_setup(with_extensions=True):
     extensions = []
+    options = {}
     if with_extensions:
         extensions = [
             Extension(
@@ -232,6 +233,14 @@ def run_setup(with_extensions=True):
                 depends=glob.glob('%s/*.h' % srcdir) + ['setup.py'],
             ),
         ]
+    else:
+        import packaging.tags
+
+        tag_name = packaging.tags.interpreter_name()
+        tag_version = packaging.tags.interpreter_version()
+        options['bdist_wheel'] = {
+            'python_tag':tag_name+tag_version,
+        }
     packages = find_packages(
         where=pkgdir,
         exclude=['ez_setup', 'examples', 'doc',],
@@ -276,6 +285,7 @@ def run_setup(with_extensions=True):
         packages=packages,
         package_dir={'': pkgdir},
         ext_modules=extensions,
+        options=options,
     )
     # add dependencies
     depend = [dill_version]

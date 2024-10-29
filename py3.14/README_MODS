@@ -1,0 +1,459 @@
+cp -rf py3.13/examples .
+cp -rf py3.13/doc .
+cp -f py3.13/index.html .
+cp -rf py3.13/_multiprocess _multiprocess
+cp -rf Python-3.14.0a1/Modules/_multiprocessing Modules/_multiprocess
+cp -rf py3.13/multiprocess multiprocess
+# ----------------------------------------------------------------------
+$ diff /Users/mmckerns/src/Python-3.14.0a1/Modules/_multiprocessing/semaphore.c Modules/_multiprocess/semaphore.c 
+10c10
+< #include "multiprocessing.h"
+---
+> #include "multiprocess.h"
+39,40c39,40
+< module _multiprocessing
+< class _multiprocessing.SemLock "SemLockObject *" "&_PyMp_SemLockType"
+---
+> module _multiprocess
+> class _multiprocess.SemLock "SemLockObject *" "&_PyMp_SemLockType"
+85c85
+< _multiprocessing.SemLock.acquire
+---
+> _multiprocess.SemLock.acquire
+94,95c94,95
+< _multiprocessing_SemLock_acquire_impl(SemLockObject *self, int blocking,
+<                                       PyObject *timeout_obj)
+---
+> _multiprocess_SemLock_acquire_impl(SemLockObject *self, int blocking,
+>                                    PyObject *timeout_obj)
+177c177
+< _multiprocessing.SemLock.release
+---
+> _multiprocess.SemLock.release
+183c183
+< _multiprocessing_SemLock_release_impl(SemLockObject *self)
+---
+> _multiprocess_SemLock_release_impl(SemLockObject *self)
+303c303
+< _multiprocessing.SemLock.acquire
+---
+> _multiprocess.SemLock.acquire
+312,313c312,313
+< _multiprocessing_SemLock_acquire_impl(SemLockObject *self, int blocking,
+<                                       PyObject *timeout_obj)
+---
+> _multiprocess_SemLock_acquire_impl(SemLockObject *self, int blocking,
+>                                    PyObject *timeout_obj)
+389c389
+< _multiprocessing.SemLock.release
+---
+> _multiprocess.SemLock.release
+395c395
+< _multiprocessing_SemLock_release_impl(SemLockObject *self)
+---
+> _multiprocess_SemLock_release_impl(SemLockObject *self)
+479c479
+< _multiprocessing.SemLock.__new__
+---
+> _multiprocess.SemLock.__new__
+490,491c490,491
+< _multiprocessing_SemLock_impl(PyTypeObject *type, int kind, int value,
+<                               int maxvalue, const char *name, int unlink)
+---
+> _multiprocess_SemLock_impl(PyTypeObject *type, int kind, int value,
+>                            int maxvalue, const char *name, int unlink)
+538c538
+< _multiprocessing.SemLock._rebuild
+---
+> _multiprocess.SemLock._rebuild
+549,551c549,551
+< _multiprocessing_SemLock__rebuild_impl(PyTypeObject *type, SEM_HANDLE handle,
+<                                        int kind, int maxvalue,
+<                                        const char *name)
+---
+> _multiprocess_SemLock__rebuild_impl(PyTypeObject *type, SEM_HANDLE handle,
+>                                     int kind, int maxvalue,
+>                                     const char *name)
+591c591
+< _multiprocessing.SemLock._count
+---
+> _multiprocess.SemLock._count
+597c597
+< _multiprocessing_SemLock__count_impl(SemLockObject *self)
+---
+> _multiprocess_SemLock__count_impl(SemLockObject *self)
+604c604
+< _multiprocessing.SemLock._is_mine
+---
+> _multiprocess.SemLock._is_mine
+610c610
+< _multiprocessing_SemLock__is_mine_impl(SemLockObject *self)
+---
+> _multiprocess_SemLock__is_mine_impl(SemLockObject *self)
+618c618
+< _multiprocessing.SemLock._get_value
+---
+> _multiprocess.SemLock._get_value
+624c624
+< _multiprocessing_SemLock__get_value_impl(SemLockObject *self)
+---
+> _multiprocess_SemLock__get_value_impl(SemLockObject *self)
+643c643
+< _multiprocessing.SemLock._is_zero
+---
+> _multiprocess.SemLock._is_zero
+649c649
+< _multiprocessing_SemLock__is_zero_impl(SemLockObject *self)
+---
+> _multiprocess_SemLock__is_zero_impl(SemLockObject *self)
+671c671
+< _multiprocessing.SemLock._after_fork
+---
+> _multiprocess.SemLock._after_fork
+677c677
+< _multiprocessing_SemLock__after_fork_impl(SemLockObject *self)
+---
+> _multiprocess_SemLock__after_fork_impl(SemLockObject *self)
+686c686
+< _multiprocessing.SemLock.__enter__
+---
+> _multiprocess.SemLock.__enter__
+692c692
+< _multiprocessing_SemLock___enter___impl(SemLockObject *self)
+---
+> _multiprocess_SemLock___enter___impl(SemLockObject *self)
+695c695
+<     return _multiprocessing_SemLock_acquire_impl(self, 1, Py_None);
+---
+>     return _multiprocess_SemLock_acquire_impl(self, 1, Py_None);
+700c700
+< _multiprocessing.SemLock.__exit__
+---
+> _multiprocess.SemLock.__exit__
+711,713c711,713
+< _multiprocessing_SemLock___exit___impl(SemLockObject *self,
+<                                        PyObject *exc_type,
+<                                        PyObject *exc_value, PyObject *exc_tb)
+---
+> _multiprocess_SemLock___exit___impl(SemLockObject *self,
+>                                     PyObject *exc_type,
+>                                     PyObject *exc_value, PyObject *exc_tb)
+716c716
+<     return _multiprocessing_SemLock_release_impl(self);
+---
+>     return _multiprocess_SemLock_release_impl(self);
+731,740c731,740
+<     _MULTIPROCESSING_SEMLOCK_ACQUIRE_METHODDEF
+<     _MULTIPROCESSING_SEMLOCK_RELEASE_METHODDEF
+<     _MULTIPROCESSING_SEMLOCK___ENTER___METHODDEF
+<     _MULTIPROCESSING_SEMLOCK___EXIT___METHODDEF
+<     _MULTIPROCESSING_SEMLOCK__COUNT_METHODDEF
+<     _MULTIPROCESSING_SEMLOCK__IS_MINE_METHODDEF
+<     _MULTIPROCESSING_SEMLOCK__GET_VALUE_METHODDEF
+<     _MULTIPROCESSING_SEMLOCK__IS_ZERO_METHODDEF
+<     _MULTIPROCESSING_SEMLOCK__REBUILD_METHODDEF
+<     _MULTIPROCESSING_SEMLOCK__AFTER_FORK_METHODDEF
+---
+>     _MULTIPROCESS_SEMLOCK_ACQUIRE_METHODDEF
+>     _MULTIPROCESS_SEMLOCK_RELEASE_METHODDEF
+>     _MULTIPROCESS_SEMLOCK___ENTER___METHODDEF
+>     _MULTIPROCESS_SEMLOCK___EXIT___METHODDEF
+>     _MULTIPROCESS_SEMLOCK__COUNT_METHODDEF
+>     _MULTIPROCESS_SEMLOCK__IS_MINE_METHODDEF
+>     _MULTIPROCESS_SEMLOCK__GET_VALUE_METHODDEF
+>     _MULTIPROCESS_SEMLOCK__IS_ZERO_METHODDEF
+>     _MULTIPROCESS_SEMLOCK__REBUILD_METHODDEF
+>     _MULTIPROCESS_SEMLOCK__AFTER_FORK_METHODDEF
+771c771
+<     {Py_tp_new, _multiprocessing_SemLock},
+---
+>     {Py_tp_new, _multiprocess_SemLock},
+779c779
+<     .name = "_multiprocessing.SemLock",
+---
+>     .name = "_multiprocess.SemLock",
+$ diff /Users/mmckerns/src/Python-3.14.0a1/Modules/_multiprocessing/multiprocessing.h Modules/_multiprocess/multiprocess.h 
+1,2c1,2
+< #ifndef MULTIPROCESSING_H
+< #define MULTIPROCESSING_H
+---
+> #ifndef MULTIPROCESS_H
+> #define MULTIPROCESS_H
+104c104
+< #endif /* MULTIPROCESSING_H */
+---
+> #endif /* MULTIPROCESS_H */
+$ diff /Users/mmckerns/src/Python-3.14.0a1/Modules/_multiprocessing/multiprocessing.c Modules/_multiprocess/multiprocess.c
+2c2
+<  * Extension module used by multiprocessing package
+---
+>  * Extension module used by multiprocess package
+4c4
+<  * multiprocessing.c
+---
+>  * multiprocess.c
+10c10
+< #include "multiprocessing.h"
+---
+> #include "multiprocess.h"
+30c30
+< module _multiprocessing
+---
+> module _multiprocess
+77c77
+< _multiprocessing.closesocket
+---
+> _multiprocess.closesocket
+85c85
+< _multiprocessing_closesocket_impl(PyObject *module, HANDLE handle)
+---
+> _multiprocess_closesocket_impl(PyObject *module, HANDLE handle)
+100c100
+< _multiprocessing.recv
+---
+> _multiprocess.recv
+109c109
+< _multiprocessing_recv_impl(PyObject *module, HANDLE handle, int size)
+---
+> _multiprocess_recv_impl(PyObject *module, HANDLE handle, int size)
+132c132
+< _multiprocessing.send
+---
+> _multiprocess.send
+141c141
+< _multiprocessing_send_impl(PyObject *module, HANDLE handle, Py_buffer *buf)
+---
+> _multiprocess_send_impl(PyObject *module, HANDLE handle, Py_buffer *buf)
+160c160
+< _multiprocessing.sem_unlink
+---
+> _multiprocess.sem_unlink
+168c168
+< _multiprocessing_sem_unlink_impl(PyObject *module, const char *name)
+---
+> _multiprocess_sem_unlink_impl(PyObject *module, const char *name)
+180,182c180,182
+<     _MULTIPROCESSING_CLOSESOCKET_METHODDEF
+<     _MULTIPROCESSING_RECV_METHODDEF
+<     _MULTIPROCESSING_SEND_METHODDEF
+---
+>     _MULTIPROCESS_CLOSESOCKET_METHODDEF
+>     _MULTIPROCESS_RECV_METHODDEF
+>     _MULTIPROCESS_SEND_METHODDEF
+185c185
+<     _MULTIPROCESSING_SEM_UNLINK_METHODDEF
+---
+>     _MULTIPROCESS_SEM_UNLINK_METHODDEF
+196c196
+< multiprocessing_exec(PyObject *module)
+---
+> multiprocess_exec(PyObject *module)
+277,278c277,278
+< static PyModuleDef_Slot multiprocessing_slots[] = {
+<     {Py_mod_exec, multiprocessing_exec},
+---
+> static PyModuleDef_Slot multiprocess_slots[] = {
+>     {Py_mod_exec, multiprocess_exec},
+284c284
+< static struct PyModuleDef multiprocessing_module = {
+---
+> static struct PyModuleDef multiprocess_module = {
+286c286
+<     .m_name = "_multiprocessing",
+---
+>     .m_name = "_multiprocess",
+289c289
+<     .m_slots = multiprocessing_slots,
+---
+>     .m_slots = multiprocess_slots,
+293c293
+< PyInit__multiprocessing(void)
+---
+> PyInit__multiprocess(void)
+295c295
+<     return PyModuleDef_Init(&multiprocessing_module);
+---
+>     return PyModuleDef_Init(&multiprocess_module);
+# ----------------------------------------------------------------------
+diff Python-3.13.0rc1/Lib/multiprocessing/connection.py Python-3.14.0a1/Lib/multiprocessing/connection.py
+13a14
+> import itertools
+18d18
+< import time
+20c20
+< import itertools
+---
+> import time
+42c42,44
+< BUFSIZE = 8192
+---
+> # 64 KiB is the default PIPE buffer size of most POSIX platforms.
+> BUFSIZE = 64 * 1024
+> 
+395c397,398
+<             chunk = read(handle, remaining)
+---
+>             to_read = min(BUFSIZE, remaining)
+>             chunk = read(handle, to_read)
+diff Python-3.13.0rc1/Lib/multiprocessing/context.py Python-3.14.0a1/Lib/multiprocessing/context.py
+170c170
+<         from . import connection
+---
+>         from . import connection  # noqa: F401
+262,268c262,267
+<         if sys.platform == 'win32':
+<             return ['spawn']
+<         else:
+<             methods = ['spawn', 'fork'] if sys.platform == 'darwin' else ['fork', 'spawn']
+<             if reduction.HAVE_SEND_HANDLE:
+<                 methods.append('forkserver')
+<             return methods
+---
+>         default = self._default_context.get_start_method()
+>         start_method_names = [default]
+>         start_method_names.extend(
+>             name for name in _concrete_contexts if name != default
+>         )
+>         return start_method_names
+323,326c322,326
+<     if sys.platform == 'darwin':
+<         # bpo-33725: running arbitrary code after fork() is no longer reliable
+<         # on macOS since macOS 10.14 (Mojave). Use spawn by default instead.
+<         _default_context = DefaultContext(_concrete_contexts['spawn'])
+---
+>     # bpo-33725: running arbitrary code after fork() is no longer reliable
+>     # on macOS since macOS 10.14 (Mojave). Use spawn by default instead.
+>     # gh-84559: We changed everyones default to a thread safeish one in 3.14.
+>     if reduction.HAVE_SEND_HANDLE and sys.platform != 'darwin':
+>         _default_context = DefaultContext(_concrete_contexts['forkserver'])
+328c328
+<         _default_context = DefaultContext(_concrete_contexts['fork'])
+---
+>         _default_context = DefaultContext(_concrete_contexts['spawn'])
+330c330
+< else:
+---
+> else:  # Windows
+diff Python-3.13.0rc1/Lib/multiprocessing/managers.py Python-3.14.0a1/Lib/multiprocessing/managers.py
+1155,1158c1155,1158
+<     '__add__', '__contains__', '__delitem__', '__getitem__', '__len__',
+<     '__mul__', '__reversed__', '__rmul__', '__setitem__',
+<     'append', 'count', 'extend', 'index', 'insert', 'pop', 'remove',
+<     'reverse', 'sort', '__imul__'
+---
+>     '__add__', '__contains__', '__delitem__', '__getitem__', '__imul__',
+>     '__len__', '__mul__', '__reversed__', '__rmul__', '__setitem__',
+>     'append', 'clear', 'copy', 'count', 'extend', 'index', 'insert', 'pop',
+>     'remove', 'reverse', 'sort',
+1172,1173c1172,1174
+<     '__contains__', '__delitem__', '__getitem__', '__iter__', '__len__',
+<     '__setitem__', 'clear', 'copy', 'get', 'items',
+---
+>     '__contains__', '__delitem__', '__getitem__', '__ior__', '__iter__',
+>     '__len__', '__or__', '__reversed__', '__ror__',
+>     '__setitem__', 'clear', 'copy', 'fromkeys', 'get', 'items',
+1180c1181,1183
+<     __class_getitem__ = classmethod(types.GenericAlias)
+---
+>     def __ior__(self, value):
+>         self._callmethod('__ior__', (value,))
+>         return self
+1181a1185
+>     __class_getitem__ = classmethod(types.GenericAlias)
+diff Python-3.13.0rc1/Lib/multiprocessing/shared_memory.py Python-3.14.0a1/Lib/multiprocessing/shared_memory.py
+542c542
+<             raise ValueError(f"{value!r} not in this container")
+---
+>             raise ValueError("ShareableList.index(x): x not in list")
+diff Python-3.13.0rc1/Lib/multiprocessing/util.py Python-3.14.0a1/Lib/multiprocessing/util.py
+17c17
+< from subprocess import _args_from_interpreter_flags
+---
+> from subprocess import _args_from_interpreter_flags  # noqa: F401
+448,449c448
+<             False, False, -1, None, None, None, -1, None,
+<             subprocess._USE_VFORK)
+---
+>             False, False, -1, None, None, None, -1, None)
+$ diff Python-3.13.0rc1/Lib/test/_test_multiprocessing.py Python-3.14.0a1/Lib/test/_test_multiprocessing.py
+5556c5556
+<     def test_get_all(self):
+---
+>     def test_get_all_start_methods(self):
+5557a5558
+>         self.assertIn('spawn', methods)
+5559a5561,5565
+>         elif sys.platform == 'darwin':
+>             self.assertEqual(methods[0], 'spawn')  # The default is first.
+>             # Whether these work or not, they remain available on macOS.
+>             self.assertIn('fork', methods)
+>             self.assertIn('forkserver', methods)
+5561,5564c5567,5578
+<             self.assertTrue(methods == ['fork', 'spawn'] or
+<                             methods == ['spawn', 'fork'] or
+<                             methods == ['fork', 'spawn', 'forkserver'] or
+<                             methods == ['spawn', 'fork', 'forkserver'])
+---
+>             # POSIX
+>             self.assertIn('fork', methods)
+>             if other_methods := set(methods) - {'fork', 'spawn'}:
+>                 # If there are more than those two, forkserver must be one.
+>                 self.assertEqual({'forkserver'}, other_methods)
+>             # The default is the first method in the list.
+>             self.assertIn(methods[0], {'forkserver', 'spawn'},
+>                           msg='3.14+ default must not be fork')
+>             if methods[0] == 'spawn':
+>                 # Confirm that the current default selection logic prefers
+>                 # forkserver vs spawn when available.
+>                 self.assertNotIn('forkserver', methods)
+6092a6107,6122
+>         obj += [7]
+>         case.assertIsInstance(obj, multiprocessing.managers.ListProxy)
+>         case.assertListEqual(list(obj), [5, 7])
+>         obj *= 2
+>         case.assertIsInstance(obj, multiprocessing.managers.ListProxy)
+>         case.assertListEqual(list(obj), [5, 7, 5, 7])
+>         double_obj = obj * 2
+>         case.assertIsInstance(double_obj, list)
+>         case.assertListEqual(list(double_obj), [5, 7, 5, 7, 5, 7, 5, 7])
+>         double_obj = 2 * obj
+>         case.assertIsInstance(double_obj, list)
+>         case.assertListEqual(list(double_obj), [5, 7, 5, 7, 5, 7, 5, 7])
+>         copied_obj = obj.copy()
+>         case.assertIsInstance(copied_obj, list)
+>         case.assertListEqual(list(copied_obj), [5, 7, 5, 7])
+>         obj.extend(double_obj + copied_obj)
+6097,6098c6127,6130
+<         case.assertEqual(len(obj), 1)
+<         case.assertEqual(obj.pop(0), 5)
+---
+>         case.assertEqual(len(obj), 16)
+>         case.assertEqual(obj.pop(0), 7)
+>         obj.clear()
+>         case.assertEqual(len(obj), 0)
+6117c6149,6171
+<         case.assertTupleEqual(obj.popitem(), ('foo', 5))
+---
+>         obj |= {'bar': 6}
+>         case.assertIsInstance(obj, multiprocessing.managers.DictProxy)
+>         case.assertDictEqual(dict(obj), {'foo': 5, 'bar': 6})
+>         x = reversed(obj)
+>         case.assertIsInstance(x, type(iter([])))
+>         case.assertListEqual(list(x), ['bar', 'foo'])
+>         x = {'bar': 7, 'baz': 7} | obj
+>         case.assertIsInstance(x, dict)
+>         case.assertDictEqual(dict(x), {'foo': 5, 'bar': 6, 'baz': 7})
+>         x = obj | {'bar': 7, 'baz': 7}
+>         case.assertIsInstance(x, dict)
+>         case.assertDictEqual(dict(x), {'foo': 5, 'bar': 7, 'baz': 7})
+>         x = obj.fromkeys(['bar'], 6)
+>         case.assertIsInstance(x, dict)
+>         case.assertDictEqual(x, {'bar': 6})
+>         x = obj.popitem()
+>         case.assertIsInstance(x, tuple)
+>         case.assertTupleEqual(x, ('bar', 6))
+>         obj.setdefault('bar', 0)
+>         obj.update({'bar': 7})
+>         case.assertEqual(obj.pop('bar'), 7)
+>         obj.clear()
+>         case.assertEqual(len(obj), 0)

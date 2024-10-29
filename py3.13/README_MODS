@@ -5,7 +5,7 @@ cp -rf py3.12/_multiprocess _multiprocess
 cp -rf Python-3.13.0a1/Modules/_multiprocessing Modules/_multiprocess
 cp -rf py3.12/multiprocess multiprocess
 # ----------------------------------------------------------------------
-diff /Users/mmckerns/src/Python-3.13.0a1/Modules/_multiprocessing/semaphore.c Modules/_multiprocess/semaphore.c
+diff ~/src/Python-3.13.0a1/Modules/_multiprocessing/semaphore.c Modules/_multiprocess/semaphore.c
 10c10
 < #include "multiprocessing.h"
 ---

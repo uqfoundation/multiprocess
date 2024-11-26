@@ -457,3 +457,375 @@ $ diff Python-3.13.0rc1/Lib/test/_test_multiprocessing.py Python-3.14.0a1/Lib/te
 >         case.assertEqual(obj.pop('bar'), 7)
 >         obj.clear()
 >         case.assertEqual(len(obj), 0)
+
+# ----------------------------------------------------------------------
+diff Python-3.14.0a1/Modules/_multiprocessing/semaphore.c Python-3.14.0a2/Modules/_multiprocessing/semaphore.c
+17a18
+> // These match the values in Lib/multiprocessing/synchronize.py
+diff Python-3.14.0a1/Modules/_multiprocessing/clinic/semaphore.c.h Python-3.14.0a2/Modules/_multiprocessing/clinic/semaphore.c.h
+61c61,62
+<     args = _PyArg_UnpackKeywords(args, nargs, NULL, kwnames, &_parser, 0, 2, 0, argsbuf);
+---
+>     args = _PyArg_UnpackKeywords(args, nargs, NULL, kwnames, &_parser,
+>             /*minpos*/ 0, /*maxpos*/ 2, /*minkw*/ 0, /*varpos*/ 0, argsbuf);
+166c167,168
+<     args = _PyArg_UnpackKeywords(args, nargs, NULL, kwnames, &_parser, 0, 2, 0, argsbuf);
+---
+>     args = _PyArg_UnpackKeywords(args, nargs, NULL, kwnames, &_parser,
+>             /*minpos*/ 0, /*maxpos*/ 2, /*minkw*/ 0, /*varpos*/ 0, argsbuf);
+266c268,269
+<     fastargs = _PyArg_UnpackKeywords(_PyTuple_CAST(args)->ob_item, nargs, kwargs, NULL, &_parser, 5, 5, 0, argsbuf);
+---
+>     fastargs = _PyArg_UnpackKeywords(_PyTuple_CAST(args)->ob_item, nargs, kwargs, NULL, &_parser,
+>             /*minpos*/ 5, /*maxpos*/ 5, /*minkw*/ 0, /*varpos*/ 0, argsbuf);
+576c579
+< /*[clinic end generated code: output=dea36482d23a355f input=a9049054013a1b77]*/
+---
+> /*[clinic end generated code: output=9023d3e48a24afd2 input=a9049054013a1b77]*/
+diff Python-3.14.0a1/Lib/multiprocessing/forkserver.py Python-3.14.0a2/Lib/multiprocessing/forkserver.py
+170a171,172
+>         if sys_path is not None:
+>             sys.path[:] = sys_path
+diff Python-3.14.0a1/Lib/multiprocessing/managers.py Python-3.14.0a2/Lib/multiprocessing/managers.py
+20a21
+> import collections.abc
+760a762,765
+>     # Each instance gets a `_serial` number. Unlike `id(...)`, this number
+>     # is never reused.
+>     _next_serial = 1
+> 
+764,767c769,775
+<             tls_idset = BaseProxy._address_to_local.get(token.address, None)
+<             if tls_idset is None:
+<                 tls_idset = util.ForkAwareLocal(), ProcessLocalSet()
+<                 BaseProxy._address_to_local[token.address] = tls_idset
+---
+>             tls_serials = BaseProxy._address_to_local.get(token.address, None)
+>             if tls_serials is None:
+>                 tls_serials = util.ForkAwareLocal(), ProcessLocalSet()
+>                 BaseProxy._address_to_local[token.address] = tls_serials
+> 
+>             self._serial = BaseProxy._next_serial
+>             BaseProxy._next_serial += 1
+771c779
+<         self._tls = tls_idset[0]
+---
+>         self._tls = tls_serials[0]
+773,774c781,782
+<         # self._idset is used to record the identities of all shared
+<         # objects for which the current process owns references and
+---
+>         # self._all_serials is a set used to record the identities of all
+>         # shared objects for which the current process owns references and
+776c784
+<         self._idset = tls_idset[1]
+---
+>         self._all_serials = tls_serials[1]
+859c867
+<         self._idset.add(self._id)
+---
+>         self._all_serials.add(self._serial)
+865,866c873,874
+<             args=(self._token, self._authkey, state,
+<                   self._tls, self._idset, self._Client),
+---
+>             args=(self._token, self._serial, self._authkey, state,
+>                   self._tls, self._all_serials, self._Client),
+871,872c879,880
+<     def _decref(token, authkey, state, tls, idset, _Client):
+<         idset.discard(token.id)
+---
+>     def _decref(token, serial, authkey, state, tls, idset, _Client):
+>         idset.discard(serial)
+1169a1178
+> collections.abc.MutableSequence.register(BaseListProxy)
+1171c1180
+< _BaseDictProxy = MakeProxyType('DictProxy', (
+---
+> _BaseDictProxy = MakeProxyType('_BaseDictProxy', (
+1186a1196,1197
+> collections.abc.MutableMapping.register(_BaseDictProxy)
+> 
+diff Python-3.14.0a1/Lib/multiprocessing/synchronize.py Python-3.14.0a2/Lib/multiprocessing/synchronize.py
+24,26c24
+< # Try to import the mp.synchronize module cleanly, if it fails
+< # raise ImportError for platforms lacking a working sem_open implementation.
+< # See issue 3770
+---
+> # TODO: Do any platforms still lack a functioning sem_open?
+29c27
+< except (ImportError):
+---
+> except ImportError:
+31,33c29
+<                       " implementation, therefore, the required" +
+<                       " synchronization primitives needed will not" +
+<                       " function, see issue 3770.")
+---
+>                       " implementation. https://github.com/python/cpython/issues/48020.")
+39c35,38
+< RECURSIVE_MUTEX, SEMAPHORE = list(range(2))
+---
+> # These match the enum in Modules/_multiprocessing/semaphore.c
+> RECURSIVE_MUTEX = 0
+> SEMAPHORE = 1
+> 
+177c176
+<             elif self._semlock._get_value() == 1:
+---
+>             elif not self._semlock._is_zero():
+203c202
+<             elif self._semlock._get_value() == 1:
+---
+>             elif not self._semlock._is_zero():
+diff Python-3.14.0a1/Lib/multiprocessing/util.py Python-3.14.0a2/Lib/multiprocessing/util.py
+441d440
+<     import subprocess
+diff Python-3.14.0a1/Lib/test/_test_multiprocessing.py Python-3.14.0a2/Lib/test/_test_multiprocessing.py 
+14a15
+> import importlib
+18a20
+> import collections.abc
+21a24
+> import shutil
+23a27
+> import tempfile
+256a261,263
+>     # If not empty, limit which start method suites run this class.
+>     START_METHODS: set[str] = set()
+>     start_method = None  # set by install_tests_in_module_dict()
+1364a1372,1431
+>     @staticmethod
+>     def _acquire(lock, l=None):
+>         lock.acquire()
+>         if l is not None:
+>             l.append(repr(lock))
+> 
+>     @staticmethod
+>     def _acquire_event(lock, event):
+>         lock.acquire()
+>         event.set()
+>         time.sleep(1.0)
+> 
+>     def test_repr_lock(self):
+>         if self.TYPE != 'processes':
+>             self.skipTest('test not appropriate for {}'.format(self.TYPE))
+> 
+>         lock = self.Lock()
+>         self.assertEqual(f'<Lock(owner=None)>', repr(lock))
+> 
+>         lock.acquire()
+>         self.assertEqual(f'<Lock(owner=MainProcess)>', repr(lock))
+>         lock.release()
+> 
+>         tname = 'T1'
+>         l = []
+>         t = threading.Thread(target=self._acquire,
+>                              args=(lock, l),
+>                              name=tname)
+>         t.start()
+>         time.sleep(0.1)
+>         self.assertEqual(f'<Lock(owner=MainProcess|{tname})>', l[0])
+>         lock.release()
+> 
+>         t = threading.Thread(target=self._acquire,
+>                              args=(lock,),
+>                              name=tname)
+>         t.start()
+>         time.sleep(0.1)
+>         self.assertEqual('<Lock(owner=SomeOtherThread)>', repr(lock))
+>         lock.release()
+> 
+>         pname = 'P1'
+>         l = multiprocessing.Manager().list()
+>         p = self.Process(target=self._acquire,
+>                          args=(lock, l),
+>                          name=pname)
+>         p.start()
+>         p.join()
+>         self.assertEqual(f'<Lock(owner={pname})>', l[0])
+> 
+>         lock = self.Lock()
+>         event = self.Event()
+>         p = self.Process(target=self._acquire_event,
+>                          args=(lock, event),
+>                          name='P2')
+>         p.start()
+>         event.wait()
+>         self.assertEqual(f'<Lock(owner=SomeOtherProcess)>', repr(lock))
+>         p.terminate()
+> 
+1371a1439,1500
+>     @staticmethod
+>     def _acquire_release(lock, timeout, l=None, n=1):
+>         for _ in range(n):
+>             lock.acquire()
+>         if l is not None:
+>             l.append(repr(lock))
+>         time.sleep(timeout)
+>         for _ in range(n):
+>             lock.release()
+> 
+>     def test_repr_rlock(self):
+>         if self.TYPE != 'processes':
+>             self.skipTest('test not appropriate for {}'.format(self.TYPE))
+> 
+>         lock = self.RLock()
+>         self.assertEqual('<RLock(None, 0)>', repr(lock))
+> 
+>         n = 3
+>         for _ in range(n):
+>             lock.acquire()
+>         self.assertEqual(f'<RLock(MainProcess, {n})>', repr(lock))
+>         for _ in range(n):
+>             lock.release()
+> 
+>         t, l = [], []
+>         for i in range(n):
+>             t.append(threading.Thread(target=self._acquire_release,
+>                                       args=(lock, 0.1, l, i+1),
+>                                       name=f'T{i+1}'))
+>             t[-1].start()
+>         for t_ in t:
+>             t_.join()
+>         for i in range(n):
+>             self.assertIn(f'<RLock(MainProcess|T{i+1}, {i+1})>', l)
+> 
+> 
+>         t = threading.Thread(target=self._acquire_release,
+>                                  args=(lock, 0.2),
+>                                  name=f'T1')
+>         t.start()
+>         time.sleep(0.1)
+>         self.assertEqual('<RLock(SomeOtherThread, nonzero)>', repr(lock))
+>         time.sleep(0.2)
+> 
+>         pname = 'P1'
+>         l = multiprocessing.Manager().list()
+>         p = self.Process(target=self._acquire_release,
+>                          args=(lock, 0.1, l),
+>                          name=pname)
+>         p.start()
+>         p.join()
+>         self.assertEqual(f'<RLock({pname}, 1)>', l[0])
+> 
+>         event = self.Event()
+>         lock = self.RLock()
+>         p = self.Process(target=self._acquire_event,
+>                          args=(lock, event))
+>         p.start()
+>         event.wait()
+>         self.assertEqual('<RLock(SomeOtherProcess, nonzero)>', repr(lock))
+>         p.join()
+> 
+2333a2463,2479
+>     def test_list_isinstance(self):
+>         a = self.list()
+>         self.assertIsInstance(a, collections.abc.MutableSequence)
+> 
+>         # MutableSequence also has __iter__, but we can iterate over
+>         # ListProxy using __getitem__ instead. Adding __iter__ to ListProxy
+>         # would change the behavior of a list modified during iteration.
+>         mutable_sequence_methods = (
+>             '__contains__', '__delitem__', '__getitem__', '__iadd__',
+>             '__len__', '__reversed__', '__setitem__', 'append',
+>             'clear', 'count', 'extend', 'index', 'insert', 'pop', 'remove',
+>             'reverse',
+>         )
+>         for name in mutable_sequence_methods:
+>             with self.subTest(name=name):
+>                 self.assertTrue(callable(getattr(a, name)))
+> 
+2373a2520,2532
+>     def test_dict_isinstance(self):
+>         a = self.dict()
+>         self.assertIsInstance(a, collections.abc.MutableMapping)
+> 
+>         mutable_mapping_methods = (
+>             '__contains__', '__delitem__', '__eq__', '__getitem__', '__iter__',
+>             '__len__', '__ne__', '__setitem__', 'clear', 'get', 'items',
+>             'keys', 'pop', 'popitem', 'setdefault', 'update', 'values',
+>         )
+>         for name in mutable_mapping_methods:
+>             with self.subTest(name=name):
+>                 self.assertTrue(callable(getattr(a, name)))
+> 
+5763a5923,5924
+>     @unittest.skipIf(sys.platform.startswith("netbsd"),
+>                      "gh-125620: Skip on NetBSD due to long wait for SIGKILL process termination.")
+6266a6428,6497
+> class _TestSpawnedSysPath(BaseTestCase):
+>     """Test that sys.path is setup in forkserver and spawn processes."""
+> 
+>     ALLOWED_TYPES = {'processes'}
+>     # Not applicable to fork which inherits everything from the process as is.
+>     START_METHODS = {"forkserver", "spawn"}
+> 
+>     def setUp(self):
+>         self._orig_sys_path = list(sys.path)
+>         self._temp_dir = tempfile.mkdtemp(prefix="test_sys_path-")
+>         self._mod_name = "unique_test_mod"
+>         module_path = os.path.join(self._temp_dir, f"{self._mod_name}.py")
+>         with open(module_path, "w", encoding="utf-8") as mod:
+>             mod.write("# A simple test module\n")
+>         sys.path[:] = [p for p in sys.path if p]  # remove any existing ""s
+>         sys.path.insert(0, self._temp_dir)
+>         sys.path.insert(0, "")  # Replaced with an abspath in child.
+>         self.assertIn(self.start_method, self.START_METHODS)
+>         self._ctx = multiprocessing.get_context(self.start_method)
+> 
+>     def tearDown(self):
+>         sys.path[:] = self._orig_sys_path
+>         shutil.rmtree(self._temp_dir, ignore_errors=True)
+> 
+>     @staticmethod
+>     def enq_imported_module_names(queue):
+>         queue.put(tuple(sys.modules))
+> 
+>     def test_forkserver_preload_imports_sys_path(self):
+>         if self._ctx.get_start_method() != "forkserver":
+>             self.skipTest("forkserver specific test.")
+>         self.assertNotIn(self._mod_name, sys.modules)
+>         multiprocessing.forkserver._forkserver._stop()  # Must be fresh.
+>         self._ctx.set_forkserver_preload(
+>             ["test.test_multiprocessing_forkserver", self._mod_name])
+>         q = self._ctx.Queue()
+>         proc = self._ctx.Process(
+>                 target=self.enq_imported_module_names, args=(q,))
+>         proc.start()
+>         proc.join()
+>         child_imported_modules = q.get()
+>         q.close()
+>         self.assertIn(self._mod_name, child_imported_modules)
+> 
+>     @staticmethod
+>     def enq_sys_path_and_import(queue, mod_name):
+>         queue.put(sys.path)
+>         try:
+>             importlib.import_module(mod_name)
+>         except ImportError as exc:
+>             queue.put(exc)
+>         else:
+>             queue.put(None)
+> 
+>     def test_child_sys_path(self):
+>         q = self._ctx.Queue()
+>         proc = self._ctx.Process(
+>                 target=self.enq_sys_path_and_import, args=(q, self._mod_name))
+>         proc.start()
+>         proc.join()
+>         child_sys_path = q.get()
+>         import_error = q.get()
+>         q.close()
+>         self.assertNotIn("", child_sys_path)  # replaced by an abspath
+>         self.assertIn(self._temp_dir, child_sys_path)  # our addition
+>         # ignore the first element, it is the absolute "" replacement
+>         self.assertEqual(child_sys_path[1:], sys.path[1:])
+>         self.assertIsNone(import_error, msg=f"child could not import {self._mod_name}")
+> 
+> 
+6460a6692,6693
+>             if base.START_METHODS and start_method not in base.START_METHODS:
+>                 continue  # class not intended for this start method.
+6473a6707
+>                 Temp.start_method = start_method

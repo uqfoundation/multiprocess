@@ -829,3 +829,185 @@ diff Python-3.14.0a1/Lib/test/_test_multiprocessing.py Python-3.14.0a2/Lib/test/
 >                 continue  # class not intended for this start method.
 6473a6707
 >                 Temp.start_method = start_method
+# ----------------------------------------------------------------------
+diff Python-3.14.0a2/Lib/multiprocessing/connection.py Python-3.14.0a3/Lib/multiprocessing/connection.py
+183a184,187
+>     def _detach(self):
+>         """Stop managing the underlying file descriptor or handle."""
+>         self._handle = None
+> 
+962c966
+<         raise AuthenticationError('challenge too short: {len(message)} bytes')
+---
+>         raise AuthenticationError(f'challenge too short: {len(message)} bytes')
+diff Python-3.14.0a2/Lib/multiprocessing/forkserver.py Python-3.14.0a3/Lib/multiprocessing/forkserver.py
+11a12
+> from . import AuthenticationError
+27a29
+> _AUTHKEY_LEN = 32  # <= PIPEBUF so it fits a single write to an empty pipe.
+35a38
+>         self._forkserver_authkey = None
+61a65
+>         self._forkserver_authkey = None
+85a90
+>         assert self._forkserver_authkey
+95a101,112
+>                 client.setblocking(True)
+>                 wrapped_client = connection.Connection(client.fileno())
+>                 # The other side of this exchange happens in the child as
+>                 # implemented in main().
+>                 try:
+>                     connection.answer_challenge(
+>                             wrapped_client, self._forkserver_authkey)
+>                     connection.deliver_challenge(
+>                             wrapped_client, self._forkserver_authkey)
+>                 finally:
+>                     wrapped_client._detach()
+>                     del wrapped_client
+122a140
+>                 self._forkserver_authkey = None
+133c151
+<                 data = {x: y for x, y in data.items() if x in desired_keys}
+---
+>                 main_kws = {x: y for x, y in data.items() if x in desired_keys}
+135c153
+<                 data = {}
+---
+>                 main_kws = {}
+146a165,166
+>                 # A short lived pipe to initialize the forkserver authkey.
+>                 authkey_r, authkey_w = os.pipe()
+148c168,169
+<                     fds_to_pass = [listener.fileno(), alive_r]
+---
+>                     fds_to_pass = [listener.fileno(), alive_r, authkey_r]
+>                     main_kws['authkey_r'] = authkey_r
+150c171
+<                             data)
+---
+>                             main_kws)
+156a178
+>                     os.close(authkey_w)
+159a182,189
+>                     os.close(authkey_r)
+>                 # Authenticate our control socket to prevent access from
+>                 # processes we have not shared this key with.
+>                 try:
+>                     self._forkserver_authkey = os.urandom(_AUTHKEY_LEN)
+>                     os.write(authkey_w, self._forkserver_authkey)
+>                 finally:
+>                     os.close(authkey_w)
+168,169c198,209
+< def main(listener_fd, alive_r, preload, main_path=None, sys_path=None):
+<     '''Run forkserver.'''
+---
+> def main(listener_fd, alive_r, preload, main_path=None, sys_path=None,
+>          *, authkey_r=None):
+>     """Run forkserver."""
+>     if authkey_r is not None:
+>         try:
+>             authkey = os.read(authkey_r, _AUTHKEY_LEN)
+>             assert len(authkey) == _AUTHKEY_LEN, f'{len(authkey)} < {_AUTHKEY_LEN}'
+>         finally:
+>             os.close(authkey_r)
+>     else:
+>         authkey = b''
+> 
+260,261c300,317
+<                         # Receive fds from client
+<                         fds = reduction.recvfds(s, MAXFDS_TO_SEND + 1)
+---
+>                         try:
+>                             if authkey:
+>                                 wrapped_s = connection.Connection(s.fileno())
+>                                 # The other side of this exchange happens in
+>                                 # in connect_to_new_process().
+>                                 try:
+>                                     connection.deliver_challenge(
+>                                             wrapped_s, authkey)
+>                                     connection.answer_challenge(
+>                                             wrapped_s, authkey)
+>                                 finally:
+>                                     wrapped_s._detach()
+>                                     del wrapped_s
+>                             # Receive fds from client
+>                             fds = reduction.recvfds(s, MAXFDS_TO_SEND + 1)
+>                         except (EOFError, BrokenPipeError, AuthenticationError):
+>                             s.close()
+>                             continue
+diff Python-3.14.0a2/Lib/multiprocessing/reduction.py Python-3.14.0a3/Lib/multiprocessing/reduction.py
+142,144d141
+<     # On MacOSX we should acknowledge receipt of fds -- see Issue14669
+<     ACKNOWLEDGE = sys.platform == 'darwin'
+< 
+150c147
+<         if ACKNOWLEDGE and sock.recv(1) != b'A':
+---
+>         if sock.recv(1) != b'A':
+161,162c158,162
+<             if ACKNOWLEDGE:
+<                 sock.send(b'A')
+---
+>             # We send/recv an Ack byte after the fds to work around an old
+>             # macOS bug; it isn't clear if this is still required but it
+>             # makes unit testing fd sending easier.
+>             # See: https://github.com/python/cpython/issues/58874
+>             sock.send(b'A')  # Acknowledge
+diff Python-3.14.0a2/Lib/test/_test_multiprocessing.py Python-3.14.0a3/Lib/test/_test_multiprocessing.py 
+849,850c849,850
+<     @classmethod
+<     def _sleep_and_set_event(self, evt, delay=0.0):
+---
+>     @staticmethod
+>     def _sleep_and_set_event(evt, delay=0.0):
+900a901,950
+>     def test_forkserver_auth_is_enabled(self):
+>         if self.TYPE == "threads":
+>             self.skipTest(f"test not appropriate for {self.TYPE}")
+>         if multiprocessing.get_start_method() != "forkserver":
+>             self.skipTest("forkserver start method specific")
+> 
+>         forkserver = multiprocessing.forkserver._forkserver
+>         forkserver.ensure_running()
+>         self.assertTrue(forkserver._forkserver_pid)
+>         authkey = forkserver._forkserver_authkey
+>         self.assertTrue(authkey)
+>         self.assertGreater(len(authkey), 15)
+>         addr = forkserver._forkserver_address
+>         self.assertTrue(addr)
+> 
+>         # Demonstrate that a raw auth handshake, as Client performs, does not
+>         # raise an error.
+>         client = multiprocessing.connection.Client(addr, authkey=authkey)
+>         client.close()
+> 
+>         # That worked, now launch a quick process.
+>         proc = self.Process(target=sys.exit)
+>         proc.start()
+>         proc.join()
+>         self.assertEqual(proc.exitcode, 0)
+> 
+>     def test_forkserver_without_auth_fails(self):
+>         if self.TYPE == "threads":
+>             self.skipTest(f"test not appropriate for {self.TYPE}")
+>         if multiprocessing.get_start_method() != "forkserver":
+>             self.skipTest("forkserver start method specific")
+> 
+>         forkserver = multiprocessing.forkserver._forkserver
+>         forkserver.ensure_running()
+>         self.assertTrue(forkserver._forkserver_pid)
+>         authkey_len = len(forkserver._forkserver_authkey)
+>         with unittest.mock.patch.object(
+>                 forkserver, '_forkserver_authkey', None):
+>             # With an incorrect authkey we should get an auth rejection
+>             # rather than the above protocol error.
+>             forkserver._forkserver_authkey = b'T' * authkey_len
+>             proc = self.Process(target=sys.exit)
+>             with self.assertRaises(multiprocessing.AuthenticationError):
+>                 proc.start()
+>             del proc
+> 
+>         # authkey restored, launching processes should work again.
+>         proc = self.Process(target=sys.exit)
+>         proc.start()
+>         proc.join()

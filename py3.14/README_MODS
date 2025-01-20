@@ -1011,3 +1011,40 @@ diff Python-3.14.0a2/Lib/test/_test_multiprocessing.py Python-3.14.0a3/Lib/test/
 >         proc = self.Process(target=sys.exit)
 >         proc.start()
 >         proc.join()
+# ----------------------------------------------------------------------
+diff Python-3.14.0a3/Lib/multiprocessing/resource_tracker.py Python-3.14.0a4/Lib/multiprocessing/resource_tracker.py
+157a158
+>                 prev_sigmask = None
+160c161
+<                         signal.pthread_sigmask(signal.SIG_BLOCK, _IGNORED_SIGNALS)
+---
+>                         prev_sigmask = signal.pthread_sigmask(signal.SIG_BLOCK, _IGNORED_SIGNALS)
+163,164c164,165
+<                     if _HAVE_SIGMASK:
+<                         signal.pthread_sigmask(signal.SIG_UNBLOCK, _IGNORED_SIGNALS)
+---
+>                     if prev_sigmask is not None:
+>                         signal.pthread_sigmask(signal.SIG_SETMASK, prev_sigmask)
+diff Python-3.14.0a3/Lib/test/_test_multiprocessing.py Python-3.14.0a4/Lib/test/_test_multiprocessing.py 
+6047a6048,6068
+>     @unittest.skipUnless(hasattr(signal, "pthread_sigmask"), "pthread_sigmask is not available")
+>     def test_resource_tracker_blocked_signals(self):
+>         #
+>         # gh-127586: Check that resource_tracker does not override blocked signals of caller.
+>         #
+>         from multiprocessing.resource_tracker import ResourceTracker
+>         orig_sigmask = signal.pthread_sigmask(signal.SIG_BLOCK, set())
+>         signals = {signal.SIGTERM, signal.SIGINT, signal.SIGUSR1}
+> 
+>         try:
+>             for sig in signals:
+>                 signal.pthread_sigmask(signal.SIG_SETMASK, {sig})
+>                 self.assertEqual(signal.pthread_sigmask(signal.SIG_BLOCK, set()), {sig})
+>                 tracker = ResourceTracker()
+>                 tracker.ensure_running()
+>                 self.assertEqual(signal.pthread_sigmask(signal.SIG_BLOCK, set()), {sig})
+>                 tracker._stop()
+>         finally:
+>             # restore sigmask to what it was before executing test
+>             signal.pthread_sigmask(signal.SIG_SETMASK, orig_sigmask)
+> 

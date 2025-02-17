@@ -1,0 +1,37 @@
+cp -rf pypy3.10/examples .
+cp -rf pypy3.10/doc .
+cp -f pypy3.10/index.html .
+cp -rf pypy3.10/module .
+cp -rf pypy3.10/_multiprocess .
+cp -rf py3.11/multiprocess .
+# ----------------------------------------------------------------------
+diff Python-3.11.9/Lib/multiprocessing/popen_spawn_win32.py pypy3.11-v7.3.18-src/lib-python/3/multiprocessing/popen_spawn_win32.py
+26c26,28
+< WINENV = not _path_eq(sys.executable, sys._base_executable)
+---
+> # PyPy is not affected by bpo-35797
+> # WINENV = not _path_eq(sys.executable, sys._base_executable)
+> WINENV = False
+diff Python-3.11.9/Lib/test/_test_multiprocessing.py  pypy3.11-v7.3.18-src/lib-python/3/test/_test_multiprocessing.py 
+40c40,44
+< 
+---
+> if sys.implementation.name == 'pypy':
+>     def noop(*args):
+>         return []
+>     gc.get_threshold = noop
+>     gc.set_threshold = noop
+2902a2907,2909
+>         sm = multiprocessing.get_start_method()
+>         if sm == 'fork' and sys.implementation.name == 'pypy':
+>             self.skipTest("race condition on PyPy")
+3117c3124,3125
+<         self.assertRaises(Exception, queue.put, time.sleep)
+---
+>         # Changed on PyPy: passing functions to xmlrpc is broken
+>         #self.assertRaises(Exception, queue.put, time.sleep)
+3842a3851,3852
+>         support.gc_collect() # for PyPy and other GCs
+> 
+3848a3859
+>     @test.support.cpython_only

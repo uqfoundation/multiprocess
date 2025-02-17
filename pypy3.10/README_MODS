@@ -57,3 +57,28 @@ diff pypy3.10-v7.3.16-src/lib-python/3/test/_test_multiprocessing.py pypy3.10-v7
 < 
 5740d5738
 < 
+# ----------------------------------------------------------------------
+diff pypy3.10-v7.3.17-src/pypy/module/_multiprocessing/interp_semaphore.py pypy3.10-v7.3.18-src/pypy/module/_multiprocessing/interp_semaphore.py
+61a62,65
+>         TIMEZONE = platform.Struct('struct timezone', [
+>                                             ('tz_minuteswest', rffi.INT_real),
+>                                             ('tz_dsttime', rffi.INT_real),
+>                                   ])
+69a74
+>     TIMEZONE       = config['TIMEZONE']
+71a77
+>     TIMEZONEP      = rffi.CArrayPtr(TIMEZONE)
+105c111
+<     _sem_getvalue = external('sem_getvalue', [SEM_T, rffi.INTP], rffi.INT,
+---
+>     _sem_getvalue = external('sem_getvalue', [SEM_T, rffi.INT_realP], rffi.INT,
+196c202
+<         sval_ptr = lltype.malloc(rffi.INTP.TO, 1, flavor='raw')
+---
+>         sval_ptr = lltype.malloc(rffi.INT_realP.TO, 1, flavor='raw')
+206a213
+>         void = lltype.nullptr(rffi.VOIDP.TO)
+208c215
+<             res = _gettimeofday(now, None)
+---
+>             res = _gettimeofday(now, void)

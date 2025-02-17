@@ -1709,3 +1709,64 @@ diff Python-3.13.0rc1/Lib/test/_test_multiprocessing.py Python-3.13.1/Lib/test/_
 >                 continue  # class not intended for this start method.
 6419a6622
 >                 Temp.start_method = start_method
+# ----------------------------------------------------------------------
+diff Python-3.13.1/Modules/_multiprocessing/semaphore.c Python-3.13.2/Modules/_multiprocessing/semaphore.c
+29a30,31
+> #define _SemLockObject_CAST(op) ((SemLockObject *)(op))
+> 
+578c580
+< semlock_dealloc(SemLockObject* self)
+---
+> semlock_dealloc(PyObject *op)
+579a582
+>     SemLockObject *self = _SemLockObject_CAST(op);
+720c723
+< semlock_traverse(SemLockObject *s, visitproc visit, void *arg)
+---
+> semlock_traverse(PyObject *s, visitproc visit, void *arg)
+diff Python-3.13.1/Lib/multiprocessing/connection.py Python-3.13.2/Lib/multiprocessing/connection.py
+849c849
+< def _get_digest_name_and_payload(message: bytes) -> (str, bytes):
+---
+> def _get_digest_name_and_payload(message):  # type: (bytes) -> tuple[str, bytes]
+diff Python-3.13.1/Lib/multiprocessing/resource_tracker.py Python-3.13.2/Lib/multiprocessing/resource_tracker.py
+157a158
+>                 prev_sigmask = None
+160c161
+<                         signal.pthread_sigmask(signal.SIG_BLOCK, _IGNORED_SIGNALS)
+---
+>                         prev_sigmask = signal.pthread_sigmask(signal.SIG_BLOCK, _IGNORED_SIGNALS)
+163,164c164,165
+<                     if _HAVE_SIGMASK:
+<                         signal.pthread_sigmask(signal.SIG_UNBLOCK, _IGNORED_SIGNALS)
+---
+>                     if prev_sigmask is not None:
+>                         signal.pthread_sigmask(signal.SIG_SETMASK, prev_sigmask)
+diff Python-3.13.1/Lib/multiprocessing/synchronize.py Python-3.13.2/Lib/multiprocessing/synchronize.py
+363c363
+<     def __repr__(self) -> str:
+---
+>     def __repr__(self):
+diff Python-3.13.1/Lib/test/_test_multiprocessing.py Python-3.13.2/Lib/test/_test_multiprocessing.py 
+5952a5953,5973
+>     @unittest.skipUnless(hasattr(signal, "pthread_sigmask"), "pthread_sigmask is not available")
+>     def test_resource_tracker_blocked_signals(self):
+>         #
+>         # gh-127586: Check that resource_tracker does not override blocked signals of caller.
+>         #
+>         from multiprocessing.resource_tracker import ResourceTracker
+>         orig_sigmask = signal.pthread_sigmask(signal.SIG_BLOCK, set())
+>         signals = {signal.SIGTERM, signal.SIGINT, signal.SIGUSR1}
+> 
+>         try:
+>             for sig in signals:
+>                 signal.pthread_sigmask(signal.SIG_SETMASK, {sig})
+>                 self.assertEqual(signal.pthread_sigmask(signal.SIG_BLOCK, set()), {sig})
+>                 tracker = ResourceTracker()
+>                 tracker.ensure_running()
+>                 self.assertEqual(signal.pthread_sigmask(signal.SIG_BLOCK, set()), {sig})
+>                 tracker._stop()
+>         finally:
+>             # restore sigmask to what it was before executing test
+>             signal.pthread_sigmask(signal.SIG_SETMASK, orig_sigmask)
+> 

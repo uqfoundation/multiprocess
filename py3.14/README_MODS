@@ -1048,3 +1048,221 @@ diff Python-3.14.0a3/Lib/test/_test_multiprocessing.py Python-3.14.0a4/Lib/test/
 >             # restore sigmask to what it was before executing test
 >             signal.pthread_sigmask(signal.SIG_SETMASK, orig_sigmask)
 > 
+# ----------------------------------------------------------------------
+diff Python-3.14.0a4/Modules/_multiprocessing/semaphore.c Python-3.14.0a5/Modules/_multiprocessing/semaphore.c
+30a31,32
+> #define _SemLockObject_CAST(op) ((SemLockObject *)(op))
+> 
+579c581
+< semlock_dealloc(SemLockObject* self)
+---
+> semlock_dealloc(PyObject *op)
+580a583
+>     SemLockObject *self = _SemLockObject_CAST(op);
+721c724
+< semlock_traverse(SemLockObject *s, visitproc visit, void *arg)
+---
+> semlock_traverse(PyObject *s, visitproc visit, void *arg)
+diff Python-3.14.0a4/Modules/_multiprocessing/clinic/semaphore.c.h Python-3.14.0a5/Modules/_multiprocessing/clinic/semaphore.c.h
+28c28
+< _multiprocessing_SemLock_acquire(SemLockObject *self, PyObject *const *args, Py_ssize_t nargs, PyObject *kwnames)
+---
+> _multiprocessing_SemLock_acquire(PyObject *self, PyObject *const *args, Py_ssize_t nargs, PyObject *kwnames)
+81c81
+<     return_value = _multiprocessing_SemLock_acquire_impl(self, blocking, timeout_obj);
+---
+>     return_value = _multiprocessing_SemLock_acquire_impl((SemLockObject *)self, blocking, timeout_obj);
+105c105
+< _multiprocessing_SemLock_release(SemLockObject *self, PyObject *Py_UNUSED(ignored))
+---
+> _multiprocessing_SemLock_release(PyObject *self, PyObject *Py_UNUSED(ignored))
+110c110
+<     return_value = _multiprocessing_SemLock_release_impl(self);
+---
+>     return_value = _multiprocessing_SemLock_release_impl((SemLockObject *)self);
+134c134
+< _multiprocessing_SemLock_acquire(SemLockObject *self, PyObject *const *args, Py_ssize_t nargs, PyObject *kwnames)
+---
+> _multiprocessing_SemLock_acquire(PyObject *self, PyObject *const *args, Py_ssize_t nargs, PyObject *kwnames)
+187c187
+<     return_value = _multiprocessing_SemLock_acquire_impl(self, blocking, timeout_obj);
+---
+>     return_value = _multiprocessing_SemLock_acquire_impl((SemLockObject *)self, blocking, timeout_obj);
+211c211
+< _multiprocessing_SemLock_release(SemLockObject *self, PyObject *Py_UNUSED(ignored))
+---
+> _multiprocessing_SemLock_release(PyObject *self, PyObject *Py_UNUSED(ignored))
+216c216
+<     return_value = _multiprocessing_SemLock_release_impl(self);
+---
+>     return_value = _multiprocessing_SemLock_release_impl((SemLockObject *)self);
+361c361
+< _multiprocessing_SemLock__count(SemLockObject *self, PyObject *Py_UNUSED(ignored))
+---
+> _multiprocessing_SemLock__count(PyObject *self, PyObject *Py_UNUSED(ignored))
+366c366
+<     return_value = _multiprocessing_SemLock__count_impl(self);
+---
+>     return_value = _multiprocessing_SemLock__count_impl((SemLockObject *)self);
+389c389
+< _multiprocessing_SemLock__is_mine(SemLockObject *self, PyObject *Py_UNUSED(ignored))
+---
+> _multiprocessing_SemLock__is_mine(PyObject *self, PyObject *Py_UNUSED(ignored))
+391c391
+<     return _multiprocessing_SemLock__is_mine_impl(self);
+---
+>     return _multiprocessing_SemLock__is_mine_impl((SemLockObject *)self);
+411c411
+< _multiprocessing_SemLock__get_value(SemLockObject *self, PyObject *Py_UNUSED(ignored))
+---
+> _multiprocessing_SemLock__get_value(PyObject *self, PyObject *Py_UNUSED(ignored))
+413c413
+<     return _multiprocessing_SemLock__get_value_impl(self);
+---
+>     return _multiprocessing_SemLock__get_value_impl((SemLockObject *)self);
+433c433
+< _multiprocessing_SemLock__is_zero(SemLockObject *self, PyObject *Py_UNUSED(ignored))
+---
+> _multiprocessing_SemLock__is_zero(PyObject *self, PyObject *Py_UNUSED(ignored))
+435c435
+<     return _multiprocessing_SemLock__is_zero_impl(self);
+---
+>     return _multiprocessing_SemLock__is_zero_impl((SemLockObject *)self);
+455c455
+< _multiprocessing_SemLock__after_fork(SemLockObject *self, PyObject *Py_UNUSED(ignored))
+---
+> _multiprocessing_SemLock__after_fork(PyObject *self, PyObject *Py_UNUSED(ignored))
+457c457
+<     return _multiprocessing_SemLock__after_fork_impl(self);
+---
+>     return _multiprocessing_SemLock__after_fork_impl((SemLockObject *)self);
+477c477
+< _multiprocessing_SemLock___enter__(SemLockObject *self, PyObject *Py_UNUSED(ignored))
+---
+> _multiprocessing_SemLock___enter__(PyObject *self, PyObject *Py_UNUSED(ignored))
+482c482
+<     return_value = _multiprocessing_SemLock___enter___impl(self);
+---
+>     return_value = _multiprocessing_SemLock___enter___impl((SemLockObject *)self);
+507c507
+< _multiprocessing_SemLock___exit__(SemLockObject *self, PyObject *const *args, Py_ssize_t nargs)
+---
+> _multiprocessing_SemLock___exit__(PyObject *self, PyObject *const *args, Py_ssize_t nargs)
+531c531
+<     return_value = _multiprocessing_SemLock___exit___impl(self, exc_type, exc_value, exc_tb);
+---
+>     return_value = _multiprocessing_SemLock___exit___impl((SemLockObject *)self, exc_type, exc_value, exc_tb);
+579c579
+< /*[clinic end generated code: output=9023d3e48a24afd2 input=a9049054013a1b77]*/
+---
+> /*[clinic end generated code: output=e28d0fdbfefd1235 input=a9049054013a1b77]*/
+diff Python-3.14.0a4/Lib/multiprocessing/connection.py Python-3.14.0a5/Lib/multiprocessing/connection.py
+856c856
+< def _get_digest_name_and_payload(message: bytes) -> (str, bytes):
+---
+> def _get_digest_name_and_payload(message):  # type: (bytes) -> tuple[str, bytes]
+diff Python-3.14.0a4/Lib/multiprocessing/forkserver.py Python-3.14.0a5/Lib/multiprocessing/forkserver.py
+385,389c385,389
+<     data = b''
+<     length = SIGNED_STRUCT.size
+<     while len(data) < length:
+<         s = os.read(fd, length - len(data))
+<         if not s:
+---
+>     data = bytearray(SIGNED_STRUCT.size)
+>     unread = memoryview(data)
+>     while unread:
+>         count = os.readinto(fd, unread)
+>         if count == 0:
+391c391,392
+<         data += s
+---
+>         unread = unread[count:]
+> 
+diff Python-3.14.0a4/Lib/multiprocessing/synchronize.py Python-3.14.0a5/Lib/multiprocessing/synchronize.py
+362c362
+<     def __repr__(self) -> str:
+---
+>     def __repr__(self):
+diff Python-3.14.0a4/Lib/test/_test_multiprocessing.py Python-3.14.0a5/Lib/test/_test_multiprocessing.py 
+322c322
+<         self.assertTrue(not current.daemon)
+---
+>         self.assertFalse(current.daemon)
+466c466
+<         self.assertTrue(type(self.active_children()) is list)
+---
+>         self.assertIs(type(self.active_children()), list)
+586,587c586,587
+<         self.assertTrue(type(cpus) is int)
+<         self.assertTrue(cpus >= 1)
+---
+>         self.assertIsInstance(cpus, int)
+>         self.assertGreaterEqual(cpus, 1)
+2385,2386c2385,2386
+<         self.assertFalse(hasattr(arr4, 'get_lock'))
+<         self.assertFalse(hasattr(arr4, 'get_obj'))
+---
+>         self.assertNotHasAttr(arr4, 'get_lock')
+>         self.assertNotHasAttr(arr4, 'get_obj')
+2391,2392c2391,2392
+<         self.assertFalse(hasattr(arr5, 'get_lock'))
+<         self.assertFalse(hasattr(arr5, 'get_obj'))
+---
+>         self.assertNotHasAttr(arr5, 'get_lock')
+>         self.assertNotHasAttr(arr5, 'get_obj')
+2465,2466c2465,2466
+<         self.assertFalse(hasattr(arr4, 'get_lock'))
+<         self.assertFalse(hasattr(arr4, 'get_obj'))
+---
+>         self.assertNotHasAttr(arr4, 'get_lock')
+>         self.assertNotHasAttr(arr4, 'get_obj')
+2471,2472c2471,2472
+<         self.assertFalse(hasattr(arr5, 'get_lock'))
+<         self.assertFalse(hasattr(arr5, 'get_obj'))
+---
+>         self.assertNotHasAttr(arr5, 'get_lock')
+>         self.assertNotHasAttr(arr5, 'get_obj')
+2660,2661c2660,2661
+<         self.assertTrue(hasattr(n, 'name'))
+<         self.assertTrue(not hasattr(n, 'job'))
+---
+>         self.assertHasAttr(n, 'name')
+>         self.assertNotHasAttr(n, 'job')
+4941,4942c4941
+<             self.assertTrue(hasattr(mod, '__all__'), name)
+< 
+---
+>             self.assertHasAttr(mod, '__all__', name)
+4944,4947c4943
+<                 self.assertTrue(
+<                     hasattr(mod, attr),
+<                     '%r does not have attribute %r' % (mod, attr)
+<                     )
+---
+>                 self.assertHasAttr(mod, attr)
+4960c4956
+<         self.assertTrue(logger is not None)
+---
+>         self.assertIsNotNone(logger)
+5756,5758c5752,5753
+<                 self.assertTrue(type(ctx).__name__.lower().startswith(method))
+<                 self.assertTrue(
+<                     ctx.Process.__name__.lower().startswith(method))
+---
+>                 self.assertStartsWith(type(ctx).__name__.lower(), method)
+>                 self.assertStartsWith(ctx.Process.__name__.lower(), method)
+5959,5961c5954,5956
+<                 self.assertTrue(issubclass(the_warn.category, UserWarning))
+<                 self.assertTrue("resource_tracker: process died"
+<                                 in str(the_warn.message))
+---
+>                 self.assertIsSubclass(the_warn.category, UserWarning)
+>                 self.assertIn("resource_tracker: process died",
+>                               str(the_warn.message))
+6166,6167c6161,6162
+<         self.assertFalse(
+<             any(process.is_alive() for process in forked_processes))
+---
+>         for process in forked_processes:
+>             self.assertFalse(process.is_alive(), process)

@@ -1,0 +1,101 @@
+===
+3.1
+---
+$ python ex_newtype.py
+Traceback (most recent call last):
+  File "/opt/local/Library/Frameworks/Python.framework/Versions/3.1/lib/python3.1/hashlib.py", line 104, in <module>
+    import _hashlib
+ImportError: dlopen(/opt/local/Library/Frameworks/Python.framework/Versions/3.1/lib/python3.1/lib-dynload/_hashlib.so, 2): Library not loaded: /opt/local/lib/libssl.1.0.0.dylib
+  Referenced from: /opt/local/Library/Frameworks/Python.framework/Versions/3.1/lib/python3.1/lib-dynload/_hashlib.so
+  Reason: image not found
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "ex_newtype.py", line 77, in <module>
+    test()
+  File "ex_newtype.py", line 52, in test
+    f1 = manager.Foo1()
+  File "/Users/mmckerns/lib/python3.1/site-packages/multiprocess/managers.py", line 669, in temp
+    token, exp = self._create(typeid, *args, **kwds)
+  File "/Users/mmckerns/lib/python3.1/site-packages/multiprocess/managers.py", line 567, in _create
+    conn = self._Client(self._address, authkey=self._authkey)
+  File "/Users/mmckerns/lib/python3.1/site-packages/multiprocess/connection.py", line 178, in Client
+    answer_challenge(c, authkey)
+  File "/Users/mmckerns/lib/python3.1/site-packages/multiprocess/connection.py", line 418, in answer_challenge
+    digest = hmac.new(authkey, message).digest()
+  File "/opt/local/Library/Frameworks/Python.framework/Versions/3.1/lib/python3.1/hmac.py", line 140, in new
+    return HMAC(key, msg, digestmod)
+  File "/opt/local/Library/Frameworks/Python.framework/Versions/3.1/lib/python3.1/hmac.py", line 46, in __init__
+    import hashlib
+  File "/opt/local/Library/Frameworks/Python.framework/Versions/3.1/lib/python3.1/hashlib.py", line 135, in <module>
+    md5 = __get_builtin_constructor('md5')
+  File "/opt/local/Library/Frameworks/Python.framework/Versions/3.1/lib/python3.1/hashlib.py", line 62, in __get_builtin_constructor
+    import _md5
+ImportError: No module named _md5
+
+$ python ex_pool.py 
+SyntaxError: can not delete variable 'pool' referenced in nested scope
+
+===
+2.7, 3.2, 3.3, 3.4, 3.5, 3.6, 3.7, 3.8 (with 'fork', 'spawn'+recurse=True)
+---
+$ python ex_pool.py
+Testing garbage collection:
+Traceback (most recent call last):
+  File "ex_pool.py", line 295, in <module>
+    test()
+  File "ex_pool.py", line 288, in test
+    assert not worker.is_alive()
+AssertionError
+
+===
+3.8 (with 'spawn'+recurse=False)
+---
+$ python ex_pool.py
+Ordered results using pool.apply_async():
+multiprocess.pool.RemoteTraceback: 
+"""
+Traceback (most recent call last):
+  File "/Users/mmckerns/lib/python3.8/site-packages/multiprocess/pool.py", line 125, in worker
+    result = (True, func(*args, **kwds))
+  File "ex_pool.py", line 16, in calculate
+    result = func(*args)
+  File "ex_pool.py", line 24, in mul
+    time.sleep(0.5*random.random())
+NameError: name 'time' is not defined
+"""
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "ex_pool.py", line 295, in <module>
+    test()
+  File "ex_pool.py", line 68, in test
+    print('\t', r.get())
+  File "/Users/mmckerns/lib/python3.8/site-packages/multiprocess/pool.py", line 768, in get
+    raise self._value
+NameError: name 'time' is not defined
+
+$ python ex_synchronize.py
+10 Process Process-1:
+Traceback (most recent call last):
+  File "/Users/mmckerns/lib/python3.8/site-packages/multiprocess/process.py", line 313, in _bootstrap
+    self.run()
+  File "/Users/mmckerns/lib/python3.8/site-packages/multiprocess/process.py", line 108, in run
+    self._target(*self._args, **self._kwargs)
+  File "ex_synchronize.py", line 17, in value_func
+    random.seed()
+NameError: name 'random' is not defined
+
+$ python ex_workers.py
+Unordered results:
+Process Process-1:
+Traceback (most recent call last):
+  File "/Users/mmckerns/lib/python3.8/site-packages/multiprocess/process.py", line 313, in _bootstrap
+    self.run()
+  File "/Users/mmckerns/lib/python3.8/site-packages/multiprocess/process.py", line 108, in run
+    self._target(*self._args, **self._kwargs)
+  File "ex_workers.py", line 23, in worker
+    result = calculate(func, args)
+NameError: name 'calculate' is not defined

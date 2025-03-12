@@ -37,18 +37,18 @@ matrix:
           env:
             - PYPY_VERSION="3.9"
 
-        - python: 'pypy3.10-7.3.18'
+        - python: 'pypy3.10-7.3.19'
           env:
             - PYPY_VERSION="3.10"
 
-        - python: 'pypy3.11-7.3.18'
+        - python: 'pypy3.11-7.3.19'
           env:
             - PYPY_VERSION="3.11"
 
     allow_failures:
         - python: '3.14-dev' # CI missing
-        - python: 'pypy3.10-7.3.18' # CI missing
-        - python: 'pypy3.11-7.3.18' # CI missing
+        - python: 'pypy3.10-7.3.19' # CI missing
+        - python: 'pypy3.11-7.3.19' # CI missing
     fast_finish: true
 
 cache:
@@ -67,8 +67,8 @@ script:
     - if [[ $PYVERSION != "3.14" ]]; then PYVERSION=$TRAVIS_PYTHON_VERSION ; fi
     - if [[ $PYVERSION == "pypy3.8-7.3.9" ]]; then PYVERSION=py$PYPY_VERSION ; fi
     - if [[ $PYVERSION == "pypy3.9-7.3.9" ]]; then PYVERSION=py$PYPY_VERSION ; fi
-    - if [[ $PYVERSION == "pypy3.10-7.3.18" ]]; then PYVERSION=py$PYPY_VERSION ; fi
-    - if [[ $PYVERSION == "pypy3.11-7.3.18" ]]; then PYVERSION=py$PYPY_VERSION ; fi
+    - if [[ $PYVERSION == "pypy3.10-7.3.19" ]]; then PYVERSION=py$PYPY_VERSION ; fi
+    - if [[ $PYVERSION == "pypy3.11-7.3.19" ]]; then PYVERSION=py$PYPY_VERSION ; fi
     - cd py$PYVERSION #XXX: bash script may require tests run from root
     - if [[ $COVERAGE == "true" ]]; then cp ../.coveragerc .coveragerc ; fi
     - for test in multiprocess/tests/__init__.py; do echo $test ; if [[ $COVERAGE == "true" ]]; then coverage run -a $test > /dev/null; else python $test > /dev/null; fi ; done

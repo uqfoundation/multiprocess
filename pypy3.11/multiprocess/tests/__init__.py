@@ -2100,6 +2100,7 @@ class _TestBarrier(BaseTestCase):
         except threading.BrokenBarrierError:
             results.append(True)
 
+    @unittest.skipIf(sys.implementation.name == 'pypy', 'poor timing for PyPy')
     def test_default_timeout(self):
         """
         Test the barrier's default timeout
@@ -2821,6 +2822,7 @@ class _TestPool(BaseTestCase):
         # check that we indeed waited for all jobs
         self.assertGreater(time.monotonic() - t_start, 0.9)
 
+    @unittest.skipIf(sys.implementation.name == 'pypy', 'poor timing for PyPy')
     def test_release_task_refs(self):
         # Issue #29861: task arguments and results should not be kept
         # alive after we are done with them.
@@ -3042,6 +3044,7 @@ class _TestMyManager(BaseTestCase):
         # which happens on slow buildbots.
         self.assertIn(manager._process.exitcode, (0, -signal.SIGTERM))
 
+    @unittest.skipIf(sys.implementation.name == 'pypy', 'poor timing for PyPy')
     def test_mymanager_context_prestarted(self):
         manager = MyManager(shutdown_timeout=SHUTDOWN_TIMEOUT)
         manager.start()

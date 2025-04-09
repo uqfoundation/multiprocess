@@ -1770,3 +1770,179 @@ diff Python-3.13.1/Lib/test/_test_multiprocessing.py Python-3.13.2/Lib/test/_tes
 >             # restore sigmask to what it was before executing test
 >             signal.pthread_sigmask(signal.SIG_SETMASK, orig_sigmask)
 > 
+# ----------------------------------------------------------------------
+diff Python-3.13.2/Lib/multiprocessing/resource_tracker.py Python-3.13.3/Lib/multiprocessing/resource_tracker.py
+78,86c78,94
+<     def _stop(self):
+<         with self._lock:
+<             # This should not happen (_stop() isn't called by a finalizer)
+<             # but we check for it anyway.
+<             if self._lock._recursion_count() > 1:
+<                 return self._reentrant_call_error()
+<             if self._fd is None:
+<                 # not running
+<                 return
+---
+>     def __del__(self):
+>         # making sure child processess are cleaned before ResourceTracker
+>         # gets destructed.
+>         # see https://github.com/python/cpython/issues/88887
+>         self._stop(use_blocking_lock=False)
+> 
+>     def _stop(self, use_blocking_lock=True):
+>         if use_blocking_lock:
+>             with self._lock:
+>                 self._stop_locked()
+>         else:
+>             acquired = self._lock.acquire(blocking=False)
+>             try:
+>                 self._stop_locked()
+>             finally:
+>                 if acquired:
+>                     self._lock.release()
+88,90c96,114
+<             # closing the "alive" file descriptor stops main()
+<             os.close(self._fd)
+<             self._fd = None
+---
+>     def _stop_locked(
+>         self,
+>         close=os.close,
+>         waitpid=os.waitpid,
+>         waitstatus_to_exitcode=os.waitstatus_to_exitcode,
+>     ):
+>         # This shouldn't happen (it might when called by a finalizer)
+>         # so we check for it anyway.
+>         if self._lock._recursion_count() > 1:
+>             return self._reentrant_call_error()
+>         if self._fd is None:
+>             # not running
+>             return
+>         if self._pid is None:
+>             return
+> 
+>         # closing the "alive" file descriptor stops main()
+>         close(self._fd)
+>         self._fd = None
+92c116
+<             _, status = os.waitpid(self._pid, 0)
+---
+>         _, status = waitpid(self._pid, 0)
+94c118
+<             self._pid = None
+---
+>         self._pid = None
+96,100c120,124
+<             try:
+<                 self._exitcode = os.waitstatus_to_exitcode(status)
+<             except ValueError:
+<                 # os.waitstatus_to_exitcode may raise an exception for invalid values
+<                 self._exitcode = None
+---
+>         try:
+>             self._exitcode = waitstatus_to_exitcode(status)
+>         except ValueError:
+>             # os.waitstatus_to_exitcode may raise an exception for invalid values
+>             self._exitcode = None
+diff Python-3.13.2/Lib/test/_test_multiprocessing.py Python-3.13.3/Lib/test/_test_multiprocessing.py 
+591c591,592
+<         p = self.Process(target=time.sleep, args=(DELTA,))
+---
+>         event = self.Event()
+>         p = self.Process(target=event.wait, args=())
+594,596c595,600
+<         p.daemon = True
+<         p.start()
+<         self.assertIn(p, self.active_children())
+---
+>         try:
+>             p.daemon = True
+>             p.start()
+>             self.assertIn(p, self.active_children())
+>         finally:
+>             event.set()
+1580c1584
+<         for i in range(10):
+---
+>         for _ in support.sleeping_retry(support.SHORT_TIMEOUT):
+1586,1587c1590
+<             time.sleep(DELTA)
+<         time.sleep(DELTA)
+---
+> 
+1609d1611
+<         self.addCleanup(p.join)
+1611,1614c1613,1615
+<         p = threading.Thread(target=self.f, args=(cond, sleeping, woken))
+<         p.daemon = True
+<         p.start()
+<         self.addCleanup(p.join)
+---
+>         t = threading.Thread(target=self.f, args=(cond, sleeping, woken))
+>         t.daemon = True
+>         t.start()
+1621,1622c1622
+<         time.sleep(DELTA)
+<         self.assertReturnsIfImplemented(0, get_value, woken)
+---
+>         self.assertReachesEventually(lambda: get_value(woken), 0)
+1630,1631c1630
+<         time.sleep(DELTA)
+<         self.assertReturnsIfImplemented(1, get_value, woken)
+---
+>         self.assertReachesEventually(lambda: get_value(woken), 1)
+1639,1640c1638
+<         time.sleep(DELTA)
+<         self.assertReturnsIfImplemented(2, get_value, woken)
+---
+>         self.assertReachesEventually(lambda: get_value(woken), 2)
+1644c1642,1644
+<         p.join()
+---
+> 
+>         threading_helper.join_thread(t)
+>         join_process(p)
+1651a1652
+>         workers = []
+1657c1658
+<             self.addCleanup(p.join)
+---
+>             workers.append(p)
+1663c1664
+<             self.addCleanup(t.join)
+---
+>             workers.append(t)
+1682c1683
+<             self.addCleanup(p.join)
+---
+>             workers.append(p)
+1687c1688
+<             self.addCleanup(t.join)
+---
+>             workers.append(t)
+1703c1704,1706
+<         self.assertReachesEventually(lambda: get_value(woken), 6)
+---
+>         for i in range(6):
+>             woken.acquire()
+>         self.assertReturnsIfImplemented(0, get_value, woken)
+1707a1711,1714
+>         for w in workers:
+>             # NOTE: join_process and join_thread are the same
+>             threading_helper.join_thread(w)
+> 
+1713a1721
+>         workers = []
+1718c1726
+<             self.addCleanup(p.join)
+---
+>             workers.append(p)
+1723c1731
+<             self.addCleanup(t.join)
+---
+>             workers.append(t)
+1757a1766,1769
+>         for w in workers:
+>             # NOTE: join_process and join_thread are the same
+>             threading_helper.join_thread(w)
+> 

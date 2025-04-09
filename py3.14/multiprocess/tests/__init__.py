@@ -1495,8 +1495,10 @@ class _TestLock(BaseTestCase):
     def test_lock(self):
         lock = self.Lock()
         self.assertEqual(lock.acquire(), True)
+        if sys.hexversion > 0x30e00a6: self.assertTrue(lock.locked())
         self.assertEqual(lock.acquire(False), False)
         self.assertEqual(lock.release(), None)
+        if sys.hexversion > 0x30e00a6: self.assertFalse(lock.locked())
         self.assertRaises((ValueError, threading.ThreadError), lock.release)
 
     @staticmethod
@@ -1558,16 +1560,23 @@ class _TestLock(BaseTestCase):
     def test_rlock(self):
         lock = self.RLock()
         self.assertEqual(lock.acquire(), True)
+        if sys.hexversion > 0x30e00a6: self.assertTrue(lock.locked())
         self.assertEqual(lock.acquire(), True)
         self.assertEqual(lock.acquire(), True)
         self.assertEqual(lock.release(), None)
+        if sys.hexversion > 0x30e00a6: self.assertTrue(lock.locked())
         self.assertEqual(lock.release(), None)
         self.assertEqual(lock.release(), None)
+        if sys.hexversion > 0x30e00a6: self.assertFalse(lock.locked())
         self.assertRaises((AssertionError, RuntimeError), lock.release)
 
     def test_lock_context(self):
-        with self.Lock():
-            pass
+        with self.Lock() as locked:
+            self.assertTrue(locked)
+
+    def test_rlock_context(self):
+        with self.RLock() as locked:
+            self.assertTrue(locked)
 
 
 class _TestSemaphore(BaseTestCase):
@@ -6267,6 +6276,7 @@ class TestSyncManagerTypes(unittest.TestCase):
     @classmethod
     def _test_lock(cls, obj):
         obj.acquire()
+        if sys.hexversion > 0x30e00a6: obj.locked()
 
     def test_lock(self, lname="Lock"):
         o = getattr(self.manager, lname)()
@@ -6278,8 +6288,9 @@ class TestSyncManagerTypes(unittest.TestCase):
     def _test_rlock(cls, obj):
         obj.acquire()
         obj.release()
+        if sys.hexversion > 0x30e00a6: obj.locked()
 
-    def test_rlock(self, lname="Lock"):
+    def test_rlock(self, lname="RLock"):
         o = getattr(self.manager, lname)()
         self.run_worker(self._test_rlock, o)
 

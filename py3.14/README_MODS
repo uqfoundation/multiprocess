@@ -1589,3 +1589,189 @@ diff Python-3.14.0a5/Lib/test/_test_multiprocessing.py Python-3.14.0a6/Lib/test/
 >         }
 >         self.assertLessEqual(set_methods, set(dir(o)))
 > 
+# ----------------------------------------------------------------------
+diff Python-3.14.0a6/Modules/_multiprocessing/semaphore.c Python-3.14.0a7/Modules/_multiprocessing/semaphore.c
+68c68
+< _GetSemaphoreValue(HANDLE handle, long *value)
+---
+> _GetSemaphoreValue(HANDLE handle, int *value)
+diff Python-3.14.0a6/Modules/_multiprocessing/clinic/semaphore.c.h Python-3.14.0a7/Modules/_multiprocessing/clinic/semaphore.c.h
+36a37
+>         Py_hash_t ob_hash;
+39a41
+>         .ob_hash = -1,
+142a145
+>         Py_hash_t ob_hash;
+145a149
+>         .ob_hash = -1,
+239a244
+>         Py_hash_t ob_hash;
+242a248
+>         .ob_hash = -1,
+579c585
+< /*[clinic end generated code: output=dddd8e989525f565 input=a9049054013a1b77]*/
+---
+> /*[clinic end generated code: output=d1e349d4ee3d4bbf input=a9049054013a1b77]*/
+diff Python-3.14.0a6/Lib/multiprocessing/connection.py Python-3.14.0a7/Lib/multiprocessing/connection.py
+324a325,327
+> 
+>                     sentinel = object()
+>                     return_value = sentinel
+326,329c329,344
+<                         if err == _winapi.ERROR_IO_PENDING:
+<                             waitres = _winapi.WaitForMultipleObjects(
+<                                 [ov.event], False, INFINITE)
+<                             assert waitres == WAIT_OBJECT_0
+---
+>                         try:
+>                             if err == _winapi.ERROR_IO_PENDING:
+>                                 waitres = _winapi.WaitForMultipleObjects(
+>                                     [ov.event], False, INFINITE)
+>                                 assert waitres == WAIT_OBJECT_0
+>                         except:
+>                             ov.cancel()
+>                             raise
+>                         finally:
+>                             nread, err = ov.GetOverlappedResult(True)
+>                             if err == 0:
+>                                 f = io.BytesIO()
+>                                 f.write(ov.getbuffer())
+>                                 return_value = f
+>                             elif err == _winapi.ERROR_MORE_DATA:
+>                                 return_value = self._get_more_data(ov, maxsize)
+331,340c346,350
+<                         ov.cancel()
+<                         raise
+<                     finally:
+<                         nread, err = ov.GetOverlappedResult(True)
+<                         if err == 0:
+<                             f = io.BytesIO()
+<                             f.write(ov.getbuffer())
+<                             return f
+<                         elif err == _winapi.ERROR_MORE_DATA:
+<                             return self._get_more_data(ov, maxsize)
+---
+>                         if return_value is sentinel:
+>                             raise
+> 
+>                     if return_value is not sentinel:
+>                         return return_value
+diff Python-3.14.0a6/Lib/multiprocessing/managers.py Python-3.14.0a7/Lib/multiprocessing/managers.py
+1062c1062
+<     _exposed_ = ('acquire', 'release')
+---
+>     _exposed_ = ('acquire', 'release', 'locked')
+1067a1068,1069
+>     def locked(self):
+>         return self._callmethod('locked')
+1075c1077
+<     _exposed_ = ('acquire', 'release', 'wait', 'notify', 'notify_all')
+---
+>     _exposed_ = ('acquire', 'release', 'locked', 'wait', 'notify', 'notify_all')
+diff Python-3.14.0a6/Lib/multiprocessing/resource_tracker.py Python-3.14.0a7/Lib/multiprocessing/resource_tracker.py
+78,86c78,94
+<     def _stop(self):
+<         with self._lock:
+<             # This should not happen (_stop() isn't called by a finalizer)
+<             # but we check for it anyway.
+<             if self._lock._recursion_count() > 1:
+<                 return self._reentrant_call_error()
+<             if self._fd is None:
+<                 # not running
+<                 return
+---
+>     def __del__(self):
+>         # making sure child processess are cleaned before ResourceTracker
+>         # gets destructed.
+>         # see https://github.com/python/cpython/issues/88887
+>         self._stop(use_blocking_lock=False)
+> 
+>     def _stop(self, use_blocking_lock=True):
+>         if use_blocking_lock:
+>             with self._lock:
+>                 self._stop_locked()
+>         else:
+>             acquired = self._lock.acquire(blocking=False)
+>             try:
+>                 self._stop_locked()
+>             finally:
+>                 if acquired:
+>                     self._lock.release()
+88,90c96,114
+<             # closing the "alive" file descriptor stops main()
+<             os.close(self._fd)
+<             self._fd = None
+---
+>     def _stop_locked(
+>         self,
+>         close=os.close,
+>         waitpid=os.waitpid,
+>         waitstatus_to_exitcode=os.waitstatus_to_exitcode,
+>     ):
+>         # This shouldn't happen (it might when called by a finalizer)
+>         # so we check for it anyway.
+>         if self._lock._recursion_count() > 1:
+>             return self._reentrant_call_error()
+>         if self._fd is None:
+>             # not running
+>             return
+>         if self._pid is None:
+>             return
+> 
+>         # closing the "alive" file descriptor stops main()
+>         close(self._fd)
+>         self._fd = None
+92c116
+<             _, status = os.waitpid(self._pid, 0)
+---
+>         _, status = waitpid(self._pid, 0)
+94c118
+<             self._pid = None
+---
+>         self._pid = None
+96,100c120,124
+<             try:
+<                 self._exitcode = os.waitstatus_to_exitcode(status)
+<             except ValueError:
+<                 # os.waitstatus_to_exitcode may raise an exception for invalid values
+<                 self._exitcode = None
+---
+>         try:
+>             self._exitcode = waitstatus_to_exitcode(status)
+>         except ValueError:
+>             # os.waitstatus_to_exitcode may raise an exception for invalid values
+>             self._exitcode = None
+diff Python-3.14.0a6/Lib/multiprocessing/synchronize.py Python-3.14.0a7/Lib/multiprocessing/synchronize.py
+92a93,95
+>     def locked(self):
+>         return self._semlock._count() != 0
+> 
+diff Python-3.14.0a6/Lib/test/_test_multiprocessing.py Python-3.14.0a7/Lib/test/_test_multiprocessing.py 
+1488a1489
+>         self.assertTrue(lock.locked())
+1490a1492
+>         self.assertFalse(lock.locked())
+1551a1554
+>         self.assertTrue(lock.locked())
+1554a1558
+>         self.assertTrue(lock.locked())
+1556a1561
+>         self.assertFalse(lock.locked())
+1560,1561c1565,1570
+<         with self.Lock():
+<             pass
+---
+>         with self.Lock() as locked:
+>             self.assertTrue(locked)
+> 
+>     def test_rlock_context(self):
+>         with self.RLock() as locked:
+>             self.assertTrue(locked)
+6256a6266
+>         obj.locked()
+6267a6278
+>         obj.locked()
+6269c6280
+<     def test_rlock(self, lname="Lock"):
+---
+>     def test_rlock(self, lname="RLock"):

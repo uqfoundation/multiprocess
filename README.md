@@ -4,7 +4,7 @@ better multiprocessing and multithreading in Python
 
 About Multiprocess
 ------------------
-``multiprocess`` is a fork of ``multiprocessing``. ``multiprocess`` extends ``multiprocessing`` to provide enhanced serialization, using `dill`. ``multiprocess`` leverages ``multiprocessing`` to support the spawning of processes using the API of the Python standard library's ``threading`` module. ``multiprocessing`` has been distributed as part of the standard library since Python 2.6.
+``multiprocess`` is a fork of ``multiprocessing``. ``multiprocess`` extends ``multiprocessing`` to provide enhanced serialization, using ``dill``. ``multiprocess`` leverages ``multiprocessing`` to support the spawning of processes using the API of the Python standard library's ``threading`` module. ``multiprocessing`` has been distributed as part of the standard library since Python 2.6.
 
 ``multiprocess`` is part of ``pathos``,  a Python framework for heterogeneous computing.
 ``multiprocess`` is in active development, so any user feedback, bug reports, comments,
@@ -63,7 +63,7 @@ Requirements
 
 * ``python`` (or ``pypy``), **>=3.8**
 * ``setuptools``, **>=42**
-* ``dill``, **>=0.3.9**
+* ``dill``, **>=0.4.0**
 
 
 Basic Usage

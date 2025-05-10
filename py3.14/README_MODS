@@ -1775,3 +1775,93 @@ diff Python-3.14.0a6/Lib/test/_test_multiprocessing.py Python-3.14.0a7/Lib/test/
 <     def test_rlock(self, lname="Lock"):
 ---
 >     def test_rlock(self, lname="RLock"):
+# ----------------------------------------------------------------------
+diff Python-3.14.0a7/Lib/multiprocessing/popen_fork.py Python-3.14.0b1/Lib/multiprocessing/popen_fork.py
+56a57,59
+>     def interrupt(self):
+>         self._send_signal(signal.SIGINT)
+> 
+diff Python-3.14.0a7/Lib/multiprocessing/process.py Python-3.14.0b1/Lib/multiprocessing/process.py
+127a128,134
+>     def interrupt(self):
+>         '''
+>         Terminate process; sends SIGINT signal
+>         '''
+>         self._check_closed()
+>         self._popen.interrupt()
+> 
+diff Python-3.14.0a7/Lib/multiprocessing/synchronize.py Python-3.14.0b1/Lib/multiprocessing/synchronize.py
+94c94
+<         return self._semlock._count() != 0
+---
+>         return self._semlock._is_zero()
+diff Python-3.14.0a7/Lib/test/_test_multiprocessing.py Python-3.14.0b1/Lib/test/_test_multiprocessing.py 
+515a516,520
+>     def _sleep_no_int_handler(cls):
+>         signal.signal(signal.SIGINT, signal.SIG_DFL)
+>         cls._sleep_some()
+> 
+>     @classmethod
+519c524
+<     def _kill_process(self, meth):
+---
+>     def _kill_process(self, meth, target=None):
+523c528
+<         p = self.Process(target=self._sleep_some)
+---
+>         p = self.Process(target=target or self._sleep_some)
+569a575,587
+>     @unittest.skipIf(os.name == 'nt', "POSIX only")
+>     def test_interrupt(self):
+>         exitcode = self._kill_process(multiprocessing.Process.interrupt)
+>         self.assertEqual(exitcode, 1)
+>         # exit code 1 is hard-coded for uncaught exceptions
+>         # (KeyboardInterrupt in this case)
+>         # in multiprocessing.BaseProcess._bootstrap
+> 
+>     @unittest.skipIf(os.name == 'nt', "POSIX only")
+>     def test_interrupt_no_handler(self):
+>         exitcode = self._kill_process(multiprocessing.Process.interrupt, target=self._sleep_no_int_handler)
+>         self.assertEqual(exitcode, -signal.SIGINT)
+> 
+1494a1513,1534
+>     @classmethod
+>     def _test_lock_locked_2processes(cls, lock, event, res):
+>         lock.acquire()
+>         res.value = lock.locked()
+>         event.set()
+> 
+>     @unittest.skipUnless(HAS_SHAREDCTYPES, 'needs sharedctypes')
+>     def test_lock_locked_2processes(self):
+>         if self.TYPE != 'processes':
+>             self.skipTest('test not appropriate for {}'.format(self.TYPE))
+> 
+>         lock = self.Lock()
+>         event = self.Event()
+>         res = self.Value('b', 0)
+>         p = self.Process(target=self._test_lock_locked_2processes,
+>                          args=(lock, event, res))
+>         p.start()
+>         event.wait()
+>         self.assertTrue(lock.locked())
+>         self.assertTrue(res.value)
+>         p.join()
+> 
+1563a1604,1620
+>     @unittest.skipUnless(HAS_SHAREDCTYPES, 'needs sharedctypes')
+>     def test_rlock_locked_2processes(self):
+>         if self.TYPE != 'processes':
+>             self.skipTest('test not appropriate for {}'.format(self.TYPE))
+> 
+>         rlock = self.RLock()
+>         event = self.Event()
+>         res = self.Value('b', 0)
+>         # target is the same as for the test_lock_locked_2processes test.
+>         p = self.Process(target=self._test_lock_locked_2processes,
+>                          args=(rlock, event, res))
+>         p.start()
+>         event.wait()
+>         self.assertTrue(rlock.locked())
+>         self.assertTrue(res.value)
+>         p.join()
+> 

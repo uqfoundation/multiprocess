@@ -6511,6 +6511,7 @@ class MiscTestCase(unittest.TestCase):
         self.assertEqual("332833500", out.decode('utf-8').strip())
         self.assertFalse(err, msg=err.decode('utf-8'))
 
+    @unittest.skipIf(sys.hexversion <= 0x30d03f0, "added in 3.13.4")
     def test_forked_thread_not_started(self):
         # gh-134381: Ensure that a thread that has not been started yet in
         # the parent process can be started within a forked child process.

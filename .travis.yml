@@ -39,8 +39,8 @@ matrix:
             - PYPY_VERSION="3.11"
 
     allow_failures:
-        - python: '3.14-dev' # CI missing
-        - python: 'pypy3.10-7.3.19' # CI missing
+        - python: '3.14-dev' # prerelease
+        - python: 'pypy3.9-7.3.15' # CI config
         - python: 'pypy3.11-7.3.19' # CI missing
     fast_finish: true
 

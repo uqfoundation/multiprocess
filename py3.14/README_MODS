@@ -2055,3 +2055,15 @@ diff Python-3.14.0b2/Lib/test/_test_multiprocessing.py Python-3.14.0b4/Lib/test/
 >         self.assertEqual(err.decode().rstrip(), 'stderr')
 >         self.assertEqual(out.decode().rstrip(), 'stdout')
 > 
+# ----------------------------------------------------------------------
+diff Python-3.14.0b4/Lib/multiprocessing/resource_tracker.py Python-3.14.0rc1/Lib/multiprocessing/resource_tracker.py
+50,55c50,51
+<         _CLEANUP_FUNCS.update({
+<             'semaphore': _multiprocessing.sem_unlink,
+<         })
+<     _CLEANUP_FUNCS.update({
+<         'shared_memory': _posixshmem.shm_unlink,
+<     })
+---
+>         _CLEANUP_FUNCS['semaphore'] = _multiprocessing.sem_unlink
+>     _CLEANUP_FUNCS['shared_memory'] = _posixshmem.shm_unlink

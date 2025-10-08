@@ -6564,6 +6564,19 @@ class MiscTestCase(unittest.TestCase):
         self.assertEqual(q.get_nowait(), "done")
         close_queue(q)
 
+    @unittest.skipIf(sys.hexversion <= 0x30d07f0, "added in 3.13.8")
+    def test_preload_main(self):
+        # gh-126631: Check that __main__ can be pre-loaded
+        if multiprocessing.get_start_method() != "forkserver":
+            self.skipTest("forkserver specific test")
+
+        name = os.path.join(os.path.dirname(__file__), 'mp_preload_main.py')
+        _, out, err = test.support.script_helper.assert_python_ok(name)
+        self.assertEqual(err, b'')
+
+        # The trailing empty string comes from split() on output ending with \n
+        out = out.decode().split("\n")
+        self.assertEqual(out, ['__main__', '__mp_main__', 'f', 'f', ''])
 
 #
 # Mixins

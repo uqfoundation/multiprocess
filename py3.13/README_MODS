@@ -2310,4 +2310,42 @@ diff Python-3.13.6/Lib/multiprocessing/resource_tracker.py Python-3.13.7/Lib/mul
 <             nbytes, len(msg))
 238a261
 >         self._ensure_running_and_write(msg)
-
+# ----------------------------------------------------------------------
+diff Python-3.13.7/Lib/multiprocessing/forkserver.py Python-3.13.8/Lib/multiprocessing/forkserver.py
+129a130
+>             main_kws = {}
+131d131
+<                 desired_keys = {'main_path', 'sys_path'}
+133,135c133,136
+<                 data = {x: y for x, y in data.items() if x in desired_keys}
+<             else:
+<                 data = {}
+---
+>                 if 'sys_path' in data:
+>                     main_kws['sys_path'] = data['sys_path']
+>                 if 'init_main_from_path' in data:
+>                     main_kws['main_path'] = data['init_main_from_path']
+150c151
+<                             data)
+---
+>                             main_kws)
+diff Python-3.13.7/Lib/multiprocessing/popen_spawn_posix.py Python-3.13.8/Lib/multiprocessing/popen_spawn_posix.py
+59a60,63
+>             os.close(child_r)
+>             child_r = None
+>             os.close(child_w)
+>             child_w = None
+diff Python-3.13.7/Lib/test/_test_multiprocessing.py Python-3.13.8/Lib/test/_test_multiprocessing.py 
+6547a6548,6559
+>     def test_preload_main(self):
+>         # gh-126631: Check that __main__ can be pre-loaded
+>         if multiprocessing.get_start_method() != "forkserver":
+>             self.skipTest("forkserver specific test")
+> 
+>         name = os.path.join(os.path.dirname(__file__), 'mp_preload_main.py')
+>         _, out, err = test.support.script_helper.assert_python_ok(name)
+>         self.assertEqual(err, b'')
+> 
+>         # The trailing empty string comes from split() on output ending with \n
+>         out = out.decode().split("\n")
+>         self.assertEqual(out, ['__main__', '__mp_main__', 'f', 'f', ''])

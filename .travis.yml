@@ -61,7 +61,7 @@ install:
     - python -m pip install .
 
 script:
-    - if [[ $PYVERSION != "3.14" || $PYVERSION != "3.15"]]; then PYVERSION=$TRAVIS_PYTHON_VERSION ; fi
+    - if [[ $PYVERSION != "3.14" ]]; then PYVERSION=$TRAVIS_PYTHON_VERSION ; fi
     - if [[ $PYVERSION == "pypy3.9-7.3.15" ]]; then PYVERSION=py$PYPY_VERSION ; fi
     - if [[ $PYVERSION == "pypy3.10-7.3.19" ]]; then PYVERSION=py$PYPY_VERSION ; fi
     - if [[ $PYVERSION == "pypy3.11-7.3.20" ]]; then PYVERSION=py$PYPY_VERSION ; fi

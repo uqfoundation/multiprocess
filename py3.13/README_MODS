@@ -5,7 +5,7 @@ cp -rf py3.12/_multiprocess _multiprocess
 cp -rf Python-3.13.0a1/Modules/_multiprocessing Modules/_multiprocess
 cp -rf py3.12/multiprocess multiprocess
 # ----------------------------------------------------------------------
-diff ~/src/Python-3.13.0a1/Modules/_multiprocessing/semaphore.c Modules/_multiprocess/semaphore.c
+diff Python-3.13.0a1/Modules/_multiprocessing/semaphore.c Modules/_multiprocess/semaphore.c
 10c10
 < #include "multiprocessing.h"
 ---
@@ -158,7 +158,7 @@ diff ~/src/Python-3.13.0a1/Modules/_multiprocessing/semaphore.c Modules/_multipr
 <     .name = "_multiprocessing.SemLock",
 ---
 >     .name = "_multiprocess.SemLock",
-diff ~/src/Python-3.13.0a1/Modules/_multiprocessing/multiprocessing.h Modules/_multiprocess/multiprocess.h 
+diff Python-3.13.0a1/Modules/_multiprocessing/multiprocessing.h Modules/_multiprocess/multiprocess.h 
 1,2c1,2
 < #ifndef MULTIPROCESSING_H
 < #define MULTIPROCESSING_H
@@ -169,7 +169,7 @@ diff ~/src/Python-3.13.0a1/Modules/_multiprocessing/multiprocessing.h Modules/_m
 < #endif /* MULTIPROCESSING_H */
 ---
 > #endif /* MULTIPROCESS_H */
-diff ~/src/Python-3.13.0a1/Modules/_multiprocessing/multiprocessing.c Modules/_multiprocess/multiprocess.c
+diff Python-3.13.0a1/Modules/_multiprocessing/multiprocessing.c Modules/_multiprocess/multiprocess.c
 2c2
 <  * Extension module used by multiprocessing package
 ---

@@ -1,0 +1,948 @@
+cp -rf py3.14/examples .
+cp -rf py3.14/doc .
+cp -f py3.14/index.html .
+cp -rf py3.14/_multiprocess _multiprocess
+cp -rf Python-3.15.0a1/Modules/_multiprocessing Modules/_multiprocess
+cp -rf py3.14/multiprocess multiprocess
+# ----------------------------------------------------------------------
+$ diff Python-3.15.0a1/Modules/_multiprocessing/semaphore.c Modules/_multiprocess/semaphore.c 
+10,11c10
+< #include "multiprocessing.h"
+< #include "pycore_object.h"        // _PyObject_VisitType()
+---
+> #include "multiprocess.h"
+19c18
+< // These match the values in Lib/multiprocessing/synchronize.py
+---
+> // These match the values in multiprocess/synchronize.py
+43,44c42,43
+< module _multiprocessing
+< class _multiprocessing.SemLock "SemLockObject *" "&_PyMp_SemLockType"
+---
+> module _multiprocess
+> class _multiprocess.SemLock "SemLockObject *" "&_PyMp_SemLockType"
+89c88
+< _multiprocessing.SemLock.acquire
+---
+> _multiprocess.SemLock.acquire
+98,99c97,98
+< _multiprocessing_SemLock_acquire_impl(SemLockObject *self, int blocking,
+<                                       PyObject *timeout_obj)
+---
+> _multiprocess_SemLock_acquire_impl(SemLockObject *self, int blocking,
+>                                    PyObject *timeout_obj)
+181c180
+< _multiprocessing.SemLock.release
+---
+> _multiprocess.SemLock.release
+187c186
+< _multiprocessing_SemLock_release_impl(SemLockObject *self)
+---
+> _multiprocess_SemLock_release_impl(SemLockObject *self)
+307c306
+< _multiprocessing.SemLock.acquire
+---
+> _multiprocess.SemLock.acquire
+316,317c315,316
+< _multiprocessing_SemLock_acquire_impl(SemLockObject *self, int blocking,
+<                                       PyObject *timeout_obj)
+---
+> _multiprocess_SemLock_acquire_impl(SemLockObject *self, int blocking,
+>                                    PyObject *timeout_obj)
+393c392
+< _multiprocessing.SemLock.release
+---
+> _multiprocess.SemLock.release
+399c398
+< _multiprocessing_SemLock_release_impl(SemLockObject *self)
+---
+> _multiprocess_SemLock_release_impl(SemLockObject *self)
+483c482
+< _multiprocessing.SemLock.__new__
+---
+> _multiprocess.SemLock.__new__
+494,495c493,494
+< _multiprocessing_SemLock_impl(PyTypeObject *type, int kind, int value,
+<                               int maxvalue, const char *name, int unlink)
+---
+> _multiprocess_SemLock_impl(PyTypeObject *type, int kind, int value,
+>                            int maxvalue, const char *name, int unlink)
+542c541
+< _multiprocessing.SemLock._rebuild
+---
+> _multiprocess.SemLock._rebuild
+553,555c552,554
+< _multiprocessing_SemLock__rebuild_impl(PyTypeObject *type, SEM_HANDLE handle,
+<                                        int kind, int maxvalue,
+<                                        const char *name)
+---
+> _multiprocess_SemLock__rebuild_impl(PyTypeObject *type, SEM_HANDLE handle,
+>                                     int kind, int maxvalue,
+>                                     const char *name)
+596c595
+< _multiprocessing.SemLock._count
+---
+> _multiprocess.SemLock._count
+602c601
+< _multiprocessing_SemLock__count_impl(SemLockObject *self)
+---
+> _multiprocess_SemLock__count_impl(SemLockObject *self)
+609c608
+< _multiprocessing.SemLock._is_mine
+---
+> _multiprocess.SemLock._is_mine
+615c614
+< _multiprocessing_SemLock__is_mine_impl(SemLockObject *self)
+---
+> _multiprocess_SemLock__is_mine_impl(SemLockObject *self)
+623c622
+< _multiprocessing.SemLock._get_value
+---
+> _multiprocess.SemLock._get_value
+629c628
+< _multiprocessing_SemLock__get_value_impl(SemLockObject *self)
+---
+> _multiprocess_SemLock__get_value_impl(SemLockObject *self)
+648c647
+< _multiprocessing.SemLock._is_zero
+---
+> _multiprocess.SemLock._is_zero
+654c653
+< _multiprocessing_SemLock__is_zero_impl(SemLockObject *self)
+---
+> _multiprocess_SemLock__is_zero_impl(SemLockObject *self)
+676c675
+< _multiprocessing.SemLock._after_fork
+---
+> _multiprocess.SemLock._after_fork
+682c681
+< _multiprocessing_SemLock__after_fork_impl(SemLockObject *self)
+---
+> _multiprocess_SemLock__after_fork_impl(SemLockObject *self)
+691c690
+< _multiprocessing.SemLock.__enter__
+---
+> _multiprocess.SemLock.__enter__
+697c696
+< _multiprocessing_SemLock___enter___impl(SemLockObject *self)
+---
+> _multiprocess_SemLock___enter___impl(SemLockObject *self)
+700c699
+<     return _multiprocessing_SemLock_acquire_impl(self, 1, Py_None);
+---
+>     return _multiprocess_SemLock_acquire_impl(self, 1, Py_None);
+705c704
+< _multiprocessing.SemLock.__exit__
+---
+> _multiprocess.SemLock.__exit__
+716,718c715,717
+< _multiprocessing_SemLock___exit___impl(SemLockObject *self,
+<                                        PyObject *exc_type,
+<                                        PyObject *exc_value, PyObject *exc_tb)
+---
+> _multiprocess_SemLock___exit___impl(SemLockObject *self,
+>                                     PyObject *exc_type,
+>                                     PyObject *exc_value, PyObject *exc_tb)
+721c720,727
+<     return _multiprocessing_SemLock_release_impl(self);
+---
+>     return _multiprocess_SemLock_release_impl(self);
+> }
+> 
+> static int
+> semlock_traverse(PyObject *s, visitproc visit, void *arg)
+> {
+>     Py_VISIT(Py_TYPE(s));
+>     return 0;
+729,738c735,744
+<     _MULTIPROCESSING_SEMLOCK_ACQUIRE_METHODDEF
+<     _MULTIPROCESSING_SEMLOCK_RELEASE_METHODDEF
+<     _MULTIPROCESSING_SEMLOCK___ENTER___METHODDEF
+<     _MULTIPROCESSING_SEMLOCK___EXIT___METHODDEF
+<     _MULTIPROCESSING_SEMLOCK__COUNT_METHODDEF
+<     _MULTIPROCESSING_SEMLOCK__IS_MINE_METHODDEF
+<     _MULTIPROCESSING_SEMLOCK__GET_VALUE_METHODDEF
+<     _MULTIPROCESSING_SEMLOCK__IS_ZERO_METHODDEF
+<     _MULTIPROCESSING_SEMLOCK__REBUILD_METHODDEF
+<     _MULTIPROCESSING_SEMLOCK__AFTER_FORK_METHODDEF
+---
+>     _MULTIPROCESS_SEMLOCK_ACQUIRE_METHODDEF
+>     _MULTIPROCESS_SEMLOCK_RELEASE_METHODDEF
+>     _MULTIPROCESS_SEMLOCK___ENTER___METHODDEF
+>     _MULTIPROCESS_SEMLOCK___EXIT___METHODDEF
+>     _MULTIPROCESS_SEMLOCK__COUNT_METHODDEF
+>     _MULTIPROCESS_SEMLOCK__IS_MINE_METHODDEF
+>     _MULTIPROCESS_SEMLOCK__GET_VALUE_METHODDEF
+>     _MULTIPROCESS_SEMLOCK__IS_ZERO_METHODDEF
+>     _MULTIPROCESS_SEMLOCK__REBUILD_METHODDEF
+>     _MULTIPROCESS_SEMLOCK__AFTER_FORK_METHODDEF
+769,770c775,776
+<     {Py_tp_new, _multiprocessing_SemLock},
+<     {Py_tp_traverse, _PyObject_VisitType},
+---
+>     {Py_tp_new, _multiprocess_SemLock},
+>     {Py_tp_traverse, semlock_traverse},
+777c783
+<     .name = "_multiprocessing.SemLock",
+---
+>     .name = "_multiprocess.SemLock",
+$ diff Python-3.15.0a1/Modules/_multiprocessing/multiprocessing.h Modules/_multiprocess/multiprocess.h 
+1,2c1,2
+< #ifndef MULTIPROCESSING_H
+< #define MULTIPROCESSING_H
+---
+> #ifndef MULTIPROCESS_H
+> #define MULTIPROCESS_H
+104c104
+< #endif /* MULTIPROCESSING_H */
+---
+> #endif /* MULTIPROCESS_H */
+$ diff Python-3.15.0a1/Modules/_multiprocessing/multiprocessing.c Modules/_multiprocess/multiprocess.c
+2c2
+<  * Extension module used by multiprocessing package
+---
+>  * Extension module used by multiprocess package
+4c4
+<  * multiprocessing.c
+---
+>  * multiprocess.c
+10c10
+< #include "multiprocessing.h"
+---
+> #include "multiprocess.h"
+30c30
+< module _multiprocessing
+---
+> module _multiprocess
+77c77
+< _multiprocessing.closesocket
+---
+> _multiprocess.closesocket
+85c85
+< _multiprocessing_closesocket_impl(PyObject *module, HANDLE handle)
+---
+> _multiprocess_closesocket_impl(PyObject *module, HANDLE handle)
+100c100
+< _multiprocessing.recv
+---
+> _multiprocess.recv
+109c109
+< _multiprocessing_recv_impl(PyObject *module, HANDLE handle, int size)
+---
+> _multiprocess_recv_impl(PyObject *module, HANDLE handle, int size)
+112,113c112,116
+<     PyBytesWriter *writer = PyBytesWriter_Create(size);
+<     if (!writer) {
+---
+>     int nread;
+>     PyObject *buf;
+> 
+>     buf = PyBytes_FromStringAndSize(NULL, size);
+>     if (!buf)
+115,116d117
+<     }
+<     char *buf = PyBytesWriter_GetData(writer);
+118d118
+<     Py_ssize_t nread;
+120c120
+<     nread = recv((SOCKET) handle, buf, size, 0);
+---
+>     nread = recv((SOCKET) handle, PyBytes_AS_STRING(buf), size, 0);
+124c124
+<         PyBytesWriter_Discard(writer);
+---
+>         Py_DECREF(buf);
+127c127,128
+<     return PyBytesWriter_FinishWithSize(writer, nread);
+---
+>     _PyBytes_Resize(&buf, nread);
+>     return buf;
+131c132
+< _multiprocessing.send
+---
+> _multiprocess.send
+140c141
+< _multiprocessing_send_impl(PyObject *module, HANDLE handle, Py_buffer *buf)
+---
+> _multiprocess_send_impl(PyObject *module, HANDLE handle, Py_buffer *buf)
+159c160
+< _multiprocessing.sem_unlink
+---
+> _multiprocess.sem_unlink
+167c168
+< _multiprocessing_sem_unlink_impl(PyObject *module, const char *name)
+---
+> _multiprocess_sem_unlink_impl(PyObject *module, const char *name)
+179,181c180,182
+<     _MULTIPROCESSING_CLOSESOCKET_METHODDEF
+<     _MULTIPROCESSING_RECV_METHODDEF
+<     _MULTIPROCESSING_SEND_METHODDEF
+---
+>     _MULTIPROCESS_CLOSESOCKET_METHODDEF
+>     _MULTIPROCESS_RECV_METHODDEF
+>     _MULTIPROCESS_SEND_METHODDEF
+184c185
+<     _MULTIPROCESSING_SEM_UNLINK_METHODDEF
+---
+>     _MULTIPROCESS_SEM_UNLINK_METHODDEF
+195c196
+< multiprocessing_exec(PyObject *module)
+---
+> multiprocess_exec(PyObject *module)
+276,277c277,278
+< static PyModuleDef_Slot multiprocessing_slots[] = {
+<     {Py_mod_exec, multiprocessing_exec},
+---
+> static PyModuleDef_Slot multiprocess_slots[] = {
+>     {Py_mod_exec, multiprocess_exec},
+283c284
+< static struct PyModuleDef multiprocessing_module = {
+---
+> static struct PyModuleDef multiprocess_module = {
+285c286
+<     .m_name = "_multiprocessing",
+---
+>     .m_name = "_multiprocess",
+288c289
+<     .m_slots = multiprocessing_slots,
+---
+>     .m_slots = multiprocess_slots,
+292c293
+< PyInit__multiprocessing(void)
+---
+> PyInit__multiprocess(void)
+294c295
+<     return PyModuleDef_Init(&multiprocessing_module);
+---
+>     return PyModuleDef_Init(&multiprocess_module);
+# ----------------------------------------------------------------------
+diff Python-3.14.0rc1/Lib/multiprocessing/forkserver.py Python-3.15.0a1/Lib/multiprocessing/forkserver.py
+147a148
+>             main_kws = {}
+149d149
+<                 desired_keys = {'main_path', 'sys_path'}
+151,153c151,154
+<                 main_kws = {x: y for x, y in data.items() if x in desired_keys}
+<             else:
+<                 main_kws = {}
+---
+>                 if 'sys_path' in data:
+>                     main_kws['sys_path'] = data['sys_path']
+>                 if 'init_main_from_path' in data:
+>                     main_kws['main_path'] = data['init_main_from_path']
+diff Python-3.14.0rc1/Lib/multiprocessing/popen_spawn_posix.py Python-3.15.0a1/Lib/multiprocessing/popen_spawn_posix.py
+59a60,63
+>             os.close(child_r)
+>             child_r = None
+>             os.close(child_w)
+>             child_w = None
+diff Python-3.14.0rc1/Lib/multiprocessing/process.py Python-3.15.0a1/Lib/multiprocessing/process.py
+80c80
+<     def __init__(self, group=None, target=None, name=None, args=(), kwargs={},
+---
+>     def __init__(self, group=None, target=None, name=None, args=(), kwargs=None,
+92c92
+<         self._kwargs = dict(kwargs)
+---
+>         self._kwargs = dict(kwargs) if kwargs else {}
+diff Python-3.14.0rc1/Lib/multiprocessing/resource_tracker.py Python-3.15.0a1/Lib/multiprocessing/resource_tracker.py
+22a23
+> from collections import deque
+64a66
+>         self._reentrant_messages = deque()
+101c103
+<             return self._reentrant_call_error()
+---
+>             raise self._reentrant_call_error()
+130a133,194
+>         return self._ensure_running_and_write()
+> 
+>     def _teardown_dead_process(self):
+>         os.close(self._fd)
+> 
+>         # Clean-up to avoid dangling processes.
+>         try:
+>             # _pid can be None if this process is a child from another
+>             # python process, which has started the resource_tracker.
+>             if self._pid is not None:
+>                 os.waitpid(self._pid, 0)
+>         except ChildProcessError:
+>             # The resource_tracker has already been terminated.
+>             pass
+>         self._fd = None
+>         self._pid = None
+>         self._exitcode = None
+> 
+>         warnings.warn('resource_tracker: process died unexpectedly, '
+>                       'relaunching.  Some resources might leak.')
+> 
+>     def _launch(self):
+>         fds_to_pass = []
+>         try:
+>             fds_to_pass.append(sys.stderr.fileno())
+>         except Exception:
+>             pass
+>         r, w = os.pipe()
+>         try:
+>             fds_to_pass.append(r)
+>             # process will out live us, so no need to wait on pid
+>             exe = spawn.get_executable()
+>             args = [
+>                 exe,
+>                 *util._args_from_interpreter_flags(),
+>                 '-c',
+>                 f'from multiprocessing.resource_tracker import main;main({r})',
+>             ]
+>             # bpo-33613: Register a signal mask that will block the signals.
+>             # This signal mask will be inherited by the child that is going
+>             # to be spawned and will protect the child from a race condition
+>             # that can make the child die before it registers signal handlers
+>             # for SIGINT and SIGTERM. The mask is unregistered after spawning
+>             # the child.
+>             prev_sigmask = None
+>             try:
+>                 if _HAVE_SIGMASK:
+>                     prev_sigmask = signal.pthread_sigmask(signal.SIG_BLOCK, _IGNORED_SIGNALS)
+>                 pid = util.spawnv_passfds(exe, args, fds_to_pass)
+>             finally:
+>                 if prev_sigmask is not None:
+>                     signal.pthread_sigmask(signal.SIG_SETMASK, prev_sigmask)
+>         except:
+>             os.close(w)
+>             raise
+>         else:
+>             self._fd = w
+>             self._pid = pid
+>         finally:
+>             os.close(r)
+> 
+>     def _ensure_running_and_write(self, msg=None):
+134c198,201
+<                 return self._reentrant_call_error()
+---
+>                 if msg is None:
+>                     raise self._reentrant_call_error()
+>                 return self._reentrant_messages.append(msg)
+> 
+137,143c204,207
+<                 if self._check_alive():
+<                     # => still alive
+<                     return
+<                 # => dead, launch it again
+<                 os.close(self._fd)
+< 
+<                 # Clean-up to avoid dangling processes.
+---
+>                 if msg is None:
+>                     to_send = b'PROBE:0:noop\n'
+>                 else:
+>                     to_send = msg
+145,154c209,212
+<                     # _pid can be None if this process is a child from another
+<                     # python process, which has started the resource_tracker.
+<                     if self._pid is not None:
+<                         os.waitpid(self._pid, 0)
+<                 except ChildProcessError:
+<                     # The resource_tracker has already been terminated.
+<                     pass
+<                 self._fd = None
+<                 self._pid = None
+<                 self._exitcode = None
+---
+>                     self._write(to_send)
+>                 except OSError:
+>                     self._teardown_dead_process()
+>                     self._launch()
+156,157c214,216
+<                 warnings.warn('resource_tracker: process died unexpectedly, '
+<                               'relaunching.  Some resources might leak.')
+---
+>                 msg = None  # message was sent in probe
+>             else:
+>                 self._launch()
+159c218
+<             fds_to_pass = []
+---
+>         while True:
+161,193c220,225
+<                 fds_to_pass.append(sys.stderr.fileno())
+<             except Exception:
+<                 pass
+<             cmd = 'from multiprocessing.resource_tracker import main;main(%d)'
+<             r, w = os.pipe()
+<             try:
+<                 fds_to_pass.append(r)
+<                 # process will out live us, so no need to wait on pid
+<                 exe = spawn.get_executable()
+<                 args = [exe] + util._args_from_interpreter_flags()
+<                 args += ['-c', cmd % r]
+<                 # bpo-33613: Register a signal mask that will block the signals.
+<                 # This signal mask will be inherited by the child that is going
+<                 # to be spawned and will protect the child from a race condition
+<                 # that can make the child die before it registers signal handlers
+<                 # for SIGINT and SIGTERM. The mask is unregistered after spawning
+<                 # the child.
+<                 prev_sigmask = None
+<                 try:
+<                     if _HAVE_SIGMASK:
+<                         prev_sigmask = signal.pthread_sigmask(signal.SIG_BLOCK, _IGNORED_SIGNALS)
+<                     pid = util.spawnv_passfds(exe, args, fds_to_pass)
+<                 finally:
+<                     if prev_sigmask is not None:
+<                         signal.pthread_sigmask(signal.SIG_SETMASK, prev_sigmask)
+<             except:
+<                 os.close(w)
+<                 raise
+<             else:
+<                 self._fd = w
+<                 self._pid = pid
+<             finally:
+<                 os.close(r)
+---
+>                 reentrant_msg = self._reentrant_messages.popleft()
+>             except IndexError:
+>                 break
+>             self._write(reentrant_msg)
+>         if msg is not None:
+>             self._write(msg)
+213a246,249
+>     def _write(self, msg):
+>         nbytes = os.write(self._fd, msg)
+>         assert nbytes == len(msg), f"{nbytes=} != {len(msg)=}"
+> 
+215,226c251
+<         try:
+<             self.ensure_running()
+<         except ReentrantCallError:
+<             # The code below might or might not work, depending on whether
+<             # the resource tracker was already running and still alive.
+<             # Better warn the user.
+<             # (XXX is warnings.warn itself reentrant-safe? :-)
+<             warnings.warn(
+<                 f"ResourceTracker called reentrantly for resource cleanup, "
+<                 f"which is unsupported. "
+<                 f"The {rtype} object {name!r} might leak.")
+<         msg = '{0}:{1}:{2}\n'.format(cmd, name, rtype).encode('ascii')
+---
+>         msg = f"{cmd}:{name}:{rtype}\n".encode("ascii")
+231,233d255
+<         nbytes = os.write(self._fd, msg)
+<         assert nbytes == len(msg), "nbytes {0:n} but len(msg) {1:n}".format(
+<             nbytes, len(msg))
+234a257
+>         self._ensure_running_and_write(msg)
+diff Python-3.14.0rc1/Lib/multiprocessing/sharedctypes.py Python-3.15.0a1/Lib/multiprocessing/sharedctypes.py
+40c40,45
+<     size = ctypes.sizeof(type_)
+---
+>     try:
+>         size = ctypes.sizeof(type_)
+>     except TypeError as e:
+>         raise TypeError("bad typecode (must be a ctypes type or one of "
+>                         "c, b, B, u, h, H, i, I, l, L, q, Q, f or d)") from e
+> 
+diff Python-3.14.0rc1/Lib/test/_test_multiprocessing.py Python-3.15.0a1/Lib/test/_test_multiprocessing.py
+42c42
+< 
+---
+> from test.support.script_helper import assert_python_failure, assert_python_ok
+327a328
+>     @warnings_helper.ignore_fork_in_thread_deprecation_warnings()
+343a345
+>     @warnings_helper.ignore_fork_in_thread_deprecation_warnings()
+390a393
+>     @warnings_helper.ignore_fork_in_thread_deprecation_warnings()
+410a414
+>     @warnings_helper.ignore_fork_in_thread_deprecation_warnings()
+448a453
+>     @warnings_helper.ignore_fork_in_thread_deprecation_warnings()
+488a494
+>     @warnings_helper.ignore_fork_in_thread_deprecation_warnings()
+528a535
+>     @warnings_helper.ignore_fork_in_thread_deprecation_warnings()
+585a593
+>     @warnings_helper.ignore_fork_in_thread_deprecation_warnings()
+593a602
+>     @warnings_helper.ignore_fork_in_thread_deprecation_warnings()
+598a608
+>     @warnings_helper.ignore_fork_in_thread_deprecation_warnings()
+602a613
+>     @warnings_helper.ignore_fork_in_thread_deprecation_warnings()
+617a629
+>     @warnings_helper.ignore_fork_in_thread_deprecation_warnings()
+645a658
+>     @warnings_helper.ignore_fork_in_thread_deprecation_warnings()
+669a683
+>     @warnings_helper.ignore_fork_in_thread_deprecation_warnings()
+691a706
+>     @warnings_helper.ignore_fork_in_thread_deprecation_warnings()
+723a739
+>     @warnings_helper.ignore_fork_in_thread_deprecation_warnings()
+759a776
+>     @warnings_helper.ignore_fork_in_thread_deprecation_warnings()
+821a839
+>     @warnings_helper.ignore_fork_in_thread_deprecation_warnings()
+845a864
+>     @warnings_helper.ignore_fork_in_thread_deprecation_warnings()
+864a884
+>     @warnings_helper.ignore_fork_in_thread_deprecation_warnings()
+1014a1035
+>     @warnings_helper.ignore_fork_in_thread_deprecation_warnings()
+1023a1045
+>     @warnings_helper.ignore_fork_in_thread_deprecation_warnings()
+1053a1076
+>     @warnings_helper.ignore_fork_in_thread_deprecation_warnings()
+1120a1144
+>     @warnings_helper.ignore_fork_in_thread_deprecation_warnings()
+1189a1214
+>     @warnings_helper.ignore_fork_in_thread_deprecation_warnings()
+1250a1276
+>     @warnings_helper.ignore_fork_in_thread_deprecation_warnings()
+1300a1327
+>     @warnings_helper.ignore_fork_in_thread_deprecation_warnings()
+1343a1371
+>     @warnings_helper.ignore_fork_in_thread_deprecation_warnings()
+1466a1495
+>     @warnings_helper.ignore_fork_in_thread_deprecation_warnings()
+1529a1559
+>     @warnings_helper.ignore_fork_in_thread_deprecation_warnings()
+1555a1586
+>     @warnings_helper.ignore_fork_in_thread_deprecation_warnings()
+1614a1646
+>     @warnings_helper.ignore_fork_in_thread_deprecation_warnings()
+1725a1758
+>     @warnings_helper.ignore_fork_in_thread_deprecation_warnings()
+1767a1801
+>     @warnings_helper.ignore_fork_in_thread_deprecation_warnings()
+1836a1871
+>     @warnings_helper.ignore_fork_in_thread_deprecation_warnings()
+1909a1945
+>     @warnings_helper.ignore_fork_in_thread_deprecation_warnings()
+1944a1981
+>     @warnings_helper.ignore_fork_in_thread_deprecation_warnings()
+1976a2014
+>     @warnings_helper.ignore_fork_in_thread_deprecation_warnings()
+2004a2043
+>     @warnings_helper.ignore_fork_in_thread_deprecation_warnings()
+2200a2240
+>     @warnings_helper.ignore_fork_in_thread_deprecation_warnings()
+2207a2248
+>     @warnings_helper.ignore_fork_in_thread_deprecation_warnings()
+2218a2260
+>     @warnings_helper.ignore_fork_in_thread_deprecation_warnings()
+2234a2277
+>     @warnings_helper.ignore_fork_in_thread_deprecation_warnings()
+2256a2300
+>     @warnings_helper.ignore_fork_in_thread_deprecation_warnings()
+2286a2331
+>     @warnings_helper.ignore_fork_in_thread_deprecation_warnings()
+2321a2367
+>     @warnings_helper.ignore_fork_in_thread_deprecation_warnings()
+2347a2394
+>     @warnings_helper.ignore_fork_in_thread_deprecation_warnings()
+2366a2414
+>     @warnings_helper.ignore_fork_in_thread_deprecation_warnings()
+2387a2436
+>     @warnings_helper.ignore_fork_in_thread_deprecation_warnings()
+2429c2478
+< 
+---
+>     @warnings_helper.ignore_fork_in_thread_deprecation_warnings()
+2476a2526,2531
+>     @unittest.skipIf(c_int is None, "requires _ctypes")
+>     def test_invalid_typecode(self):
+>         with self.assertRaisesRegex(TypeError, 'bad typecode'):
+>             self.Value('x', None)
+>         with self.assertRaisesRegex(TypeError, 'bad typecode'):
+>             self.RawValue('x', None)
+2486a2542
+>     @warnings_helper.ignore_fork_in_thread_deprecation_warnings()
+2556a2613,2618
+>     @unittest.skipIf(c_int is None, "requires _ctypes")
+>     def test_invalid_typecode(self):
+>         with self.assertRaisesRegex(TypeError, 'bad typecode'):
+>             self.Array('x', [])
+>         with self.assertRaisesRegex(TypeError, 'bad typecode'):
+>             self.RawArray('x', [])
+2792,2793c2854,2856
+<         super().setUpClass()
+<         cls.pool = cls.Pool(4)
+---
+>         with warnings_helper.ignore_fork_in_thread_deprecation_warnings():
+>             super().setUpClass()
+>             cls.pool = cls.Pool(4)
+2891a2955
+>     @warnings_helper.ignore_fork_in_thread_deprecation_warnings()
+2988a3053
+>     @warnings_helper.ignore_fork_in_thread_deprecation_warnings()
+3003a3069
+>     @warnings_helper.ignore_fork_in_thread_deprecation_warnings()
+3020a3087
+>     @warnings_helper.ignore_fork_in_thread_deprecation_warnings()
+3032a3100
+>     @warnings_helper.ignore_fork_in_thread_deprecation_warnings()
+3046a3115
+>     @warnings_helper.ignore_fork_in_thread_deprecation_warnings()
+3085a3155
+>     @warnings_helper.ignore_fork_in_thread_deprecation_warnings()
+3088a3159
+>     @warnings_helper.ignore_fork_in_thread_deprecation_warnings()
+3095a3167
+>     @warnings_helper.ignore_fork_in_thread_deprecation_warnings()
+3130a3203
+>     @warnings_helper.ignore_fork_in_thread_deprecation_warnings()
+3146a3220
+>     @warnings_helper.ignore_fork_in_thread_deprecation_warnings()
+3171a3246
+>     @warnings_helper.ignore_fork_in_thread_deprecation_warnings()
+3186a3262
+>     @warnings_helper.ignore_fork_in_thread_deprecation_warnings()
+3211a3288
+>     @warnings_helper.ignore_fork_in_thread_deprecation_warnings()
+3240a3318
+>     @warnings_helper.ignore_fork_in_thread_deprecation_warnings()
+3313a3392
+>     @warnings_helper.ignore_fork_in_thread_deprecation_warnings()
+3324a3404
+>     @warnings_helper.ignore_fork_in_thread_deprecation_warnings()
+3333a3414
+>     @warnings_helper.ignore_fork_in_thread_deprecation_warnings()
+3403a3485
+>     @warnings_helper.ignore_fork_in_thread_deprecation_warnings()
+3444a3527
+>     @warnings_helper.ignore_fork_in_thread_deprecation_warnings()
+3497c3580,3581
+<         self.mgr = multiprocessing.Manager()
+---
+>         with warnings_helper.ignore_fork_in_thread_deprecation_warnings():
+>             self.mgr = multiprocessing.Manager()
+3502a3587
+>     @warnings_helper.ignore_fork_in_thread_deprecation_warnings()
+3513a3599
+>     @warnings_helper.ignore_fork_in_thread_deprecation_warnings()
+3539a3626
+>     @warnings_helper.ignore_fork_in_thread_deprecation_warnings()
+3631a3719
+>     @warnings_helper.ignore_fork_in_thread_deprecation_warnings()
+3707a3796
+>     @warnings_helper.ignore_fork_in_thread_deprecation_warnings()
+3726a3816
+>     @warnings_helper.ignore_fork_in_thread_deprecation_warnings()
+3763a3854
+>     @warnings_helper.ignore_fork_in_thread_deprecation_warnings()
+3862a3954
+>     @warnings_helper.ignore_fork_in_thread_deprecation_warnings()
+3873a3966
+>     @warnings_helper.ignore_fork_in_thread_deprecation_warnings()
+3918a4012
+>     @warnings_helper.ignore_fork_in_thread_deprecation_warnings()
+3941a4036
+>     @warnings_helper.ignore_fork_in_thread_deprecation_warnings()
+3959a4055
+>     @warnings_helper.ignore_fork_in_thread_deprecation_warnings()
+4027a4124
+>     @warnings_helper.ignore_fork_in_thread_deprecation_warnings()
+4085a4183
+>     @warnings_helper.ignore_fork_in_thread_deprecation_warnings()
+4248a4347
+>     @warnings_helper.ignore_fork_in_thread_deprecation_warnings()
+4509a4609
+>     @warnings_helper.ignore_fork_in_thread_deprecation_warnings()
+4537a4638
+>     @warnings_helper.ignore_fork_in_thread_deprecation_warnings()
+4582a4684
+>     @warnings_helper.ignore_fork_in_thread_deprecation_warnings()
+4921a5024
+>     @warnings_helper.ignore_fork_in_thread_deprecation_warnings()
+5048a5152
+>     @warnings_helper.ignore_fork_in_thread_deprecation_warnings()
+5132a5237
+>     @warnings_helper.ignore_fork_in_thread_deprecation_warnings()
+5175a5281,5297
+> #
+> # Regression tests for BaseProcess kwargs handling
+> #
+> 
+> class TestBaseProcessKwargs(unittest.TestCase):
+>     def test_default_kwargs_not_shared_between_instances(self):
+>         # Creating multiple Process instances without passing kwargs
+>         # must create independent empty dicts (no shared state).
+>         p1 = multiprocessing.Process(target=lambda: None)
+>         p2 = multiprocessing.Process(target=lambda: None)
+>         self.assertIsInstance(p1._kwargs, dict)
+>         self.assertIsInstance(p2._kwargs, dict)
+>         self.assertIsNot(p1._kwargs, p2._kwargs)
+>         # Mutating one should not affect the other
+>         p1._kwargs['x'] = 1
+>         self.assertNotIn('x', p2._kwargs)
+> 
+5255,5257c5377,5380
+<         self.mgr = multiprocessing.Manager()
+<         self.ns = self.mgr.Namespace()
+<         self.ns.test = 0
+---
+>         with warnings_helper.ignore_fork_in_thread_deprecation_warnings():
+>             self.mgr = multiprocessing.Manager()
+>             self.ns = self.mgr.Namespace()
+>             self.ns.test = 0
+5262a5386
+>     @warnings_helper.ignore_fork_in_thread_deprecation_warnings()
+5270a5395
+>     @warnings_helper.ignore_fork_in_thread_deprecation_warnings()
+5327a5453
+>     @warnings_helper.ignore_fork_in_thread_deprecation_warnings()
+5332a5459
+>     @warnings_helper.ignore_fork_in_thread_deprecation_warnings()
+5337a5465
+>     @warnings_helper.ignore_fork_in_thread_deprecation_warnings()
+5356a5485
+>     @warnings_helper.ignore_fork_in_thread_deprecation_warnings()
+5396a5526
+>     @warnings_helper.ignore_fork_in_thread_deprecation_warnings()
+5460a5591
+>     @warnings_helper.ignore_fork_in_thread_deprecation_warnings()
+5504a5636
+>     @warnings_helper.ignore_fork_in_thread_deprecation_warnings()
+5581a5714
+>     @warnings_helper.ignore_fork_in_thread_deprecation_warnings()
+5638a5772
+>     @warnings_helper.ignore_fork_in_thread_deprecation_warnings()
+5689a5824
+>     @warnings_helper.ignore_fork_in_thread_deprecation_warnings()
+5734a5870
+>     @warnings_helper.ignore_fork_in_thread_deprecation_warnings()
+5767a5904
+>     @warnings_helper.ignore_fork_in_thread_deprecation_warnings()
+5801a5939
+>     @warnings_helper.ignore_fork_in_thread_deprecation_warnings()
+5821a5960
+>     @warnings_helper.ignore_fork_in_thread_deprecation_warnings()
+5878a6018
+>     @warnings_helper.ignore_fork_in_thread_deprecation_warnings()
+5911a6052
+>     @warnings_helper.ignore_fork_in_thread_deprecation_warnings()
+6066a6208
+>     @warnings_helper.ignore_fork_in_thread_deprecation_warnings()
+6167a6310
+>     @warnings_helper.ignore_fork_in_thread_deprecation_warnings()
+6275c6418,6419
+<         self.manager.start()
+---
+>         with warnings_helper.ignore_fork_in_thread_deprecation_warnings():
+>             self.manager.start()
+6323a6468
+>     @warnings_helper.ignore_fork_in_thread_deprecation_warnings()
+6335a6481
+>     @warnings_helper.ignore_fork_in_thread_deprecation_warnings()
+6347a6494
+>     @warnings_helper.ignore_fork_in_thread_deprecation_warnings()
+6355a6503
+>     @warnings_helper.ignore_fork_in_thread_deprecation_warnings()
+6368a6517
+>     @warnings_helper.ignore_fork_in_thread_deprecation_warnings()
+6377a6527
+>     @warnings_helper.ignore_fork_in_thread_deprecation_warnings()
+6387a6538
+>     @warnings_helper.ignore_fork_in_thread_deprecation_warnings()
+6401a6553
+>     @warnings_helper.ignore_fork_in_thread_deprecation_warnings()
+6409a6562
+>     @warnings_helper.ignore_fork_in_thread_deprecation_warnings()
+6443a6597
+>     @warnings_helper.ignore_fork_in_thread_deprecation_warnings()
+6484a6639
+>     @warnings_helper.ignore_fork_in_thread_deprecation_warnings()
+6498a6654
+>     @warnings_helper.ignore_fork_in_thread_deprecation_warnings()
+6512a6669
+>     @warnings_helper.ignore_fork_in_thread_deprecation_warnings()
+6522a6680
+>     @warnings_helper.ignore_fork_in_thread_deprecation_warnings()
+6641a6800
+>     @warnings_helper.ignore_fork_in_thread_deprecation_warnings()
+6658a6818
+>     @warnings_helper.ignore_fork_in_thread_deprecation_warnings()
+6711a6872
+>     @warnings_helper.ignore_fork_in_thread_deprecation_warnings()
+6863a7025
+>     @warnings_helper.ignore_fork_in_thread_deprecation_warnings()
+6885a7048,7059
+>     def test_preload_main(self):
+>         # gh-126631: Check that __main__ can be pre-loaded
+>         if multiprocessing.get_start_method() != "forkserver":
+>             self.skipTest("forkserver specific test")
+> 
+>         name = os.path.join(os.path.dirname(__file__), 'mp_preload_main.py')
+>         _, out, err = test.support.script_helper.assert_python_ok(name)
+>         self.assertEqual(err, b'')
+> 
+>         # The trailing empty string comes from split() on output ending with \n
+>         out = out.decode().split("\n")
+>         self.assertEqual(out, ['__main__', '__mp_main__', 'f', 'f', ''])
+6965,6966c7139,7141
+<         super().setUpClass()
+<         cls.manager = multiprocessing.Manager()
+---
+>         with warnings_helper.ignore_fork_in_thread_deprecation_warnings():
+>             super().setUpClass()
+>             cls.manager = multiprocessing.Manager()
+7132a7308,7366
+> 
+> 
+> @unittest.skipIf(sys.platform != "linux", "Linux only")
+> class ForkInThreads(unittest.TestCase):
+> 
+>     def test_fork(self):
+>         code = """
+>         import os, sys, threading, time
+> 
+>         t = threading.Thread(target=time.sleep, args=(1,), daemon=True)
+>         t.start()
+> 
+>         assert threading.active_count() == 2
+> 
+>         pid = os.fork()
+>         if pid < 0:
+>             print("Fork failed")
+>         elif pid == 0:
+>             print("In child")
+>             sys.exit(0)
+>         print("In parent")
+>         """
+> 
+>         res = assert_python_ok("-c", code, PYTHONWARNINGS='always')
+>         self.assertIn(b'In child', res.out)
+>         self.assertIn(b'In parent', res.out)
+>         self.assertIn(b'DeprecationWarning', res.err)
+>         self.assertIn(b'is multi-threaded, use of fork() may lead to deadlocks in the child', res.err)
+> 
+>         res = assert_python_failure("-c", code, PYTHONWARNINGS='error')
+>         self.assertIn(b'DeprecationWarning', res.err)
+>         self.assertIn(b'is multi-threaded, use of fork() may lead to deadlocks in the child', res.err)
+> 
+>     def test_forkpty(self):
+>         code = """
+>         import os, sys, threading, time
+> 
+>         t = threading.Thread(target=time.sleep, args=(1,), daemon=True)
+>         t.start()
+> 
+>         assert threading.active_count() == 2
+> 
+>         pid, _ = os.forkpty()
+>         if pid < 0:
+>             print(f"forkpty failed")
+>         elif pid == 0:
+>             print(f"In child")
+>             sys.exit(0)
+>         print(f"In parent")
+>         """
+> 
+>         res = assert_python_ok("-c", code, PYTHONWARNINGS='always')
+>         self.assertIn(b'In parent', res.out)
+>         self.assertIn(b'DeprecationWarning', res.err)
+>         self.assertIn(b'is multi-threaded, use of forkpty() may lead to deadlocks in the child', res.err)
+> 
+>         res = assert_python_failure("-c", code, PYTHONWARNINGS='error')
+>         self.assertIn(b'DeprecationWarning', res.err)
+>         self.assertIn(b'is multi-threaded, use of forkpty() may lead to deadlocks in the child', res.err)

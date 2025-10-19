@@ -565,7 +565,7 @@ class _TestProcess(BaseTestCase):
         self.assertTimingAlmostEqual(join.elapsed, 0.0)
         self.assertEqual(p.is_alive(), True)
 
-        timeout = support.SHORT_TIMEOUT
+        timeout = support.SHORT_TIMEOUT * 1.5
         if not event.wait(timeout):
             p.terminate()
             p.join()

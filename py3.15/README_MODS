@@ -946,3 +946,167 @@ diff Python-3.14.0rc1/Lib/test/_test_multiprocessing.py Python-3.15.0a1/Lib/test
 >         res = assert_python_failure("-c", code, PYTHONWARNINGS='error')
 >         self.assertIn(b'DeprecationWarning', res.err)
 >         self.assertIn(b'is multi-threaded, use of forkpty() may lead to deadlocks in the child', res.err)
+# ----------------------------------------------------------------------
+diff Python-3.15.0a1/Lib/multiprocessing/heap.py Python-3.15.0a2/Lib/multiprocessing/heap.py
+327,330d326
+<         if size < 0:
+<             raise ValueError("Size {0:n} out of range".format(size))
+<         if sys.maxsize <= size:
+<             raise OverflowError("Size {0:n} too large".format(size))
+diff Python-3.15.0a1/Lib/multiprocessing/resource_tracker.py Python-3.15.0a2/Lib/multiprocessing/resource_tracker.py
+17a18
+> import base64
+24a26,27
+> import json
+> 
+114c117,122
+<         _, status = waitpid(self._pid, 0)
+---
+>         try:
+>             _, status = waitpid(self._pid, 0)
+>         except ChildProcessError:
+>             self._pid = None
+>             self._exitcode = None
+>             return
+193a202,212
+>     def _make_probe_message(self):
+>         """Return a JSON-encoded probe message."""
+>         return (
+>             json.dumps(
+>                 {"cmd": "PROBE", "rtype": "noop"},
+>                 ensure_ascii=True,
+>                 separators=(",", ":"),
+>             )
+>             + "\n"
+>         ).encode("ascii")
+> 
+205c224
+<                     to_send = b'PROBE:0:noop\n'
+---
+>                     to_send = self._make_probe_message()
+232c251
+<             os.write(self._fd, b'PROBE:0:noop\n')
+---
+>             os.write(self._fd, self._make_probe_message())
+251,255c270,288
+<         msg = f"{cmd}:{name}:{rtype}\n".encode("ascii")
+<         if len(msg) > 512:
+<             # posix guarantees that writes to a pipe of less than PIPE_BUF
+<             # bytes are atomic, and that PIPE_BUF >= 512
+<             raise ValueError('msg too long')
+---
+>         # POSIX guarantees that writes to a pipe of less than PIPE_BUF (512 on Linux)
+>         # bytes are atomic. Therefore, we want the message to be shorter than 512 bytes.
+>         # POSIX shm_open() and sem_open() require the name, including its leading slash,
+>         # to be at most NAME_MAX bytes (255 on Linux)
+>         # With json.dump(..., ensure_ascii=True) every non-ASCII byte becomes a 6-char
+>         # escape like \uDC80.
+>         # As we want the overall message to be kept atomic and therefore smaller than 512,
+>         # we encode encode the raw name bytes with URL-safe Base64 - so a 255 long name
+>         # will not exceed 340 bytes.
+>         b = name.encode('utf-8', 'surrogateescape')
+>         if len(b) > 255:
+>             raise ValueError('shared memory name too long (max 255 bytes)')
+>         b64 = base64.urlsafe_b64encode(b).decode('ascii')
+> 
+>         payload = {"cmd": cmd, "rtype": rtype, "base64_name": b64}
+>         msg = (json.dumps(payload, ensure_ascii=True, separators=(",", ":")) + "\n").encode("ascii")
+> 
+>         # The entire JSON message is guaranteed < PIPE_BUF (512 bytes) by construction.
+>         assert len(msg) <= 512, f"internal error: message too long ({len(msg)} bytes)"
+288c321,337
+<                     cmd, name, rtype = line.strip().decode('ascii').split(':')
+---
+>                     try:
+>                         obj = json.loads(line.decode('ascii'))
+>                     except Exception as e:
+>                         raise ValueError("malformed resource_tracker message: %r" % (line,)) from e
+> 
+>                     cmd = obj["cmd"]
+>                     rtype = obj["rtype"]
+>                     b64  = obj.get("base64_name", "")
+> 
+>                     if not isinstance(cmd, str) or not isinstance(rtype, str) or not isinstance(b64, str):
+>                         raise ValueError("malformed resource_tracker fields: %r" % (obj,))
+> 
+>                     try:
+>                         name = base64.urlsafe_b64decode(b64).decode('utf-8', 'surrogateescape')
+>                     except ValueError as e:
+>                         raise ValueError("malformed resource_tracker base64_name: %r" % (b64,)) from e
+> 
+diff Python-3.15.0a1/Lib/multiprocessing/util.py Python-3.15.0a2/Lib/multiprocessing/util.py
+129,134c129,136
+< # Maximum length of a socket file path is usually between 92 and 108 [1],
+< # but Linux is known to use a size of 108 [2]. BSD-based systems usually
+< # use a size of 104 or 108 and Windows does not create AF_UNIX sockets.
+< #
+< # [1]: https://pubs.opengroup.org/onlinepubs/9799919799/basedefs/sys_un.h.html
+< # [2]: https://man7.org/linux/man-pages/man7/unix.7.html.
+---
+> # Maximum length of a NULL-terminated [1] socket file path is usually
+> # between 92 and 108 [2], but Linux is known to use a size of 108 [3].
+> # BSD-based systems usually use a size of 104 or 108 and Windows does
+> # not create AF_UNIX sockets.
+> #
+> # [1]: https://github.com/python/cpython/issues/140734
+> # [2]: https://pubs.opengroup.org/onlinepubs/9799919799/basedefs/sys_un.h.html
+> # [3]: https://man7.org/linux/man-pages/man7/unix.7.html
+174c176
+<     # Thus, the length of socket filename will be:
+---
+>     # Thus, the socket file path length (without NULL terminator) will be:
+178c180,182
+<     if sun_path_len <= _SUN_PATH_MAX:
+---
+>     # Strict inequality to account for the NULL terminator.
+>     # See https://github.com/python/cpython/issues/140734.
+>     if sun_path_len < _SUN_PATH_MAX:
+204c208
+<     assert len(base_system_tempdir) + 14 + 14 <= _SUN_PATH_MAX
+---
+>     assert len(base_system_tempdir) + 14 + 14 < _SUN_PATH_MAX
+diff Python-3.15.0a1/Lib/test/_test_multiprocessing.py Python-3.15.0a2/Lib/test/_test_multiprocessing.py 
+7366a7367,7409
+> 
+> @unittest.skipUnless(HAS_SHMEM, "requires multiprocessing.shared_memory")
+> class TestSharedMemoryNames(unittest.TestCase):
+>     def test_that_shared_memory_name_with_colons_has_no_resource_tracker_errors(self):
+>         # Test script that creates and cleans up shared memory with colon in name
+>         test_script = textwrap.dedent("""
+>             import sys
+>             from multiprocessing import shared_memory
+>             import time
+> 
+>             # Test various patterns of colons in names
+>             test_names = [
+>                 "a:b",
+>                 "a:b:c",
+>                 "test:name:with:many:colons",
+>                 ":starts:with:colon",
+>                 "ends:with:colon:",
+>                 "::double::colons::",
+>                 "name\\nwithnewline",
+>                 "name-with-trailing-newline\\n",
+>                 "\\nname-starts-with-newline",
+>                 "colons:and\\nnewlines:mix",
+>                 "multi\\nline\\nname",
+>             ]
+> 
+>             for name in test_names:
+>                 try:
+>                     shm = shared_memory.SharedMemory(create=True, size=100, name=name)
+>                     shm.buf[:5] = b'hello'  # Write something to the shared memory
+>                     shm.close()
+>                     shm.unlink()
+> 
+>                 except Exception as e:
+>                     print(f"Error with name '{name}': {e}", file=sys.stderr)
+>                     sys.exit(1)
+> 
+>             print("SUCCESS")
+>         """)
+> 
+>         rc, out, err = assert_python_ok("-c", test_script)
+>         self.assertIn(b"SUCCESS", out)
+>         self.assertNotIn(b"traceback", err.lower(), err)
+>         self.assertNotIn(b"resource_tracker.py", err, err)

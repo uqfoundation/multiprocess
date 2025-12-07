@@ -2067,3 +2067,600 @@ diff Python-3.14.0b4/Lib/multiprocessing/resource_tracker.py Python-3.14.0rc1/Li
 ---
 >         _CLEANUP_FUNCS['semaphore'] = _multiprocessing.sem_unlink
 >     _CLEANUP_FUNCS['shared_memory'] = _posixshmem.shm_unlink
+# ----------------------------------------------------------------------
+diff Python-3.14.0rc1/Lib/multiprocessing/forkserver.py Python-3.14.1/Lib/multiprocessing/forkserver.py
+147a148
+>             main_kws = {}
+149d149
+<                 desired_keys = {'main_path', 'sys_path'}
+151,153c151,154
+<                 main_kws = {x: y for x, y in data.items() if x in desired_keys}
+<             else:
+<                 main_kws = {}
+---
+>                 if 'sys_path' in data:
+>                     main_kws['sys_path'] = data['sys_path']
+>                 if 'init_main_from_path' in data:
+>                     main_kws['main_path'] = data['init_main_from_path']
+diff Python-3.14.0rc1/Lib/multiprocessing/popen_spawn_posix.py Python-3.14.1/Lib/multiprocessing/popen_spawn_posix.py
+59a60,63
+>             os.close(child_r)
+>             child_r = None
+>             os.close(child_w)
+>             child_w = None
+diff Python-3.14.0rc1/Lib/multiprocessing/process.py Python-3.14.1/Lib/multiprocessing/process.py
+80c80
+<     def __init__(self, group=None, target=None, name=None, args=(), kwargs={},
+---
+>     def __init__(self, group=None, target=None, name=None, args=(), kwargs=None,
+92c92
+<         self._kwargs = dict(kwargs)
+---
+>         self._kwargs = dict(kwargs) if kwargs else {}
+diff Python-3.14.0rc1/Lib/multiprocessing/queues.py Python-3.14.1/Lib/multiprocessing/queues.py
+124c124
+<         return self._maxsize - self._sem._semlock._get_value()
+---
+>         return self._maxsize - self._sem.get_value()
+diff Python-3.14.0rc1/Lib/multiprocessing/resource_tracker.py Python-3.14.1/Lib/multiprocessing/resource_tracker.py
+17a18
+> import base64
+22a24,26
+> from collections import deque
+> 
+> import json
+64a69
+>         self._reentrant_messages = deque()
+101c106
+<             return self._reentrant_call_error()
+---
+>             raise self._reentrant_call_error()
+112c117,122
+<         _, status = waitpid(self._pid, 0)
+---
+>         try:
+>             _, status = waitpid(self._pid, 0)
+>         except ChildProcessError:
+>             self._pid = None
+>             self._exitcode = None
+>             return
+130a141,213
+>         return self._ensure_running_and_write()
+> 
+>     def _teardown_dead_process(self):
+>         os.close(self._fd)
+> 
+>         # Clean-up to avoid dangling processes.
+>         try:
+>             # _pid can be None if this process is a child from another
+>             # python process, which has started the resource_tracker.
+>             if self._pid is not None:
+>                 os.waitpid(self._pid, 0)
+>         except ChildProcessError:
+>             # The resource_tracker has already been terminated.
+>             pass
+>         self._fd = None
+>         self._pid = None
+>         self._exitcode = None
+> 
+>         warnings.warn('resource_tracker: process died unexpectedly, '
+>                       'relaunching.  Some resources might leak.')
+> 
+>     def _launch(self):
+>         fds_to_pass = []
+>         try:
+>             fds_to_pass.append(sys.stderr.fileno())
+>         except Exception:
+>             pass
+>         r, w = os.pipe()
+>         try:
+>             fds_to_pass.append(r)
+>             # process will out live us, so no need to wait on pid
+>             exe = spawn.get_executable()
+>             args = [
+>                 exe,
+>                 *util._args_from_interpreter_flags(),
+>                 '-c',
+>                 f'from multiprocessing.resource_tracker import main;main({r})',
+>             ]
+>             # bpo-33613: Register a signal mask that will block the signals.
+>             # This signal mask will be inherited by the child that is going
+>             # to be spawned and will protect the child from a race condition
+>             # that can make the child die before it registers signal handlers
+>             # for SIGINT and SIGTERM. The mask is unregistered after spawning
+>             # the child.
+>             prev_sigmask = None
+>             try:
+>                 if _HAVE_SIGMASK:
+>                     prev_sigmask = signal.pthread_sigmask(signal.SIG_BLOCK, _IGNORED_SIGNALS)
+>                 pid = util.spawnv_passfds(exe, args, fds_to_pass)
+>             finally:
+>                 if prev_sigmask is not None:
+>                     signal.pthread_sigmask(signal.SIG_SETMASK, prev_sigmask)
+>         except:
+>             os.close(w)
+>             raise
+>         else:
+>             self._fd = w
+>             self._pid = pid
+>         finally:
+>             os.close(r)
+> 
+>     def _make_probe_message(self):
+>         """Return a JSON-encoded probe message."""
+>         return (
+>             json.dumps(
+>                 {"cmd": "PROBE", "rtype": "noop"},
+>                 ensure_ascii=True,
+>                 separators=(",", ":"),
+>             )
+>             + "\n"
+>         ).encode("ascii")
+> 
+>     def _ensure_running_and_write(self, msg=None):
+134c217,220
+<                 return self._reentrant_call_error()
+---
+>                 if msg is None:
+>                     raise self._reentrant_call_error()
+>                 return self._reentrant_messages.append(msg)
+> 
+137,143c223,226
+<                 if self._check_alive():
+<                     # => still alive
+<                     return
+<                 # => dead, launch it again
+<                 os.close(self._fd)
+< 
+<                 # Clean-up to avoid dangling processes.
+---
+>                 if msg is None:
+>                     to_send = self._make_probe_message()
+>                 else:
+>                     to_send = msg
+145,154c228,231
+<                     # _pid can be None if this process is a child from another
+<                     # python process, which has started the resource_tracker.
+<                     if self._pid is not None:
+<                         os.waitpid(self._pid, 0)
+<                 except ChildProcessError:
+<                     # The resource_tracker has already been terminated.
+<                     pass
+<                 self._fd = None
+<                 self._pid = None
+<                 self._exitcode = None
+---
+>                     self._write(to_send)
+>                 except OSError:
+>                     self._teardown_dead_process()
+>                     self._launch()
+156,157c233,235
+<                 warnings.warn('resource_tracker: process died unexpectedly, '
+<                               'relaunching.  Some resources might leak.')
+---
+>                 msg = None  # message was sent in probe
+>             else:
+>                 self._launch()
+159c237
+<             fds_to_pass = []
+---
+>         while True:
+161,193c239,244
+<                 fds_to_pass.append(sys.stderr.fileno())
+<             except Exception:
+<                 pass
+<             cmd = 'from multiprocessing.resource_tracker import main;main(%d)'
+<             r, w = os.pipe()
+<             try:
+<                 fds_to_pass.append(r)
+<                 # process will out live us, so no need to wait on pid
+<                 exe = spawn.get_executable()
+<                 args = [exe] + util._args_from_interpreter_flags()
+<                 args += ['-c', cmd % r]
+<                 # bpo-33613: Register a signal mask that will block the signals.
+<                 # This signal mask will be inherited by the child that is going
+<                 # to be spawned and will protect the child from a race condition
+<                 # that can make the child die before it registers signal handlers
+<                 # for SIGINT and SIGTERM. The mask is unregistered after spawning
+<                 # the child.
+<                 prev_sigmask = None
+<                 try:
+<                     if _HAVE_SIGMASK:
+<                         prev_sigmask = signal.pthread_sigmask(signal.SIG_BLOCK, _IGNORED_SIGNALS)
+<                     pid = util.spawnv_passfds(exe, args, fds_to_pass)
+<                 finally:
+<                     if prev_sigmask is not None:
+<                         signal.pthread_sigmask(signal.SIG_SETMASK, prev_sigmask)
+<             except:
+<                 os.close(w)
+<                 raise
+<             else:
+<                 self._fd = w
+<                 self._pid = pid
+<             finally:
+<                 os.close(r)
+---
+>                 reentrant_msg = self._reentrant_messages.popleft()
+>             except IndexError:
+>                 break
+>             self._write(reentrant_msg)
+>         if msg is not None:
+>             self._write(msg)
+200c251
+<             os.write(self._fd, b'PROBE:0:noop\n')
+---
+>             os.write(self._fd, self._make_probe_message())
+214,230c265
+<     def _send(self, cmd, name, rtype):
+<         try:
+<             self.ensure_running()
+<         except ReentrantCallError:
+<             # The code below might or might not work, depending on whether
+<             # the resource tracker was already running and still alive.
+<             # Better warn the user.
+<             # (XXX is warnings.warn itself reentrant-safe? :-)
+<             warnings.warn(
+<                 f"ResourceTracker called reentrantly for resource cleanup, "
+<                 f"which is unsupported. "
+<                 f"The {rtype} object {name!r} might leak.")
+<         msg = '{0}:{1}:{2}\n'.format(cmd, name, rtype).encode('ascii')
+<         if len(msg) > 512:
+<             # posix guarantees that writes to a pipe of less than PIPE_BUF
+<             # bytes are atomic, and that PIPE_BUF >= 512
+<             raise ValueError('msg too long')
+---
+>     def _write(self, msg):
+232,233c267
+<         assert nbytes == len(msg), "nbytes {0:n} but len(msg) {1:n}".format(
+<             nbytes, len(msg))
+---
+>         assert nbytes == len(msg), f"{nbytes=} != {len(msg)=}"
+234a269,290
+>     def _send(self, cmd, name, rtype):
+>         # POSIX guarantees that writes to a pipe of less than PIPE_BUF (512 on Linux)
+>         # bytes are atomic. Therefore, we want the message to be shorter than 512 bytes.
+>         # POSIX shm_open() and sem_open() require the name, including its leading slash,
+>         # to be at most NAME_MAX bytes (255 on Linux)
+>         # With json.dump(..., ensure_ascii=True) every non-ASCII byte becomes a 6-char
+>         # escape like \uDC80.
+>         # As we want the overall message to be kept atomic and therefore smaller than 512,
+>         # we encode encode the raw name bytes with URL-safe Base64 - so a 255 long name
+>         # will not exceed 340 bytes.
+>         b = name.encode('utf-8', 'surrogateescape')
+>         if len(b) > 255:
+>             raise ValueError('shared memory name too long (max 255 bytes)')
+>         b64 = base64.urlsafe_b64encode(b).decode('ascii')
+> 
+>         payload = {"cmd": cmd, "rtype": rtype, "base64_name": b64}
+>         msg = (json.dumps(payload, ensure_ascii=True, separators=(",", ":")) + "\n").encode("ascii")
+> 
+>         # The entire JSON message is guaranteed < PIPE_BUF (512 bytes) by construction.
+>         assert len(msg) <= 512, f"internal error: message too long ({len(msg)} bytes)"
+> 
+>         self._ensure_running_and_write(msg)
+265c321,337
+<                     cmd, name, rtype = line.strip().decode('ascii').split(':')
+---
+>                     try:
+>                         obj = json.loads(line.decode('ascii'))
+>                     except Exception as e:
+>                         raise ValueError("malformed resource_tracker message: %r" % (line,)) from e
+> 
+>                     cmd = obj["cmd"]
+>                     rtype = obj["rtype"]
+>                     b64  = obj.get("base64_name", "")
+> 
+>                     if not isinstance(cmd, str) or not isinstance(rtype, str) or not isinstance(b64, str):
+>                         raise ValueError("malformed resource_tracker fields: %r" % (obj,))
+> 
+>                     try:
+>                         name = base64.urlsafe_b64decode(b64).decode('utf-8', 'surrogateescape')
+>                     except ValueError as e:
+>                         raise ValueError("malformed resource_tracker base64_name: %r" % (b64,)) from e
+> 
+diff Python-3.14.0rc1/Lib/multiprocessing/synchronize.py Python-3.14.1/Lib/multiprocessing/synchronize.py
+137a138,142
+>         '''Returns current value of Semaphore.
+> 
+>         Raises NotImplementedError on Mac OSX
+>         because of broken sem_getvalue().
+>         '''
+142c147
+<             value = self._semlock._get_value()
+---
+>             value = self.get_value()
+158c163
+<             value = self._semlock._get_value()
+---
+>             value = self.get_value()
+250,251c255,256
+<             num_waiters = (self._sleeping_count._semlock._get_value() -
+<                            self._woken_count._semlock._get_value())
+---
+>             num_waiters = (self._sleeping_count.get_value() -
+>                            self._woken_count.get_value())
+diff Python-3.14.0rc1/Lib/multiprocessing/util.py Python-3.14.1/Lib/multiprocessing/util.py
+129,134c129,136
+< # Maximum length of a socket file path is usually between 92 and 108 [1],
+< # but Linux is known to use a size of 108 [2]. BSD-based systems usually
+< # use a size of 104 or 108 and Windows does not create AF_UNIX sockets.
+< #
+< # [1]: https://pubs.opengroup.org/onlinepubs/9799919799/basedefs/sys_un.h.html
+< # [2]: https://man7.org/linux/man-pages/man7/unix.7.html.
+---
+> # Maximum length of a NULL-terminated [1] socket file path is usually
+> # between 92 and 108 [2], but Linux is known to use a size of 108 [3].
+> # BSD-based systems usually use a size of 104 or 108 and Windows does
+> # not create AF_UNIX sockets.
+> #
+> # [1]: https://github.com/python/cpython/issues/140734
+> # [2]: https://pubs.opengroup.org/onlinepubs/9799919799/basedefs/sys_un.h.html
+> # [3]: https://man7.org/linux/man-pages/man7/unix.7.html
+174c176
+<     # Thus, the length of socket filename will be:
+---
+>     # Thus, the socket file path length (without NULL terminator) will be:
+178c180,182
+<     if sun_path_len <= _SUN_PATH_MAX:
+---
+>     # Strict inequality to account for the NULL terminator.
+>     # See https://github.com/python/cpython/issues/140734.
+>     if sun_path_len < _SUN_PATH_MAX:
+204c208
+<     assert len(base_system_tempdir) + 14 + 14 <= _SUN_PATH_MAX
+---
+>     assert len(base_system_tempdir) + 14 + 14 < _SUN_PATH_MAX
+diff Python-3.14.0rc1/Lib/multiprocessing/dummy/__init__.py Python-3.14.1/Lib/multiprocessing/dummy/__init__.py
+36c36
+<     def __init__(self, group=None, target=None, name=None, args=(), kwargs={}):
+---
+>     def __init__(self, group=None, target=None, name=None, args=(), kwargs=None):
+diff Python-3.14.0rc1/Lib/test/_test_multiprocessing.py Python-3.14.1/Lib/test/_test_multiprocessing.py 
+1183c1183
+<         #queue.put(1)
+---
+>         queue.put(1)
+1207c1207,1209
+<         time.sleep(DELTA)
+---
+>         for _ in support.sleeping_retry(support.SHORT_TIMEOUT):
+>             if not queue_empty(queue):
+>                 break
+1210,1211c1212
+<         # Hangs unexpectedly, remove for now
+<         #self.assertEqual(queue.get(), 1)
+---
+>         self.assertEqual(queue.get_nowait(), 1)
+1215c1216
+<         self.assertEqual(queue.get_nowait(), 5)
+---
+>         self.assertEqual(queue.get(), 5)
+5175a5177,5193
+> #
+> # Regression tests for BaseProcess kwargs handling
+> #
+> 
+> class TestBaseProcessKwargs(unittest.TestCase):
+>     def test_default_kwargs_not_shared_between_instances(self):
+>         # Creating multiple Process instances without passing kwargs
+>         # must create independent empty dicts (no shared state).
+>         p1 = multiprocessing.Process(target=lambda: None)
+>         p2 = multiprocessing.Process(target=lambda: None)
+>         self.assertIsInstance(p1._kwargs, dict)
+>         self.assertIsInstance(p2._kwargs, dict)
+>         self.assertIsNot(p1._kwargs, p2._kwargs)
+>         # Mutating one should not affect the other
+>         p1._kwargs['x'] = 1
+>         self.assertNotIn('x', p2._kwargs)
+> 
+6798,6811d6815
+<         # Create a test module in the temporary directory on the child's path
+<         # TODO: This can all be simplified once gh-126631 is fixed and we can
+<         #       use __main__ instead of a module.
+<         dirname = os.path.join(self._temp_dir, 'preloaded_module')
+<         init_name = os.path.join(dirname, '__init__.py')
+<         os.mkdir(dirname)
+<         with open(init_name, "w") as f:
+<             cmd = '''if 1:
+<                 import sys
+<                 print('stderr', end='', file=sys.stderr)
+<                 print('stdout', end='', file=sys.stdout)
+<             '''
+<             f.write(cmd)
+< 
+6813,6814c6817
+<         env = {'PYTHONPATH': self._temp_dir}
+<         _, out, err = test.support.script_helper.assert_python_ok(name, **env)
+---
+>         _, out, err = test.support.script_helper.assert_python_ok(name)
+6818,6819c6821,6822
+<         self.assertEqual(err.decode().rstrip(), 'stderr')
+<         self.assertEqual(out.decode().rstrip(), 'stdout')
+---
+>         self.assertEqual(err.decode().rstrip(), '__main____mp_main__')
+>         self.assertEqual(out.decode().rstrip(), '__main____mp_main__')
+6885a6889,6900
+>     def test_preload_main(self):
+>         # gh-126631: Check that __main__ can be pre-loaded
+>         if multiprocessing.get_start_method() != "forkserver":
+>             self.skipTest("forkserver specific test")
+> 
+>         name = os.path.join(os.path.dirname(__file__), 'mp_preload_main.py')
+>         _, out, err = test.support.script_helper.assert_python_ok(name)
+>         self.assertEqual(err, b'')
+> 
+>         # The trailing empty string comes from split() on output ending with \n
+>         out = out.decode().split("\n")
+>         self.assertEqual(out, ['__main__', '__mp_main__', 'f', 'f', ''])
+7132a7148,7191
+> 
+> 
+> @unittest.skipUnless(HAS_SHMEM, "requires multiprocessing.shared_memory")
+> class TestSharedMemoryNames(unittest.TestCase):
+>     def test_that_shared_memory_name_with_colons_has_no_resource_tracker_errors(self):
+>         # Test script that creates and cleans up shared memory with colon in name
+>         test_script = textwrap.dedent("""
+>             import sys
+>             from multiprocessing import shared_memory
+>             import time
+> 
+>             # Test various patterns of colons in names
+>             test_names = [
+>                 "a:b",
+>                 "a:b:c",
+>                 "test:name:with:many:colons",
+>                 ":starts:with:colon",
+>                 "ends:with:colon:",
+>                 "::double::colons::",
+>                 "name\\nwithnewline",
+>                 "name-with-trailing-newline\\n",
+>                 "\\nname-starts-with-newline",
+>                 "colons:and\\nnewlines:mix",
+>                 "multi\\nline\\nname",
+>             ]
+> 
+>             for name in test_names:
+>                 try:
+>                     shm = shared_memory.SharedMemory(create=True, size=100, name=name)
+>                     shm.buf[:5] = b'hello'  # Write something to the shared memory
+>                     shm.close()
+>                     shm.unlink()
+> 
+>                 except Exception as e:
+>                     print(f"Error with name '{name}': {e}", file=sys.stderr)
+>                     sys.exit(1)
+> 
+>             print("SUCCESS")
+>         """)
+> 
+>         rc, out, err = script_helper.assert_python_ok("-c", test_script)
+>         self.assertIn(b"SUCCESS", out)
+>         self.assertNotIn(b"traceback", err.lower(), err)
+>         self.assertNotIn(b"resource_tracker.py", err, err)
+diff Python-3.14.0rc1/Lib/test/mp_preload_flush.py Python-3.14.1/Lib/test/mp_preload_flush.py 
+4c4,5
+< modname = 'preloaded_module'
+---
+> print(__name__, end='', file=sys.stderr)
+> print(__name__, end='', file=sys.stdout)
+6,7d6
+<     if modname in sys.modules:
+<         raise AssertionError(f'{modname!r} is not in sys.modules')
+9d7
+<     multiprocessing.set_forkserver_preload([modname])
+14,15d11
+< elif modname not in sys.modules:
+<     raise AssertionError(f'{modname!r} is not in sys.modules')
+# ----------------------------------------------------------------------
+diff Python-3.14.1/Lib/multiprocessing/resource_tracker.py Python-3.14.2/Lib/multiprocessing/resource_tracker.py
+70a71,77
+>         # True to use colon-separated lines, rather than JSON lines,
+>         # for internal communication. (Mainly for testing).
+>         # Filenames not supported by the simple format will always be sent
+>         # using JSON.
+>         # The reader should understand all formats.
+>         self._use_simple_format = True
+> 
+203c210,212
+<         """Return a JSON-encoded probe message."""
+---
+>         """Return a probe message."""
+>         if self._use_simple_format:
+>             return b'PROBE:0:noop\n'
+269a279,287
+>         if self._use_simple_format and '\n' not in name:
+>             msg = f"{cmd}:{name}:{rtype}\n".encode("ascii")
+>             if len(msg) > 512:
+>                 # posix guarantees that writes to a pipe of less than PIPE_BUF
+>                 # bytes are atomic, and that PIPE_BUF >= 512
+>                 raise ValueError('msg too long')
+>             self._ensure_running_and_write(msg)
+>             return
+> 
+288a307
+>         assert msg.startswith(b'{')
+298a318,341
+> def _decode_message(line):
+>     if line.startswith(b'{'):
+>         try:
+>             obj = json.loads(line.decode('ascii'))
+>         except Exception as e:
+>             raise ValueError("malformed resource_tracker message: %r" % (line,)) from e
+> 
+>         cmd = obj["cmd"]
+>         rtype = obj["rtype"]
+>         b64  = obj.get("base64_name", "")
+> 
+>         if not isinstance(cmd, str) or not isinstance(rtype, str) or not isinstance(b64, str):
+>             raise ValueError("malformed resource_tracker fields: %r" % (obj,))
+> 
+>         try:
+>             name = base64.urlsafe_b64decode(b64).decode('utf-8', 'surrogateescape')
+>         except ValueError as e:
+>             raise ValueError("malformed resource_tracker base64_name: %r" % (b64,)) from e
+>     else:
+>         cmd, rest = line.strip().decode('ascii').split(':', maxsplit=1)
+>         name, rtype = rest.rsplit(':', maxsplit=1)
+>     return cmd, rtype, name
+> 
+> 
+321,337c364
+<                     try:
+<                         obj = json.loads(line.decode('ascii'))
+<                     except Exception as e:
+<                         raise ValueError("malformed resource_tracker message: %r" % (line,)) from e
+< 
+<                     cmd = obj["cmd"]
+<                     rtype = obj["rtype"]
+<                     b64  = obj.get("base64_name", "")
+< 
+<                     if not isinstance(cmd, str) or not isinstance(rtype, str) or not isinstance(b64, str):
+<                         raise ValueError("malformed resource_tracker fields: %r" % (obj,))
+< 
+<                     try:
+<                         name = base64.urlsafe_b64decode(b64).decode('utf-8', 'surrogateescape')
+<                     except ValueError as e:
+<                         raise ValueError("malformed resource_tracker base64_name: %r" % (b64,)) from e
+< 
+---
+>                     cmd, rtype, name = _decode_message(line)
+diff Python-3.14.1/Lib/test/_test_multiprocessing.py Python-3.14.2/Lib/test/_test_multiprocessing.py 
+42c42
+< 
+---
+> from test.support import subTests
+4286a4287,4299
+> def resource_tracker_format_subtests(func):
+>     """Run given test using both resource tracker communication formats"""
+>     def _inner(self, *args, **kwargs):
+>         tracker = resource_tracker._resource_tracker
+>         for use_simple_format in False, True:
+>             with (
+>                 self.subTest(use_simple_format=use_simple_format),
+>                 unittest.mock.patch.object(
+>                     tracker, '_use_simple_format', use_simple_format)
+>             ):
+>                 func(self, *args, **kwargs)
+>     return _inner
+> 
+4563a4577
+>     @resource_tracker_format_subtests
+4813a4828
+>     @resource_tracker_format_subtests
+4840a4856
+>     @resource_tracker_format_subtests
+7152c7168,7170
+<     def test_that_shared_memory_name_with_colons_has_no_resource_tracker_errors(self):
+---
+>     @subTests('use_simple_format', (True, False))
+>     def test_that_shared_memory_name_with_colons_has_no_resource_tracker_errors(
+>             self, use_simple_format):
+7156a7175
+>             from multiprocessing import resource_tracker
+7158a7178,7179
+>             resource_tracker._resource_tracker._use_simple_format = %s
+> 
+7186c7207
+<         """)
+---
+>         """ % use_simple_format)

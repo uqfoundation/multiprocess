@@ -142,11 +142,16 @@ class Semaphore(SemLock):
         SemLock.__init__(self, SEMAPHORE, value, SEM_VALUE_MAX, ctx=ctx)
 
     def get_value(self):
+        '''Returns current value of Semaphore.
+    
+        Raises NotImplementedError on Mac OSX
+        because of broken sem_getvalue().
+        '''
         return self._semlock._get_value()
 
     def __repr__(self):
         try:
-            value = self._semlock._get_value()
+            value = self.get_value()
         except Exception:
             value = 'unknown'
         return '<%s(value=%s)>' % (self.__class__.__name__, value)
@@ -162,7 +167,7 @@ class BoundedSemaphore(Semaphore):
 
     def __repr__(self):
         try:
-            value = self._semlock._get_value()
+            value = self.get_value()
         except Exception:
             value = 'unknown'
         return '<%s(value=%s, maxvalue=%s)>' % \
@@ -254,8 +259,8 @@ class Condition(object):
 
     def __repr__(self):
         try:
-            num_waiters = (self._sleeping_count._semlock._get_value() -
-                           self._woken_count._semlock._get_value())
+            num_waiters = (self._sleeping_count.get_value() -
+                           self._woken_count.get_value())
         except Exception:
             num_waiters = 'unknown'
         return '<%s(%s, %s)>' % (self.__class__.__name__, self._lock, num_waiters)

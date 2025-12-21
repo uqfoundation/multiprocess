@@ -1110,3 +1110,205 @@ diff Python-3.15.0a1/Lib/test/_test_multiprocessing.py Python-3.15.0a2/Lib/test/
 >         self.assertIn(b"SUCCESS", out)
 >         self.assertNotIn(b"traceback", err.lower(), err)
 >         self.assertNotIn(b"resource_tracker.py", err, err)
+# ----------------------------------------------------------------------
+diff Python-3.15.0a2/Lib/multiprocessing/connection.py Python-3.15.0a3/Lib/multiprocessing/connection.py
+712,713c712
+<                     res = _winapi.WaitForMultipleObjects(
+<                         [ov.event], False, INFINITE)
+---
+>                     _winapi.WaitForMultipleObjects([ov.event], False, INFINITE)
+diff Python-3.15.0a2/Lib/multiprocessing/queues.py Python-3.15.0a3/Lib/multiprocessing/queues.py
+124c124
+<         return self._maxsize - self._sem._semlock._get_value()
+---
+>         return self._maxsize - self._sem.get_value()
+diff Python-3.15.0a2/Lib/multiprocessing/resource_tracker.py Python-3.15.0a3/Lib/multiprocessing/resource_tracker.py
+70a71,77
+>         # True to use colon-separated lines, rather than JSON lines,
+>         # for internal communication. (Mainly for testing).
+>         # Filenames not supported by the simple format will always be sent
+>         # using JSON.
+>         # The reader should understand all formats.
+>         self._use_simple_format = False
+> 
+203c210,212
+<         """Return a JSON-encoded probe message."""
+---
+>         """Return a probe message."""
+>         if self._use_simple_format:
+>             return b'PROBE:0:noop\n'
+269a279,287
+>         if self._use_simple_format and '\n' not in name:
+>             msg = f"{cmd}:{name}:{rtype}\n".encode("ascii")
+>             if len(msg) > 512:
+>                 # posix guarantees that writes to a pipe of less than PIPE_BUF
+>                 # bytes are atomic, and that PIPE_BUF >= 512
+>                 raise ValueError('msg too long')
+>             self._ensure_running_and_write(msg)
+>             return
+> 
+288a307
+>         assert msg.startswith(b'{')
+298a318,341
+> def _decode_message(line):
+>     if line.startswith(b'{'):
+>         try:
+>             obj = json.loads(line.decode('ascii'))
+>         except Exception as e:
+>             raise ValueError("malformed resource_tracker message: %r" % (line,)) from e
+> 
+>         cmd = obj["cmd"]
+>         rtype = obj["rtype"]
+>         b64  = obj.get("base64_name", "")
+> 
+>         if not isinstance(cmd, str) or not isinstance(rtype, str) or not isinstance(b64, str):
+>             raise ValueError("malformed resource_tracker fields: %r" % (obj,))
+> 
+>         try:
+>             name = base64.urlsafe_b64decode(b64).decode('utf-8', 'surrogateescape')
+>         except ValueError as e:
+>             raise ValueError("malformed resource_tracker base64_name: %r" % (b64,)) from e
+>     else:
+>         cmd, rest = line.strip().decode('ascii').split(':', maxsplit=1)
+>         name, rtype = rest.rsplit(':', maxsplit=1)
+>     return cmd, rtype, name
+> 
+> 
+321,337c364
+<                     try:
+<                         obj = json.loads(line.decode('ascii'))
+<                     except Exception as e:
+<                         raise ValueError("malformed resource_tracker message: %r" % (line,)) from e
+< 
+<                     cmd = obj["cmd"]
+<                     rtype = obj["rtype"]
+<                     b64  = obj.get("base64_name", "")
+< 
+<                     if not isinstance(cmd, str) or not isinstance(rtype, str) or not isinstance(b64, str):
+<                         raise ValueError("malformed resource_tracker fields: %r" % (obj,))
+< 
+<                     try:
+<                         name = base64.urlsafe_b64decode(b64).decode('utf-8', 'surrogateescape')
+<                     except ValueError as e:
+<                         raise ValueError("malformed resource_tracker base64_name: %r" % (b64,)) from e
+< 
+---
+>                     cmd, rtype, name = _decode_message(line)
+diff Python-3.15.0a2/Lib/multiprocessing/synchronize.py Python-3.15.0a3/Lib/multiprocessing/synchronize.py
+137a138,142
+>         '''Returns current value of Semaphore.
+> 
+>         Raises NotImplementedError on Mac OSX
+>         because of broken sem_getvalue().
+>         '''
+142c147
+<             value = self._semlock._get_value()
+---
+>             value = self.get_value()
+158c163
+<             value = self._semlock._get_value()
+---
+>             value = self.get_value()
+250,251c255,256
+<             num_waiters = (self._sleeping_count._semlock._get_value() -
+<                            self._woken_count._semlock._get_value())
+---
+>             num_waiters = (self._sleeping_count.get_value() -
+>                            self._woken_count.get_value())
+diff Python-3.15.0a2/Lib/test/_test_multiprocessing.py Python-3.15.0a3/Lib/test/_test_multiprocessing.py 
+41a42
+> from test.support import subTests
+1207c1208
+<         #queue.put(1)
+---
+>         queue.put(1)
+1232c1233,1235
+<         time.sleep(DELTA)
+---
+>         for _ in support.sleeping_retry(support.SHORT_TIMEOUT):
+>             if not queue_empty(queue):
+>                 break
+1235,1236c1238
+<         # Hangs unexpectedly, remove for now
+<         #self.assertEqual(queue.get(), 1)
+---
+>         self.assertEqual(queue.get_nowait(), 1)
+1240c1242
+<         self.assertEqual(queue.get_nowait(), 5)
+---
+>         self.assertEqual(queue.get(), 5)
+4384a4387,4399
+> def resource_tracker_format_subtests(func):
+>     """Run given test using both resource tracker communication formats"""
+>     def _inner(self, *args, **kwargs):
+>         tracker = resource_tracker._resource_tracker
+>         for use_simple_format in False, True:
+>             with (
+>                 self.subTest(use_simple_format=use_simple_format),
+>                 unittest.mock.patch.object(
+>                     tracker, '_use_simple_format', use_simple_format)
+>             ):
+>                 func(self, *args, **kwargs)
+>     return _inner
+> 
+4663a4679
+>     @resource_tracker_format_subtests
+4914a4931
+>     @resource_tracker_format_subtests
+4941a4959
+>     @resource_tracker_format_subtests
+6959,6972d6976
+<         # Create a test module in the temporary directory on the child's path
+<         # TODO: This can all be simplified once gh-126631 is fixed and we can
+<         #       use __main__ instead of a module.
+<         dirname = os.path.join(self._temp_dir, 'preloaded_module')
+<         init_name = os.path.join(dirname, '__init__.py')
+<         os.mkdir(dirname)
+<         with open(init_name, "w") as f:
+<             cmd = '''if 1:
+<                 import sys
+<                 print('stderr', end='', file=sys.stderr)
+<                 print('stdout', end='', file=sys.stdout)
+<             '''
+<             f.write(cmd)
+< 
+6974,6975c6978
+<         env = {'PYTHONPATH': self._temp_dir}
+<         _, out, err = test.support.script_helper.assert_python_ok(name, **env)
+---
+>         _, out, err = test.support.script_helper.assert_python_ok(name)
+6979,6980c6982,6983
+<         self.assertEqual(err.decode().rstrip(), 'stderr')
+<         self.assertEqual(out.decode().rstrip(), 'stdout')
+---
+>         self.assertEqual(err.decode().rstrip(), '__main____mp_main__')
+>         self.assertEqual(out.decode().rstrip(), '__main____mp_main__')
+7370c7373,7375
+<     def test_that_shared_memory_name_with_colons_has_no_resource_tracker_errors(self):
+---
+>     @subTests('use_simple_format', (True, False))
+>     def test_that_shared_memory_name_with_colons_has_no_resource_tracker_errors(
+>             self, use_simple_format):
+7374a7380
+>             from multiprocessing import resource_tracker
+7376a7383,7384
+>             resource_tracker._resource_tracker._use_simple_format = %s
+> 
+7404c7412
+<         """)
+---
+>         """ % use_simple_format)
+diff Python-3.15.0a2/Lib/test/mp_preload_flush.py Python-3.15.0a3/Lib/test/mp_preload_flush.py 
+4c4,5
+< modname = 'preloaded_module'
+---
+> print(__name__, end='', file=sys.stderr)
+> print(__name__, end='', file=sys.stdout)
+6,7d6
+<     if modname in sys.modules:
+<         raise AssertionError(f'{modname!r} is not in sys.modules')
+9d7
+<     multiprocessing.set_forkserver_preload([modname])
+14,15d11
+< elif modname not in sys.modules:
+<     raise AssertionError(f'{modname!r} is not in sys.modules')

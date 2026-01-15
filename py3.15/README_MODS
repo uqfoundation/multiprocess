@@ -1312,3 +1312,74 @@ diff Python-3.15.0a2/Lib/test/mp_preload_flush.py Python-3.15.0a3/Lib/test/mp_pr
 14,15d11
 < elif modname not in sys.modules:
 <     raise AssertionError(f'{modname!r} is not in sys.modules')
+# ----------------------------------------------------------------------
+diff Python-3.15.0a3/Lib/multiprocessing/forkserver.py Python-3.15.0a5/Lib/multiprocessing/forkserver.py
+154a155,156
+>                 if 'sys_argv' in data:
+>                     main_kws['sys_argv'] = data['sys_argv']
+200c202
+<          *, authkey_r=None):
+---
+>          *, sys_argv=None, authkey_r=None):
+211a214,215
+>         if sys_argv is not None:
+>             sys.argv[:] = sys_argv
+diff Python-3.15.0a3/Lib/multiprocessing/spawn.py Python-3.15.0a5/Lib/multiprocessing/spawn.py
+187c187
+<         start_method=get_start_method(),
+---
+>         start_method=get_start_method(allow_none=True),
+diff Python-3.15.0a3/Lib/test/_test_multiprocessing.py Python-3.15.0a5/Lib/test/_test_multiprocessing.py 
+3394a3395
+>     @support.skip_if_sanitizer('TSan: leaks threads', thread=True)
+3406a3408
+>     @support.skip_if_sanitizer('TSan: leaks threads', thread=True)
+3416a3419
+>     @support.skip_if_sanitizer('TSan: leaks threads', thread=True)
+3487a3491
+>     @support.skip_if_sanitizer('TSan: leaks threads', thread=True)
+3529a3534
+>     @support.skip_if_sanitizer("TSan: leaks threads", thread=True)
+5969a5975,5994
+>     @staticmethod
+>     def _dummy_func():
+>         pass
+> 
+>     @warnings_helper.ignore_fork_in_thread_deprecation_warnings()
+>     def test_spawn_dont_set_context(self):
+>         # Run a process with spawn or forkserver context may change
+>         # the global start method, see gh-109263.
+>         for method in ('fork', 'spawn', 'forkserver'):
+>             multiprocessing.set_start_method(None, force=True)
+> 
+>             try:
+>                 ctx = multiprocessing.get_context(method)
+>             except ValueError:
+>                 continue
+>             process = ctx.Process(target=self._dummy_func)
+>             process.start()
+>             process.join()
+>             self.assertIsNone(multiprocessing.get_start_method(allow_none=True))
+> 
+7063a7089,7108
+>     def test_preload_main_sys_argv(self):
+>         # gh-143706: Check that sys.argv is set before __main__ is pre-loaded
+>         if multiprocessing.get_start_method() != "forkserver":
+>             self.skipTest("forkserver specific test")
+> 
+>         name = os.path.join(os.path.dirname(__file__), 'mp_preload_sysargv.py')
+>         _, out, err = test.support.script_helper.assert_python_ok(
+>             name, 'foo', 'bar')
+>         self.assertEqual(err, b'')
+> 
+>         out = out.decode().split("\n")
+>         expected_argv = "['foo', 'bar']"
+>         self.assertEqual(out, [
+>             f"module:{expected_argv}",
+>             f"fun:{expected_argv}",
+>             f"module:{expected_argv}",
+>             f"fun:{expected_argv}",
+>             '',
+>         ])
+> 
+

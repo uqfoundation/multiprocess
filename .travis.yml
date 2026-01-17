@@ -1,19 +1,22 @@
-dist: jammy
+dist: noble
 language: python
 
 matrix:
     include:
         - python: '3.9'
+          dist: focal
+          env:
+
+        - python: '3.10'
+          dist: jammy
           env:
             - COVERAGE="true"
             - DILL="true"
 
-        - python: '3.10'
+        - python: '3.11'
+          dist: jammy
           env:
             - COVERAGE="true"
-
-        - python: '3.11'
-          env:
 
         - python: '3.12'
           env:
@@ -21,12 +24,11 @@ matrix:
         - python: '3.13'
           env:
 
-        - python: '3.14-dev'
+        - python: '3.14'
           env:
-            - PYVERSION="3.14"
             - DILL="master"
 
-        - python: '3.15-dev'
+        - python: '3.15t-dev'
           env:
             - PYVERSION="3.15"
             - DILL="master"
@@ -44,8 +46,7 @@ matrix:
             - PYPY_VERSION="3.11"
 
     allow_failures:
-        - python: '3.15-dev' # prerelease; CI missing
-        - python: 'pypy3.11-7.3.20' # CI missing
+        - python: '3.15t-dev' # prerelease
     fast_finish: true
 
 cache:
@@ -61,7 +62,7 @@ install:
     - python -m pip install .
 
 script:
-    - if [[ $PYVERSION != "3.14" ]]; then PYVERSION=$TRAVIS_PYTHON_VERSION ; fi
+    - if [[ $PYVERSION != "3.15" ]]; then PYVERSION=$TRAVIS_PYTHON_VERSION ; fi
     - if [[ $PYVERSION == "pypy3.9-7.3.15" ]]; then PYVERSION=py$PYPY_VERSION ; fi
     - if [[ $PYVERSION == "pypy3.10-7.3.19" ]]; then PYVERSION=py$PYPY_VERSION ; fi
     - if [[ $PYVERSION == "pypy3.11-7.3.20" ]]; then PYVERSION=py$PYPY_VERSION ; fi

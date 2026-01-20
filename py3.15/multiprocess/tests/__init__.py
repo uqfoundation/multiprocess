@@ -50,12 +50,11 @@ import threading
 # Skip warnings decorator if not found in warnings_helper.
 warnings_helper_ignore_fork_in_thread_deprecation_warnings = getattr(warnings_helper, 'ignore_fork_in_thread_deprecation_warnings', None)
 if warnings_helper_ignore_fork_in_thread_deprecation_warnings is None:
-    from contextlib import ContextDecorator
-    class warnings_helper_ignore_fork_in_thread_deprecation_warnings(ContextDecorator):
-        def __enter__(self):
-            return self
-        def __exit__(self, exc_type, exc_val, exc_tb):
-            return
+    from contextlib import contextmanager, nullcontext
+    @contextmanager
+    def warnings_helper_ignore_fork_in_thread_deprecation_warnings():
+        with nullcontext():
+            yield
 
 import multiprocess as multiprocessing
 import multiprocess.connection

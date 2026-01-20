@@ -50,11 +50,11 @@ import threading
 # Skip warnings decorator if not found in warnings_helper.
 warnings_helper_ignore_fork_in_thread_deprecation_warnings = getattr(warnings_helper, 'ignore_fork_in_thread_deprecation_warnings', None)
 if warnings_helper_ignore_fork_in_thread_deprecation_warnings is None:
-    from contextlib import contextmanager, nullcontext
-    @contextmanager
+    HAS_WARN = False
+    @unittest.skipIf(True, "skip warning not found")
     def warnings_helper_ignore_fork_in_thread_deprecation_warnings():
-        with nullcontext():
-            yield
+        yield
+else: HAS_WARN = True
 
 import multiprocess as multiprocessing
 import multiprocess.connection
@@ -2870,7 +2870,11 @@ class _TestPool(BaseTestCase):
 
     @classmethod
     def setUpClass(cls):
-        with warnings_helper_ignore_fork_in_thread_deprecation_warnings():
+        if HAS_WARN:
+            with warnings_helper.ignore_fork_in_thread_deprecation_warnings():
+                super().setUpClass()
+                cls.pool = cls.Pool(4)
+        else:
             super().setUpClass()
             cls.pool = cls.Pool(4)
 
@@ -3603,7 +3607,10 @@ class FakeConnection:
 class TestManagerExceptions(unittest.TestCase):
     # Issue 106558: Manager exceptions avoids creating cyclic references.
     def setUp(self):
-        with warnings_helper_ignore_fork_in_thread_deprecation_warnings():
+        if HAS_WARN:
+            with warnings_helper.ignore_fork_in_thread_deprecation_warnings():
+                self.mgr = multiprocessing.Manager()
+        else:
             self.mgr = multiprocessing.Manager()
 
     def tearDown(self):
@@ -5418,7 +5425,12 @@ def initializer(ns):
 @hashlib_helper.requires_hashdigest('sha256')
 class TestInitializers(unittest.TestCase):
     def setUp(self):
-        with warnings_helper_ignore_fork_in_thread_deprecation_warnings():
+        if HAS_WARN:
+            with warnings_helper.ignore_fork_in_thread_deprecation_warnings():
+                self.mgr = multiprocessing.Manager()
+                self.ns = self.mgr.Namespace()
+                self.ns.test = 0
+        else:
             self.mgr = multiprocessing.Manager()
             self.ns = self.mgr.Namespace()
             self.ns.test = 0
@@ -6479,7 +6491,10 @@ class TestSyncManagerTypes(unittest.TestCase):
 
     def setUp(self):
         self.manager = self.manager_class()
-        with warnings_helper_ignore_fork_in_thread_deprecation_warnings():
+        if HAS_WARN:
+            with warnings_helper.ignore_fork_in_thread_deprecation_warnings():
+                self.manager.start()
+        else:
             self.manager.start()
         self.proc = None
 
@@ -7212,7 +7227,11 @@ class ManagerMixin(BaseMixin):
 
     @classmethod
     def setUpClass(cls):
-        with warnings_helper_ignore_fork_in_thread_deprecation_warnings():
+        if HAS_WARN:
+            with warnings_helper.ignore_fork_in_thread_deprecation_warnings():
+                super().setUpClass()
+                cls.manager = multiprocessing.Manager()
+        else:
             super().setUpClass()
             cls.manager = multiprocessing.Manager()
 

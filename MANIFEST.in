@@ -11,10 +11,8 @@ recursive-include py3.12 *
 recursive-include py3.13 *
 recursive-include py3.14 *
 recursive-include py3.15 *
-recursive-include py3.9 *
 recursive-include pypy3.11 *
 recursive-include pypy3.10 *
-recursive-include pypy3.9 *
 include .*
 prune .git
 prune .coverage
@@ -30,7 +28,9 @@ prune py3.5
 prune py3.6
 prune py3.7
 prune py3.8
+prune py3.9
 prune pypy2.7
 prune pypy3.6
 prune pypy3.7
 prune pypy3.8
+prune pypy3.9

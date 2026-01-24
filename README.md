@@ -61,7 +61,7 @@ Requirements
 ------------
 ``multiprocess`` requires:
 
-* ``python`` (or ``pypy``), **>=3.9**
+* ``python`` (or ``pypy``), **>=3.10**
 * ``setuptools``, **>=42**
 * ``dill``, **>=0.4.1**
 

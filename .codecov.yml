@@ -23,23 +23,19 @@ coverage:
 fixes:
   # reduces pip-installed path to git root and
   # remove dist-name from setup-installed path
-  - "*/python3.9/site-packages/::py3.9/"
   - "*/python3.10/site-packages/::py3.10/"
   - "*/python3.11/site-packages/::py3.11/"
   - "*/python3.12/site-packages/::py3.12/"
   - "*/python3.13/site-packages/::py3.13/"
   - "*/python3.14/site-packages/::py3.14/"
   - "*/python3.15/site-packages/::py3.15/"
-  - "*/pypy3.9-*/site-packages/::pypy3.9/"
   - "*/pypy3.10-*/site-packages/::pypy3.10/"
   - "*/pypy3.11-*/site-packages/::pypy3.11/"
-  - "*/python3.9/site-packages/multiprocess-*::py3.9/"
   - "*/python3.10/site-packages/multiprocess-*::py3.10/"
   - "*/python3.11/site-packages/multiprocess-*::py3.11/"
   - "*/python3.12/site-packages/multiprocess-*::py3.12/"
   - "*/python3.13/site-packages/multiprocess-*::py3.13/"
   - "*/python3.14/site-packages/multiprocess-*::py3.14/"
   - "*/python3.15/site-packages/multiprocess-*::py3.15/"
-  - "*/pypy3.9-*/site-packages/multiprocess-*::pypy3.9/"
   - "*/pypy3.10-*/site-packages/multiprocess-*::pypy3.10/"
   - "*/pypy3.11-*/site-packages/multiprocess-*::pypy3.11/"

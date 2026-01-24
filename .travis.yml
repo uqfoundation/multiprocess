@@ -3,11 +3,6 @@ language: python
 
 matrix:
     include:
-        - python: '3.9'
-          dist: focal
-          env:
-            - FORK_PY="true"
-
         - python: '3.10'
           dist: jammy
           env:
@@ -34,11 +29,6 @@ matrix:
           env:
             - PYVERSION="3.15"
             - DILL="master"
-
-        - python: 'pypy3.9-7.3.15' # is 7.3.16
-          env:
-            - PYPY_VERSION="3.9"
-            - FORK_PY="true"
 
         - python: 'pypy3.10-7.3.19'
           env:
@@ -67,7 +57,6 @@ install:
 
 script:
     - if [[ $PYVERSION != "3.15" ]]; then PYVERSION=$TRAVIS_PYTHON_VERSION ; fi
-    - if [[ $PYVERSION == "pypy3.9-7.3.15" ]]; then PYVERSION=py$PYPY_VERSION ; fi
     - if [[ $PYVERSION == "pypy3.10-7.3.19" ]]; then PYVERSION=py$PYPY_VERSION ; fi
     - if [[ $PYVERSION == "pypy3.11-7.3.20" ]]; then PYVERSION=py$PYPY_VERSION ; fi
     - cd py$PYVERSION #XXX: bash script may require tests run from root

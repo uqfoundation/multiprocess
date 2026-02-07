@@ -2680,3 +2680,102 @@ diff Python-3.13.10/Lib/test/_test_multiprocessing.py Python-3.13.11/Lib/test/_t
 <         """)
 ---
 >         """ % use_simple_format)
+# ----------------------------------------------------------------------
+diff Python-3.13.11/Lib/multiprocessing/forkserver.py Python-3.13.12/Lib/multiprocessing/forkserver.py
+136a137,138
+>                 if 'sys_argv' in data:
+>                     main_kws['sys_argv'] = data['sys_argv']
+169c171,172
+< def main(listener_fd, alive_r, preload, main_path=None, sys_path=None):
+---
+> def main(listener_fd, alive_r, preload, main_path=None, sys_path=None,
+>          *, sys_argv=None):
+171a175,176
+>         if sys_argv is not None:
+>             sys.argv[:] = sys_argv
+diff Python-3.13.11/Lib/multiprocessing/spawn.py Python-3.13.12/Lib/multiprocessing/spawn.py
+187c187
+<         start_method=get_start_method(),
+---
+>         start_method=get_start_method(allow_none=True),
+diff Python-3.13.11/Lib/test/_test_multiprocessing.py Python-3.13.12/Lib/test/_test_multiprocessing.py 
+1487,1490c1487,1488
+< 
+<         t = threading.Thread(target=self._acquire_release,
+<                                  args=(lock, 0.2),
+<                                  name=f'T1')
+---
+>         rlock = self.RLock()
+>         t = threading.Thread(target=rlock.acquire)
+1492,1494c1490,1491
+<         time.sleep(0.1)
+<         self.assertEqual('<RLock(SomeOtherThread, nonzero)>', repr(lock))
+<         time.sleep(0.2)
+---
+>         t.join()
+>         self.assertEqual('<RLock(SomeOtherThread, nonzero)>', repr(rlock))
+1505,1508c1502,1503
+<         event = self.Event()
+<         lock = self.RLock()
+<         p = self.Process(target=self._acquire_event,
+<                          args=(lock, event))
+---
+>         rlock = self.RLock()
+>         p = self.Process(target=self._acquire, args=(rlock,))
+1510,1511d1504
+<         event.wait()
+<         self.assertEqual('<RLock(SomeOtherProcess, nonzero)>', repr(lock))
+1512a1506
+>         self.assertEqual('<RLock(SomeOtherProcess, nonzero)>', repr(rlock))
+3171a3166
+>     @support.skip_if_sanitizer('TSan: leaks threads', thread=True)
+3182a3178
+>     @support.skip_if_sanitizer('TSan: leaks threads', thread=True)
+3191a3188
+>     @support.skip_if_sanitizer('TSan: leaks threads', thread=True)
+3261a3259
+>     @support.skip_if_sanitizer('TSan: leaks threads', thread=True)
+3302a3301
+>     @support.skip_if_sanitizer("TSan: leaks threads", thread=True)
+5691a5691,5709
+>     @staticmethod
+>     def _dummy_func():
+>         pass
+> 
+>     def test_spawn_dont_set_context(self):
+>         # Run a process with spawn or forkserver context may change
+>         # the global start method, see gh-109263.
+>         for method in ('fork', 'spawn', 'forkserver'):
+>             multiprocessing.set_start_method(None, force=True)
+> 
+>             try:
+>                 ctx = multiprocessing.get_context(method)
+>             except ValueError:
+>                 continue
+>             process = ctx.Process(target=self._dummy_func)
+>             process.start()
+>             process.join()
+>             self.assertIsNone(multiprocessing.get_start_method(allow_none=True))
+> 
+6562a6581,6600
+>     def test_preload_main_sys_argv(self):
+>         # gh-143706: Check that sys.argv is set before __main__ is pre-loaded
+>         if multiprocessing.get_start_method() != "forkserver":
+>             self.skipTest("forkserver specific test")
+> 
+>         name = os.path.join(os.path.dirname(__file__), 'mp_preload_sysargv.py')
+>         _, out, err = test.support.script_helper.assert_python_ok(
+>             name, 'foo', 'bar')
+>         self.assertEqual(err, b'')
+> 
+>         out = out.decode().split("\n")
+>         expected_argv = "['foo', 'bar']"
+>         self.assertEqual(out, [
+>             f"module:{expected_argv}",
+>             f"fun:{expected_argv}",
+>             f"module:{expected_argv}",
+>             f"fun:{expected_argv}",
+>             '',
+>         ])
+> 
+

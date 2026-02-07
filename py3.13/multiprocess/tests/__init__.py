@@ -1492,14 +1492,11 @@ class _TestLock(BaseTestCase):
         for i in range(n):
             self.assertIn(f'<RLock(MainProcess|T{i+1}, {i+1})>', l)
 
-
-        t = threading.Thread(target=self._acquire_release,
-                                 args=(lock, 0.2),
-                                 name=f'T1')
+        rlock = self.RLock()
+        t = threading.Thread(target=rlock.acquire)
         t.start()
-        time.sleep(0.1)
-        self.assertEqual('<RLock(SomeOtherThread, nonzero)>', repr(lock))
-        time.sleep(0.2)
+        t.join()
+        self.assertEqual('<RLock(SomeOtherThread, nonzero)>', repr(rlock))
 
         pname = 'P1'
         l = multiprocessing.Manager().list()
@@ -1510,14 +1507,11 @@ class _TestLock(BaseTestCase):
         p.join()
         self.assertEqual(f'<RLock({pname}, 1)>', l[0])
 
-        event = self.Event()
-        lock = self.RLock()
-        p = self.Process(target=self._acquire_event,
-                         args=(lock, event))
+        rlock = self.RLock()
+        p = self.Process(target=self._acquire, args=(rlock,))
         p.start()
-        event.wait()
-        self.assertEqual('<RLock(SomeOtherProcess, nonzero)>', repr(lock))
         p.join()
+        self.assertEqual('<RLock(SomeOtherProcess, nonzero)>', repr(rlock))
 
     def test_rlock(self):
         lock = self.RLock()
@@ -3179,6 +3173,7 @@ class _TestMyManager(BaseTestCase):
 
     ALLOWED_TYPES = ('manager',)
 
+    @support.skip_if_sanitizer('TSan: leaks threads', thread=True)
     def test_mymanager(self):
         manager = MyManager(shutdown_timeout=SHUTDOWN_TIMEOUT)
         manager.start()
@@ -3190,6 +3185,7 @@ class _TestMyManager(BaseTestCase):
         # which happens on slow buildbots.
         self.assertIn(manager._process.exitcode, (0, -signal.SIGTERM))
 
+    @support.skip_if_sanitizer('TSan: leaks threads', thread=True)
     def test_mymanager_context(self):
         manager = MyManager(shutdown_timeout=SHUTDOWN_TIMEOUT)
         with manager:
@@ -3199,6 +3195,7 @@ class _TestMyManager(BaseTestCase):
         # which happens on slow buildbots.
         self.assertIn(manager._process.exitcode, (0, -signal.SIGTERM))
 
+    @support.skip_if_sanitizer('TSan: leaks threads', thread=True)
     def test_mymanager_context_prestarted(self):
         manager = MyManager(shutdown_timeout=SHUTDOWN_TIMEOUT)
         manager.start()
@@ -3269,6 +3266,7 @@ class _TestRemoteManager(BaseTestCase):
         # Note that xmlrpclib will deserialize object as a list not a tuple
         queue.put(tuple(cls.values))
 
+    @support.skip_if_sanitizer('TSan: leaks threads', thread=True)
     def test_remote(self):
         authkey = os.urandom(32)
 
@@ -3310,6 +3308,7 @@ class _TestManagerRestart(BaseTestCase):
         queue = manager.get_queue()
         queue.put('hello world')
 
+    @support.skip_if_sanitizer('TSan: leaks threads', thread=True)
     def test_rapid_restart(self):
         authkey = os.urandom(32)
         manager = QueueManager(
@@ -5701,6 +5700,25 @@ class TestStartMethod(unittest.TestCase):
             self.assertRaises(ValueError, ctx.set_start_method, None)
             self.check_context(ctx)
 
+    @staticmethod
+    def _dummy_func():
+        pass
+
+    def test_spawn_dont_set_context(self):
+        # Run a process with spawn or forkserver context may change
+        # the global start method, see gh-109263.
+        for method in ('fork', 'spawn', 'forkserver'):
+            multiprocessing.set_start_method(None, force=True)
+
+            try:
+                ctx = multiprocessing.get_context(method)
+            except ValueError:
+                continue
+            process = ctx.Process(target=self._dummy_func)
+            process.start()
+            process.join()
+            self.assertIsNone(multiprocessing.get_start_method(allow_none=True))
+
     def test_context_check_module_types(self):
         try:
             ctx = multiprocessing.get_context('forkserver')
@@ -6579,6 +6597,27 @@ class MiscTestCase(unittest.TestCase):
         # The trailing empty string comes from split() on output ending with \n
         out = out.decode().split("\n")
         self.assertEqual(out, ['__main__', '__mp_main__', 'f', 'f', ''])
+
+    @unittest.skipIf(sys.hexversion <= 0x30d0bf0, "added in 3.13.12")
+    def test_preload_main_sys_argv(self):
+        # gh-143706: Check that sys.argv is set before __main__ is pre-loaded
+        if multiprocessing.get_start_method() != "forkserver":
+            self.skipTest("forkserver specific test")
+
+        name = os.path.join(os.path.dirname(__file__), 'mp_preload_sysargv.py')
+        _, out, err = test.support.script_helper.assert_python_ok(
+            name, 'foo', 'bar')
+        self.assertEqual(err, b'')
+
+        out = out.decode().split("\n")
+        expected_argv = "['foo', 'bar']"
+        self.assertEqual(out, [
+            f"module:{expected_argv}",
+            f"fun:{expected_argv}",
+            f"module:{expected_argv}",
+            f"fun:{expected_argv}",
+            '',
+        ])
 
 #
 # Mixins

@@ -3323,6 +3323,7 @@ class _TestMyManager(BaseTestCase):
 
     ALLOWED_TYPES = ('manager',)
 
+    @support.skip_if_sanitizer('TSan: leaks threads', thread=True)
     def test_mymanager(self):
         manager = MyManager(shutdown_timeout=SHUTDOWN_TIMEOUT)
         manager.start()
@@ -3334,6 +3335,7 @@ class _TestMyManager(BaseTestCase):
         # which happens on slow buildbots.
         self.assertIn(manager._process.exitcode, (0, -signal.SIGTERM))
 
+    @support.skip_if_sanitizer('TSan: leaks threads', thread=True)
     def test_mymanager_context(self):
         manager = MyManager(shutdown_timeout=SHUTDOWN_TIMEOUT)
         with manager:
@@ -3343,6 +3345,7 @@ class _TestMyManager(BaseTestCase):
         # which happens on slow buildbots.
         self.assertIn(manager._process.exitcode, (0, -signal.SIGTERM))
 
+    @support.skip_if_sanitizer('TSan: leaks threads', thread=True)
     def test_mymanager_context_prestarted(self):
         manager = MyManager(shutdown_timeout=SHUTDOWN_TIMEOUT)
         manager.start()
@@ -3413,6 +3416,7 @@ class _TestRemoteManager(BaseTestCase):
         # Note that xmlrpclib will deserialize object as a list not a tuple
         queue.put(tuple(cls.values))
 
+    @support.skip_if_sanitizer('TSan: leaks threads', thread=True)
     def test_remote(self):
         authkey = os.urandom(32)
 
@@ -3454,6 +3458,7 @@ class _TestManagerRestart(BaseTestCase):
         queue = manager.get_queue()
         queue.put('hello world')
 
+    @support.skip_if_sanitizer('TSan: leaks threads', thread=True)
     def test_rapid_restart(self):
         authkey = os.urandom(32)
         manager = QueueManager(
@@ -5858,6 +5863,25 @@ class TestStartMethod(unittest.TestCase):
             self.assertRaises(ValueError, ctx.set_start_method, None)
             self.check_context(ctx)
 
+    @staticmethod
+    def _dummy_func():
+        pass
+
+    def test_spawn_dont_set_context(self):
+        # Run a process with spawn or forkserver context may change
+        # the global start method, see gh-109263.
+        for method in ('fork', 'spawn', 'forkserver'):
+            multiprocessing.set_start_method(None, force=True)
+
+            try:
+                ctx = multiprocessing.get_context(method)
+            except ValueError:
+                continue
+            process = ctx.Process(target=self._dummy_func)
+            process.start()
+            process.join()
+            self.assertIsNone(multiprocessing.get_start_method(allow_none=True))
+
     def test_context_check_module_types(self):
         try:
             ctx = multiprocessing.get_context('forkserver')
@@ -6935,6 +6959,27 @@ class MiscTestCase(unittest.TestCase):
         # The trailing empty string comes from split() on output ending with \n
         out = out.decode().split("\n")
         self.assertEqual(out, ['__main__', '__mp_main__', 'f', 'f', ''])
+
+    @unittest.skipIf(sys.hexversion <= 0x30e02f0, "added in 3.14.3")
+    def test_preload_main_sys_argv(self):
+        # gh-143706: Check that sys.argv is set before __main__ is pre-loaded
+        if multiprocessing.get_start_method() != "forkserver":
+            self.skipTest("forkserver specific test")
+
+        name = os.path.join(os.path.dirname(__file__), 'mp_preload_sysargv.py')
+        _, out, err = test.support.script_helper.assert_python_ok(
+            name, 'foo', 'bar')
+        self.assertEqual(err, b'')
+
+        out = out.decode().split("\n")
+        expected_argv = "['foo', 'bar']"
+        self.assertEqual(out, [
+            f"module:{expected_argv}",
+            f"fun:{expected_argv}",
+            f"module:{expected_argv}",
+            f"fun:{expected_argv}",
+            '',
+        ])
 
 #
 # Mixins

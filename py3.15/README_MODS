@@ -1382,4 +1382,143 @@ diff Python-3.15.0a3/Lib/test/_test_multiprocessing.py Python-3.15.0a5/Lib/test/
 >             '',
 >         ])
 > 
-
+# ----------------------------------------------------------------------
+diff Python-3.15.0a5/Lib/multiprocessing/context.py Python-3.15.0a6/Lib/multiprocessing/context.py
+180c180
+<     def set_forkserver_preload(self, module_names):
+---
+>     def set_forkserver_preload(self, module_names, *, on_error='ignore'):
+182c182,185
+<         This is really just a hint.
+---
+> 
+>         The on_error parameter controls how import failures are handled:
+>         "ignore" (default) silently ignores failures, "warn" emits warnings,
+>         and "fail" raises exceptions breaking the forkserver context.
+185c188
+<         set_forkserver_preload(module_names)
+---
+>         set_forkserver_preload(module_names, on_error=on_error)
+diff Python-3.15.0a5/Lib/multiprocessing/forkserver.py Python-3.15.0a6/Lib/multiprocessing/forkserver.py
+44a45
+>         self._preload_on_error = 'ignore'
+67,68c68,74
+<     def set_forkserver_preload(self, modules_names):
+<         '''Set list of module names to try to load in forkserver process.'''
+---
+>     def set_forkserver_preload(self, modules_names, *, on_error='ignore'):
+>         '''Set list of module names to try to load in forkserver process.
+> 
+>         The on_error parameter controls how import failures are handled:
+>         "ignore" (default) silently ignores failures, "warn" emits warnings,
+>         and "fail" raises exceptions breaking the forkserver context.
+>         '''
+70a77,81
+>         if on_error not in ('ignore', 'warn', 'fail'):
+>             raise ValueError(
+>                 f"on_error must be 'ignore', 'warn', or 'fail', "
+>                 f"not {on_error!r}"
+>             )
+71a83
+>         self._preload_on_error = on_error
+109a122,129
+>                 except (EOFError, ConnectionError, BrokenPipeError) as exc:
+>                     if (self._preload_modules and
+>                         self._preload_on_error == 'fail'):
+>                         exc.add_note(
+>                             "Forkserver process may have crashed during module "
+>                             "preloading. Check stderr."
+>                         )
+>                     raise
+156a177,178
+>                 if self._preload_on_error != 'ignore':
+>                     main_kws['on_error'] = self._preload_on_error
+200a223,283
+> def _handle_import_error(on_error, modinfo, exc, *, warn_stacklevel):
+>     """Handle an import error according to the on_error policy."""
+>     match on_error:
+>         case 'fail':
+>             raise
+>         case 'warn':
+>             warnings.warn(
+>                 f"Failed to preload {modinfo}: {exc}",
+>                 ImportWarning,
+>                 stacklevel=warn_stacklevel + 1
+>             )
+>         case 'ignore':
+>             pass
+> 
+> 
+> def _handle_preload(preload, main_path=None, sys_path=None, sys_argv=None,
+>                     on_error='ignore'):
+>     """Handle module preloading with configurable error handling.
+> 
+>     Args:
+>         preload: List of module names to preload.
+>         main_path: Path to __main__ module if '__main__' is in preload.
+>         sys_path: sys.path to use for imports (None means use current).
+>         sys_argv: sys.argv to use (None means use current).
+>         on_error: How to handle import errors ("ignore", "warn", or "fail").
+>     """
+>     if not preload:
+>         return
+> 
+>     if sys_argv is not None:
+>         sys.argv[:] = sys_argv
+>     if sys_path is not None:
+>         sys.path[:] = sys_path
+> 
+>     if '__main__' in preload and main_path is not None:
+>         process.current_process()._inheriting = True
+>         try:
+>             spawn.import_main_path(main_path)
+>         except Exception as e:
+>             # Catch broad Exception because import_main_path() uses
+>             # runpy.run_path() which executes the script and can raise
+>             # any exception, not just ImportError
+>             _handle_import_error(
+>                 on_error, f"__main__ from {main_path!r}", e, warn_stacklevel=2
+>             )
+>         finally:
+>             del process.current_process()._inheriting
+> 
+>     for modname in preload:
+>         try:
+>             __import__(modname)
+>         except ImportError as e:
+>             _handle_import_error(
+>                 on_error, f"module {modname!r}", e, warn_stacklevel=2
+>             )
+> 
+>     # gh-135335: flush stdout/stderr in case any of the preloaded modules
+>     # wrote to them, otherwise children might inherit buffered data
+>     util._flush_std_streams()
+> 
+> 
+202c285
+<          *, sys_argv=None, authkey_r=None):
+---
+>          *, sys_argv=None, authkey_r=None, on_error='ignore'):
+213,232c296
+<     if preload:
+<         if sys_argv is not None:
+<             sys.argv[:] = sys_argv
+<         if sys_path is not None:
+<             sys.path[:] = sys_path
+<         if '__main__' in preload and main_path is not None:
+<             process.current_process()._inheriting = True
+<             try:
+<                 spawn.import_main_path(main_path)
+<             finally:
+<                 del process.current_process()._inheriting
+<         for modname in preload:
+<             try:
+<                 __import__(modname)
+<             except ImportError:
+<                 pass
+< 
+<         # gh-135335: flush stdout/stderr in case any of the preloaded modules
+<         # wrote to them, otherwise children might inherit buffered data
+<         util._flush_std_streams()
+---
+>     _handle_preload(preload, main_path, sys_path, sys_argv, on_error)

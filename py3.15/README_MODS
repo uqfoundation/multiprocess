@@ -1522,3 +1522,75 @@ diff Python-3.15.0a5/Lib/multiprocessing/forkserver.py Python-3.15.0a6/Lib/multi
 <         util._flush_std_streams()
 ---
 >     _handle_preload(preload, main_path, sys_path, sys_argv, on_error)
+# ----------------------------------------------------------------------
+diff Python-3.15.0a6/Lib/multiprocessing/connection.py Python-3.15.0a7/Lib/multiprocessing/connection.py
+48a49
+> _MAX_PIPE_ATTEMPTS = 100
+81,82c82,83
+<         return tempfile.mktemp(prefix=r'\\.\pipe\pyc-%d-%d-' %
+<                                (os.getpid(), next(_mmap_counter)), dir="")
+---
+>         return (r'\\.\pipe\pyc-%d-%d-%s' %
+>                 (os.getpid(), next(_mmap_counter), os.urandom(8).hex()))
+475,476d475
+<         address = address or arbitrary_address(family)
+< 
+477a477,479
+>         if authkey is not None and not isinstance(authkey, bytes):
+>             raise TypeError('authkey should be a byte string')
+> 
+479c481,494
+<             self._listener = PipeListener(address, backlog)
+---
+>             if address:
+>                 self._listener = PipeListener(address, backlog)
+>             else:
+>                 for attempts in itertools.count():
+>                     address = arbitrary_address(family)
+>                     try:
+>                         self._listener = PipeListener(address, backlog)
+>                         break
+>                     except OSError as e:
+>                         if attempts >= _MAX_PIPE_ATTEMPTS:
+>                             raise
+>                         if e.winerror not in (_winapi.ERROR_PIPE_BUSY,
+>                                               _winapi.ERROR_ACCESS_DENIED):
+>                             raise
+480a496
+>             address = address or arbitrary_address(family)
+483,485d498
+<         if authkey is not None and not isinstance(authkey, bytes):
+<             raise TypeError('authkey should be a byte string')
+< 
+573d585
+<         address = arbitrary_address('AF_PIPE')
+583,591c595,613
+<         h1 = _winapi.CreateNamedPipe(
+<             address, openmode | _winapi.FILE_FLAG_OVERLAPPED |
+<             _winapi.FILE_FLAG_FIRST_PIPE_INSTANCE,
+<             _winapi.PIPE_TYPE_MESSAGE | _winapi.PIPE_READMODE_MESSAGE |
+<             _winapi.PIPE_WAIT,
+<             1, obsize, ibsize, _winapi.NMPWAIT_WAIT_FOREVER,
+<             # default security descriptor: the handle cannot be inherited
+<             _winapi.NULL
+<             )
+---
+>         for attempts in itertools.count():
+>             address = arbitrary_address('AF_PIPE')
+>             try:
+>                 h1 = _winapi.CreateNamedPipe(
+>                     address, openmode | _winapi.FILE_FLAG_OVERLAPPED |
+>                     _winapi.FILE_FLAG_FIRST_PIPE_INSTANCE,
+>                     _winapi.PIPE_TYPE_MESSAGE | _winapi.PIPE_READMODE_MESSAGE |
+>                     _winapi.PIPE_WAIT,
+>                     1, obsize, ibsize, _winapi.NMPWAIT_WAIT_FOREVER,
+>                     # default security descriptor: the handle cannot be inherited
+>                     _winapi.NULL
+>                     )
+>                 break
+>             except OSError as e:
+>                 if attempts >= _MAX_PIPE_ATTEMPTS:
+>                     raise
+>                 if e.winerror not in (_winapi.ERROR_PIPE_BUSY,
+>                                       _winapi.ERROR_ACCESS_DENIED):
+>                     raise

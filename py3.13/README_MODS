@@ -2778,4 +2778,200 @@ diff Python-3.13.11/Lib/test/_test_multiprocessing.py Python-3.13.12/Lib/test/_t
 >             '',
 >         ])
 > 
-
+# ----------------------------------------------------------------------
+diff Python-3.13.12/Lib/multiprocessing/connection.py Python-3.13.13/Lib/multiprocessing/connection.py
+46a47
+> _MAX_PIPE_ATTEMPTS = 100
+79,80c80,81
+<         return tempfile.mktemp(prefix=r'\\.\pipe\pyc-%d-%d-' %
+<                                (os.getpid(), next(_mmap_counter)), dir="")
+---
+>         return (r'\\.\pipe\pyc-%d-%d-%s' %
+>                 (os.getpid(), next(_mmap_counter), os.urandom(8).hex()))
+458,459d458
+<         address = address or arbitrary_address(family)
+< 
+460a460,462
+>         if authkey is not None and not isinstance(authkey, bytes):
+>             raise TypeError('authkey should be a byte string')
+> 
+462c464,477
+<             self._listener = PipeListener(address, backlog)
+---
+>             if address:
+>                 self._listener = PipeListener(address, backlog)
+>             else:
+>                 for attempts in itertools.count():
+>                     address = arbitrary_address(family)
+>                     try:
+>                         self._listener = PipeListener(address, backlog)
+>                         break
+>                     except OSError as e:
+>                         if attempts >= _MAX_PIPE_ATTEMPTS:
+>                             raise
+>                         if e.winerror not in (_winapi.ERROR_PIPE_BUSY,
+>                                               _winapi.ERROR_ACCESS_DENIED):
+>                             raise
+463a479
+>             address = address or arbitrary_address(family)
+466,468d481
+<         if authkey is not None and not isinstance(authkey, bytes):
+<             raise TypeError('authkey should be a byte string')
+< 
+556d568
+<         address = arbitrary_address('AF_PIPE')
+566,574c578,596
+<         h1 = _winapi.CreateNamedPipe(
+<             address, openmode | _winapi.FILE_FLAG_OVERLAPPED |
+<             _winapi.FILE_FLAG_FIRST_PIPE_INSTANCE,
+<             _winapi.PIPE_TYPE_MESSAGE | _winapi.PIPE_READMODE_MESSAGE |
+<             _winapi.PIPE_WAIT,
+<             1, obsize, ibsize, _winapi.NMPWAIT_WAIT_FOREVER,
+<             # default security descriptor: the handle cannot be inherited
+<             _winapi.NULL
+<             )
+---
+>         for attempts in itertools.count():
+>             address = arbitrary_address('AF_PIPE')
+>             try:
+>                 h1 = _winapi.CreateNamedPipe(
+>                     address, openmode | _winapi.FILE_FLAG_OVERLAPPED |
+>                     _winapi.FILE_FLAG_FIRST_PIPE_INSTANCE,
+>                     _winapi.PIPE_TYPE_MESSAGE | _winapi.PIPE_READMODE_MESSAGE |
+>                     _winapi.PIPE_WAIT,
+>                     1, obsize, ibsize, _winapi.NMPWAIT_WAIT_FOREVER,
+>                     # default security descriptor: the handle cannot be inherited
+>                     _winapi.NULL
+>                     )
+>                 break
+>             except OSError as e:
+>                 if attempts >= _MAX_PIPE_ATTEMPTS:
+>                     raise
+>                 if e.winerror not in (_winapi.ERROR_PIPE_BUSY,
+>                                       _winapi.ERROR_ACCESS_DENIED):
+>                     raise
+diff Python-3.13.12/Lib/multiprocessing/context.py Python-3.13.13/Lib/multiprocessing/context.py
+148c148,154
+<         if self.get_start_method() == 'spawn' and getattr(sys, 'frozen', False):
+---
+>         # gh-140814: allow_none=True avoids locking in the default start
+>         # method, which would cause a later set_start_method() to fail.
+>         # None is safe to pass through: spawn.freeze_support()
+>         # independently detects whether this process is a spawned
+>         # child, so the start method check here is only an optimization.
+>         if (getattr(sys, 'frozen', False)
+>                 and self.get_start_method(allow_none=True) in ('spawn', None)):
+diff Python-3.13.12/Lib/multiprocessing/forkserver.py Python-3.13.13/Lib/multiprocessing/forkserver.py
+127,128c127,134
+<             cmd = ('from multiprocessing.forkserver import main; ' +
+<                    'main(%d, %d, %r, **%r)')
+---
+>             # gh-144503: sys_argv is passed as real argv elements after the
+>             # ``-c cmd`` rather than repr'd into main_kws so that a large
+>             # parent sys.argv cannot push the single ``-c`` command string
+>             # over the OS per-argument length limit (MAX_ARG_STRLEN on Linux).
+>             # The child sees them as sys.argv[1:].
+>             cmd = ('import sys; '
+>                    'from multiprocessing.forkserver import main; '
+>                    'main(%d, %d, %r, sys_argv=sys.argv[1:], **%r)')
+130a137
+>             sys_argv = None
+138c145
+<                     main_kws['sys_argv'] = data['sys_argv']
+---
+>                     sys_argv = data['sys_argv']
+156a164,165
+>                     if sys_argv is not None:
+>                         args += sys_argv
+diff Python-3.13.12/Lib/test/_test_multiprocessing.py Python-3.13.13/Lib/test/_test_multiprocessing.py 
+207a208,235
+> def only_run_in_forkserver_testsuite(reason):
+>     """Returns a decorator: raises SkipTest unless fork is supported
+>     and the current start method is forkserver.
+> 
+>     Combines @support.requires_fork() with the single-run semantics of
+>     only_run_in_spawn_testsuite(), but uses the forkserver testsuite as
+>     the single-run target.  Appropriate for tests that exercise
+>     os.fork() directly (raw fork or mp.set_start_method("fork") in a
+>     subprocess) and don't vary by start method, since forkserver is
+>     only available on platforms that support fork.
+>     """
+> 
+>     def decorator(test_item):
+> 
+>         @functools.wraps(test_item)
+>         def forkserver_check_wrapper(*args, **kwargs):
+>             if not support.has_fork_support:
+>                 raise unittest.SkipTest("requires working os.fork()")
+>             if (start_method := multiprocessing.get_start_method()) != "forkserver":
+>                 raise unittest.SkipTest(
+>                     f"{start_method=}, not 'forkserver'; {reason}")
+>             return test_item(*args, **kwargs)
+> 
+>         return forkserver_check_wrapper
+> 
+>     return decorator
+> 
+> 
+211c239
+<     @unittest.skipIf(sys.platform == "win32", "test requires that fork exists.")
+---
+>     @support.requires_fork()
+234a263,286
+>     @support.requires_fork()
+>     def test_only_run_in_forkserver_testsuite(self):
+>         if multiprocessing.get_start_method() != "forkserver":
+>             raise unittest.SkipTest("only run in test_multiprocessing_forkserver.")
+> 
+>         try:
+>             @only_run_in_forkserver_testsuite("testing this decorator")
+>             def return_four_if_forkserver():
+>                 return 4
+>         except Exception as err:
+>             self.fail(f"expected decorated `def` not to raise; caught {err}")
+> 
+>         orig_start_method = multiprocessing.get_start_method(allow_none=True)
+>         try:
+>             multiprocessing.set_start_method("forkserver", force=True)
+>             self.assertEqual(return_four_if_forkserver(), 4)
+>             multiprocessing.set_start_method("spawn", force=True)
+>             with self.assertRaises(unittest.SkipTest) as ctx:
+>                 return_four_if_forkserver()
+>             self.assertIn("testing this decorator", str(ctx.exception))
+>             self.assertIn("start_method=", str(ctx.exception))
+>         finally:
+>             multiprocessing.set_start_method(orig_start_method, force=True)
+> 
+5709a5762,5775
+>     @only_run_in_spawn_testsuite("freeze_support is not start method specific")
+>     def test_freeze_support_dont_set_context(self):
+>         # gh-140814: freeze_support() should not set the start method
+>         # as a side effect, so a later set_start_method() still works.
+>         multiprocessing.set_start_method(None, force=True)
+>         try:
+>             multiprocessing.freeze_support()
+>             self.assertIsNone(
+>                 multiprocessing.get_start_method(allow_none=True))
+>             # Should not raise "context has already been set"
+>             multiprocessing.set_start_method('spawn')
+>         finally:
+>             multiprocessing.set_start_method(None, force=True)
+> 
+6600a6667,6683
+>     @only_run_in_forkserver_testsuite("forkserver specific test.")
+>     def test_preload_main_large_sys_argv(self):
+>         # gh-144503: a very large parent sys.argv must not prevent the
+>         # forkserver from starting (it previously overflowed the OS
+>         # per-argument length limit when repr'd into the -c command string).
+>         name = os.path.join(os.path.dirname(__file__),
+>                             'mp_preload_large_sysargv.py')
+>         _, out, err = test.support.script_helper.assert_python_ok(name)
+>         self.assertEqual(err, b'')
+> 
+>         out = out.decode().split("\n")
+>         self.assertEqual(out, [
+>             'preload:5002:sentinel',
+>             'worker:5002:sentinel',
+>             '',
+>         ])
+> 

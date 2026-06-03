@@ -41,7 +41,7 @@ from test.support import threading_helper
 from test.support import warnings_helper
 from test.support import subTests
 from test.support.script_helper import assert_python_failure, assert_python_ok
-warnings_helper_ignore_fork_in_thread_deprecation_warnings = getattr(warnings_helper, 'ignore_fork_in_thread_deprecation_warnings', 'cpython_only')
+warnings_helper_ignore_fork_in_thread_deprecation_warnings = getattr(warnings_helper, 'ignore_fork_in_thread_deprecation_warnings', 'check_warnings')
 
 # Skip tests if _multiprocessing wasn't built.
 _multiprocessing = import_helper.import_module('_multiprocessing')

@@ -3248,3 +3248,30 @@ diff Python-3.14.4/Lib/test/_test_multiprocessing.py Python-3.14.5/Lib/test/_tes
 >             f"safety-net timeout did not fire: stderr={err!r}")
 > 
 > 
+# ----------------------------------------------------------------------
+diff Python-3.14.5/Modules/_multiprocessing/posixshmem.c Python-3.14.6/Modules/_multiprocessing/posixshmem.c
+84,86c84,86
+< Remove a shared memory object name, and, once all processes  have  unmapped
+< the object, de-allocates and destroys the contents of the associated memory
+< region.
+---
+> Remove a shared memory object name, and, once all processes have
+> unmapped the object, de-allocates and destroys the contents of the
+> associated memory region.
+92c92
+< /*[clinic end generated code: output=42f8b23d134b9ff5 input=298369d013dcad63]*/
+---
+> /*[clinic end generated code: output=42f8b23d134b9ff5 input=cf7a30ec6503cf78]*/
+diff Python-3.14.5/Modules/_multiprocessing/clinic/posixshmem.c.h Python-3.14.6/Modules/_multiprocessing/clinic/posixshmem.c.h
+53,55c53,55
+< "Remove a shared memory object name, and, once all processes  have  unmapped\n"
+< "the object, de-allocates and destroys the contents of the associated memory\n"
+< "region.");
+---
+> "Remove a shared memory object name, and, once all processes have\n"
+> "unmapped the object, de-allocates and destroys the contents of the\n"
+> "associated memory region.");
+89c89
+< /*[clinic end generated code: output=74588a5abba6e36c input=a9049054013a1b77]*/
+---
+> /*[clinic end generated code: output=e69afacce7b0595e input=a9049054013a1b77]*/

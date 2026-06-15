@@ -7355,6 +7355,7 @@ class MiscTestCase(unittest.TestCase):
         self.assertEqual(q.get_nowait(), "done")
         close_queue(q)
 
+    @unittest.skipIf(sys.hexversion <= 0x30f00a0, "added in 3.15.0a1")
     def test_preload_main(self):
         # gh-126631: Check that __main__ can be pre-loaded
         if multiprocessing.get_start_method() != "forkserver":
@@ -7656,6 +7657,7 @@ class SemLockTests(unittest.TestCase):
         _multiprocessing.sem_unlink(name)
 
 
+@unittest.skipIf(sys.hexversion <= 0x30f00a0, "added in 3.15.0a1")
 @unittest.skipIf(sys.platform != "linux", "Linux only")
 class ForkInThreads(unittest.TestCase):
             
@@ -7714,6 +7716,7 @@ class ForkInThreads(unittest.TestCase):
         self.assertIn(b'DeprecationWarning', res.err)
         self.assertIn(b'is multi-threaded, use of forkpty() may lead to deadlocks in the child', res.err)
 
+@unittest.skipIf(sys.hexversion <= 0x30f00a2, "added in 3.15.0a3")
 @unittest.skipUnless(HAS_SHMEM, "requires multiprocessing.shared_memory")
 class TestSharedMemoryNames(unittest.TestCase):
     @subTests('use_simple_format', (True, False))

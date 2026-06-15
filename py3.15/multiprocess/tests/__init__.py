@@ -7270,6 +7270,7 @@ class _TestSpawnedSysPath(BaseTestCase):
         self.assertEqual(child_sys_path[1:], sys.path[1:])
         self.assertIsNone(import_error, msg=f"child could not import {self._mod_name}")
 
+    @unittest.skipIf(sys.hexversion <= 0x30f00a2, "added in 3.15.0a3")
     def test_std_streams_flushed_after_preload(self):
         # gh-135335: Check fork server flushes standard streams after
         # preloading modules

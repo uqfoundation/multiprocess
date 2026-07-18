@@ -2097,3 +2097,13 @@ diff Python-3.15.0b1/Modules/_multiprocessing/clinic/posixshmem.c.h Python-3.15.
 < /*[clinic end generated code: output=74588a5abba6e36c input=a9049054013a1b77]*/
 ---
 > /*[clinic end generated code: output=e69afacce7b0595e input=a9049054013a1b77]*/
+# ----------------------------------------------------------------------
+diff Python-3.15.0b2/Lib/multiprocessing/managers.py Python-3.15.0b4/Lib/multiprocessing/managers.py
+1297c1297
+<         def __init__(self, name, segment_names=[]):
+---
+>         def __init__(self, name, segment_names=None):
+1299c1299
+<             self.segment_names = segment_names
+---
+>             self.segment_names = [] if segment_names is None else segment_names

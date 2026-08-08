@@ -1,3 +1,4 @@
+import multiprocess
 import os.path
 import sys
 import unittest
@@ -17,6 +18,11 @@ if support.PGO:
 
 if sys.platform == "win32":
     raise unittest.SkipTest("forkserver is not available on Windows")
+
+# The forkserver start method requires passing file descriptors over a Unix
+# socket, which is not available on every platform (e.g. Solaris/illumos).
+if "forkserver" not in multiprocess.get_all_start_methods():
+    raise unittest.SkipTest("forkserver start method is not available")
 
 suite = os.path.dirname(__file__) or os.path.curdir
 tests = glob.glob(suite + os.path.sep + 'test_*.py')

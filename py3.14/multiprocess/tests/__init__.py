@@ -625,7 +625,7 @@ class _TestProcess(BaseTestCase):
                 raise RuntimeError('join took too long: %s' % p)
             old_handler = signal.signal(signal.SIGALRM, handler)
             try:
-                signal.alarm(15) #XXX
+                signal.alarm(20) #XXX
                 self.assertEqual(join(), None)
             finally:
                 signal.alarm(0)

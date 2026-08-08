@@ -2107,3 +2107,13 @@ diff Python-3.15.0b2/Lib/multiprocessing/managers.py Python-3.15.0b4/Lib/multipr
 <             self.segment_names = segment_names
 ---
 >             self.segment_names = [] if segment_names is None else segment_names
+# ----------------------------------------------------------------------
+diff Python-3.15.0b4/Lib/test/test_multiprocessing_forkserver/__init__.py Python-3.15.0rc1/Lib/test/test_multiprocessing_forkserver/__init__.py
+0a1
+> import multiprocessing
+14a16,20
+> # The forkserver start method requires passing file descriptors over a Unix
+> # socket, which is not available on every platform (e.g. Solaris/illumos).
+> if "forkserver" not in multiprocessing.get_all_start_methods():
+>     raise unittest.SkipTest("forkserver start method is not available")
+> 

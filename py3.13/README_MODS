@@ -3317,3 +3317,22 @@ diff Python-3.13.13/Lib/test/_test_multiprocessing.py Python-3.13.14/Lib/test/_t
 >             f"safety-net timeout did not fire: stderr={err!r}")
 > 
 > 
+# ----------------------------------------------------------------------
+diff Python-3.13.14/Lib/multiprocessing/managers.py Python-3.13.15/Lib/multiprocessing/managers.py
+1256c1256
+<         def __init__(self, name, segment_names=[]):
+---
+>         def __init__(self, name, segment_names=None):
+1258c1258
+<             self.segment_names = segment_names
+---
+>             self.segment_names = [] if segment_names is None else segment_names
+diff Python-3.13.14/Lib/test/test_multiprocessing_forkserver/__init__.py Python-3.13.15/Lib/test/test_multiprocessing_forkserver/__init__.py
+0a1
+> import multiprocessing
+11a13,17
+> # The forkserver start method requires passing file descriptors over a Unix
+> # socket, which is not available on every platform (e.g. Solaris/illumos).
+> if "forkserver" not in multiprocessing.get_all_start_methods():
+>     raise unittest.SkipTest("forkserver start method is not available")
+> 

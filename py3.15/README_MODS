@@ -2117,3 +2117,7 @@ diff Python-3.15.0b4/Lib/test/test_multiprocessing_forkserver/__init__.py Python
 > if "forkserver" not in multiprocessing.get_all_start_methods():
 >     raise unittest.SkipTest("forkserver start method is not available")
 > 
+# ----------------------------------------------------------------------
+diff Python-3.15.0rc1/Lib/test/_test_multiprocessing.py Python-3.15.0rc2/Lib/test/_test_multiprocessing.py 
+1596a1597
+>         p.join()

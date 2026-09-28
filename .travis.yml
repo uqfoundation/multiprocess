@@ -39,8 +39,13 @@ matrix:
           env:
             - PYPY_VERSION="3.11"
 
+        - python: 'pypy3.12-8.0.0'
+          env:
+            - PYPY_VERSION="3.12"
+
     allow_failures:
         - python: '3.15t-dev' # prerelease
+        - python: 'pypy3.12-8.0.0' # missing
     fast_finish: true
 
 cache:
@@ -59,6 +64,7 @@ script:
     - if [[ $PYVERSION != "3.15" ]]; then PYVERSION=$TRAVIS_PYTHON_VERSION ; fi
     - if [[ $PYVERSION == "pypy3.10-7.3.19" ]]; then PYVERSION=py$PYPY_VERSION ; fi
     - if [[ $PYVERSION == "pypy3.11-7.3.20" ]]; then PYVERSION=py$PYPY_VERSION ; fi
+    - if [[ $PYVERSION == "pypy3.12-8.0.0" ]]; then PYVERSION=py$PYPY_VERSION ; fi
     - cd py$PYVERSION #XXX: bash script may require tests run from root
     - if [[ $COVERAGE == "true" ]]; then cp ../.coveragerc .coveragerc ; fi
     - for test in multiprocess/tests/__init__.py; do echo $test ; if [[ $COVERAGE == "true" ]]; then coverage run -a $test > /dev/null; else python $test > /dev/null; fi ; done

@@ -31,6 +31,7 @@ fixes:
   - "*/python3.15/site-packages/::py3.15/"
   - "*/pypy3.10-*/site-packages/::pypy3.10/"
   - "*/pypy3.11-*/site-packages/::pypy3.11/"
+  - "*/pypy3.12-*/site-packages/::pypy3.12/"
   - "*/python3.10/site-packages/multiprocess-*::py3.10/"
   - "*/python3.11/site-packages/multiprocess-*::py3.11/"
   - "*/python3.12/site-packages/multiprocess-*::py3.12/"
@@ -39,3 +40,4 @@ fixes:
   - "*/python3.15/site-packages/multiprocess-*::py3.15/"
   - "*/pypy3.10-*/site-packages/multiprocess-*::pypy3.10/"
   - "*/pypy3.11-*/site-packages/multiprocess-*::pypy3.11/"
+  - "*/pypy3.12-*/site-packages/multiprocess-*::pypy3.12/"

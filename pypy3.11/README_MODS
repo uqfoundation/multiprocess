@@ -35,3 +35,109 @@ diff Python-3.11.9/Lib/test/_test_multiprocessing.py  pypy3.11-v7.3.18-src/lib-p
 > 
 3848a3859
 >     @test.support.cpython_only
+# ----------------------------------------------------------------------
+diff pypy3.11-v7.3.18-src/pypy/module/_multiprocessing/interp_semaphore.py pypy3.11-v8.0.0-src/pypy/module/_multiprocessing/interp_semaphore.py
+572,573c572,573
+< @unwrap_spec(kind=int, value=int, maxvalue=int, name='text', unlink=int)
+< def descr_new(space, w_subtype, kind, value, maxvalue, name, unlink):
+---
+> @unwrap_spec(kind=int, value=int, maxvalue=int, unlink=int)
+> def descr_new(space, w_subtype, kind, value, maxvalue, w_name, unlink):
+575a576,577
+> 
+>     name = space.text_arg_w(w_name, 'SemLock', 'name')
+diff pypy3.11-v7.3.18-src/pypy/module/_multiprocessing/test/test_semaphore.py pypy3.11-v8.0.0-src/pypy/module/_multiprocessing/test/test_semaphore.py
+71a72,85
+>     def test_semaphore_name_must_be_str(self):
+>         from _multiprocessing import SemLock
+>         kind = self.SEMAPHORE
+>         value = 1
+>         maxvalue = 1
+>         e = raises(TypeError, SemLock, kind, value, maxvalue, None,
+>                     unlink=True)
+>         assert str(e.value) == (
+>             "SemLock() argument 'name' must be str, not None")
+>         e = raises(TypeError, SemLock, kind, value, maxvalue, 1,
+>                     unlink=True)
+>         assert str(e.value) == (
+>             "SemLock() argument 'name' must be str, not int")
+> 
+diff pypy3.11-v7.3.18-src/lib-python/3/multiprocessing/reduction.py pypy3.11-v8.0.0-src/lib-python/3/multiprocessing/reduction.py
+41a42,43
+>         if hasattr(self, 'pypy_extensions'):
+>             self.pypy_extensions = True
+diff pypy3.11-v7.3.18-src/lib-python/3/multiprocessing/resource_tracker.py pypy3.11-v8.0.0-src/lib-python/3/multiprocessing/resource_tracker.py
+63a64,68
+>         # PYPY change: shadow registry for restart resilience -- if the tracker
+>         # subprocess dies and is relaunched, we replay all outstanding REGISTERs
+>         # so the new tracker has a complete view of resources to clean up.
+>         self._registered = {}
+>         # PYPY change end
+157a163,170
+>                 # PYPY change: replay outstanding registrations to the new
+>                 # tracker.  On first start _registered is empty so this is a
+>                 # no-op; on restart it re-syncs the new tracker's cache.
+>                 for pending_name, pending_rtype in list(self._registered.items()):
+>                     replay_msg = 'REGISTER:{0}:{1}\n'.format(
+>                         pending_name, pending_rtype).encode('ascii')
+>                     os.write(self._fd, replay_msg)
+>                 # PYPY change end
+173a187,193
+>         # PYPY change: send BEFORE updating the shadow registry so that if
+>         # _send raises (e.g. ValueError for a too-long name) the name is not
+>         # left as a stale entry that would be replayed to a restarted tracker.
+>         # This ordering is safe: ensure_running() inside _send replays
+>         # _registered before os.write() is called, so adding the name
+>         # afterwards still lands in _registered in time for any subsequent
+>         # restart.
+174a195,196
+>         self._registered[name] = rtype
+>         # PYPY change end
+178a201,205
+>         # PYPY change: remove from shadow registry *after* sending so that a
+>         # tracker restart during send still replays the entry before the
+>         # UNREGISTER lands on the new tracker.
+>         self._registered.pop(name, None)
+>         # PYPY change end
+191a219,227
+>         # PYPY change: only bail out when _fd is None, i.e. we are in the
+>         # middle of (re)starting the tracker and os.write(None,...) would
+>         # crash.  When _fd is valid the tracker is alive and the write
+>         # below is safe even though ensure_running() detected reentrancy;
+>         # delivering the message avoids a spurious "leaked / ENOENT" pair
+>         # at shutdown caused by the tracker never receiving the UNREGISTER.
+>         if self._fd is None:
+>              return
+>         # PYPY change end
+239c275,280
+<                         cache[rtype].remove(name)
+---
+>                         # PYPY change: use discard instead of remove so an
+>                         # out-of-order UNREGISTER (arriving before its REGISTER
+>                         # due to a tracker restart or reentrant GC) does not
+>                         # print a KeyError traceback to stderr and fail tests.
+>                         cache[rtype].discard(name)
+>                         # PYPY change end
+diff pypy3.11-v7.3.18-src/lib-python/3/multiprocessing/util.py pypy3.11-v8.0.0-src/lib-python/3/multiprocessing/util.py
+485c485,497
+<     # Stop the ResourceTracker process if it's running
+---
+>     # PYPY: run outstanding Finalize callbacks (e.g. SemLock._cleanup,
+>     # temporary directories from get_temp_dir()) BEFORE stopping the
+>     # ResourceTracker, so their UNREGISTER messages reach it while it is
+>     # still alive.  In CPython, reference-counting destroys objects eagerly
+>     # and these callbacks have already fired by this point; in PyPy the GC
+>     # may not have collected them yet, so we must flush manually.
+>     # bpo-37421: also covers temporary directories created by get_temp_dir().
+>     support.gc_collect()
+>     _run_finalizers()
+> 
+>     # Stop the ResourceTracker process if it's running.  All UNREGISTER
+>     # messages have already been sent above, so the tracker should see an
+>     # empty cache and exit without printing "leaked object" warnings.
+488,492d499
+< 
+<     # bpo-37421: Explicitly call _run_finalizers() to remove immediately
+<     # temporary directories created by multiprocessing.util.get_temp_dir().
+<     _run_finalizers()
+<     support.gc_collect()

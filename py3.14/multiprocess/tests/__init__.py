@@ -1573,6 +1573,7 @@ class _TestLock(BaseTestCase):
         event.wait()
         self.assertEqual(f'<Lock(owner=SomeOtherProcess)>', repr(lock))
         p.terminate()
+        p.join()
 
     def test_lock(self):
         lock = self.Lock()

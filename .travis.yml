@@ -23,7 +23,6 @@ matrix:
 
         - python: '3.14'
           env:
-            - DILL="master"
 
         - python: '3.15t-dev'
           env:

@@ -141,3 +141,69 @@ diff pypy3.11-v7.3.18-src/lib-python/3/multiprocessing/util.py pypy3.11-v8.0.0-s
 <     # temporary directories created by multiprocessing.util.get_temp_dir().
 <     _run_finalizers()
 <     support.gc_collect()
+# ----------------------------------------------------------------------
+diff pypy3.11-v8.0.0-src/pypy/module/_multiprocessing/interp_semaphore.py pypy3.11-v8.0.1-src/pypy/module/_multiprocessing/interp_semaphore.py
+87a88
+>         sem_open_natural_arity = 2
+89a91
+>         sem_open_natural_arity = -1
+97c99,100
+<                          SEM_T, save_err=rffi.RFFI_SAVE_ERRNO)
+---
+>                          SEM_T, save_err=rffi.RFFI_SAVE_ERRNO,
+>                          natural_arity=sem_open_natural_arity)
+diff pypy3.11-v8.0.0-src/pypy/module/_multiprocessing/test/test_interp_semaphore.py pypy3.11-v8.0.1-src/pypy/module/_multiprocessing/test/test_interp_semaphore.py
+15d14
+< @pytest.mark.skipif(sys.platform == 'darwin', reason="Hangs on macOSX")
+diff pypy3.11-v8.0.0-src/pypy/module/_multiprocessing/test/test_semaphore.py pypy3.11-v8.0.1-src/pypy/module/_multiprocessing/test/test_semaphore.py
+86d85
+<     @pytest.mark.skipif(sys.platform == 'darwin', reason="Hangs on macOSX")
+109d107
+<     @pytest.mark.skipif(sys.platform == 'darwin', reason="Hangs on macOSX")
+135d132
+<     @pytest.mark.skipif(sys.platform == 'darwin', reason="Hangs on macOSX")
+148d144
+<     @pytest.mark.skipif(sys.platform == 'darwin', reason="Hangs on macOSX")
+171d166
+<     @pytest.mark.skipif(sys.platform == 'darwin', reason="Hangs on macOSX")
+188d182
+<     @pytest.mark.skipif(sys.platform == 'darwin', reason="Hangs on macOSX")
+diff pypy3.11-v8.0.0-src/lib-python/3/multiprocessing/connection.py pypy3.11-v8.0.1-src/lib-python/3/multiprocessing/connection.py
+186,200c186,206
+<         m = memoryview(buf)
+<         if m.itemsize > 1:
+<             m = m.cast('B')
+<         n = m.nbytes
+<         if offset < 0:
+<             raise ValueError("offset is negative")
+<         if n < offset:
+<             raise ValueError("buffer length < offset")
+<         if size is None:
+<             size = n - offset
+<         elif size < 0:
+<             raise ValueError("size is negative")
+<         elif offset + size > n:
+<             raise ValueError("buffer length < offset + size")
+<         self._send_bytes(m[offset:offset + size])
+---
+>         # PyPy: release every view now, the GC would only do it later, and a
+>         # view still using the export keeps buf locked (issues 5612, 5613)
+>         with memoryview(buf) as mv:
+>             m = mv.cast('B') if mv.itemsize > 1 else mv
+>             try:
+>                 n = m.nbytes
+>                 if offset < 0:
+>                     raise ValueError("offset is negative")
+>                 if n < offset:
+>                     raise ValueError("buffer length < offset")
+>                 if size is None:
+>                     size = n - offset
+>                 elif size < 0:
+>                     raise ValueError("size is negative")
+>                 elif offset + size > n:
+>                     raise ValueError("buffer length < offset + size")
+>                 with m[offset:offset + size] as chunk:
+>                     self._send_bytes(chunk)
+>             finally:
+>                 if m is not mv:
+>                     m.release()

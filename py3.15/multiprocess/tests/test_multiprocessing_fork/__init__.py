@@ -21,6 +21,9 @@ if sys.platform == "win32":
 if sys.platform == 'darwin':
     raise unittest.SkipTest("test may crash on macOS (bpo-33725)")
 
+if support.check_sanitizer(thread=True):
+    raise unittest.SkipTest("TSAN doesn't support threads after fork")
+
 suite = os.path.dirname(__file__) or os.path.curdir
 tests = glob.glob(suite + os.path.sep + 'test_*.py')
 

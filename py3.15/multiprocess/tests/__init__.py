@@ -3307,6 +3307,23 @@ def raising():
 def unpickleable_result():
     return lambda: 42
 
+def raising_systemexit(x):
+    raise SystemExit(x)
+
+def systemexit_from_sigterm(x):
+    # issue #220: the worker turns SIGTERM into SystemExit mid-task
+    def handler(signum, frame):
+        raise SystemExit(1)
+    signal.signal(signal.SIGTERM, handler)
+    os.kill(os.getpid(), signal.SIGTERM)
+    return x
+
+def sigterm_handler_then_sleep():
+    def handler(signum, frame):
+        raise SystemExit(1)
+    signal.signal(signal.SIGTERM, handler)
+    time.sleep(support.SHORT_TIMEOUT)
+
 class _TestPoolWorkerErrors(BaseTestCase):
     ALLOWED_TYPES = ('processes', )
 
@@ -3348,6 +3365,63 @@ class _TestPoolWorkerErrors(BaseTestCase):
 
         p.close()
         p.join()
+
+    # issue #220: a task raising a BaseException that is not an Exception
+    # (SystemExit, KeyboardInterrupt) used to end the worker without sending
+    # a result back, so the caller waited forever on the lost task
+
+    def test_systemexit_in_task(self):
+        with multiprocessing.Pool(2) as p:
+            res = p.map_async(raising_systemexit, range(3))
+            with self.assertRaises(SystemExit):
+                res.get(timeout=support.SHORT_TIMEOUT)
+            # the exited workers are replaced and the pool keeps working
+            # (explicit chunksize: the pool may be mid-repopulation here)
+            res = p.map_async(sqr, range(5), chunksize=1)
+            self.assertEqual(res.get(timeout=support.SHORT_TIMEOUT),
+                             [sqr(i) for i in range(5)])
+
+    def test_systemexit_in_task_exits_worker(self):
+        # the SystemExit is reported, but the worker process still exits
+        with multiprocessing.Pool(1) as p:
+            pid = p.apply_async(os.getpid).get(timeout=support.SHORT_TIMEOUT)
+            res = p.apply_async(raising_systemexit, (0,))
+            with self.assertRaises(SystemExit):
+                res.get(timeout=support.SHORT_TIMEOUT)
+            res = p.apply_async(os.getpid)
+            self.assertNotEqual(res.get(timeout=support.SHORT_TIMEOUT), pid)
+
+    @unittest.skipIf(sys.platform == "win32", "requires a SIGTERM handler")
+    def test_systemexit_from_sigterm_handler(self):
+        # one task, so no other worker is mid-task when the pool is
+        # terminated on exit from the with block
+        with multiprocessing.Pool(1) as p:
+            it = p.imap(systemexit_from_sigterm, [0])
+            with self.assertRaises(SystemExit):
+                it.next(timeout=support.SHORT_TIMEOUT)
+
+    @unittest.skipIf(sys.platform == "win32", "requires a SIGTERM handler")
+    def test_terminate_busy_worker_with_sigterm_handler(self):
+        # a busy worker that turns SIGTERM into SystemExit must still exit
+        # on terminate(), not report it and go back for more work
+        p = multiprocessing.Pool(1)
+        p.apply_async(sigterm_handler_then_sleep)
+        time.sleep(1.0)  # let the task start and install its handler
+        t = threading.Thread(target=lambda: (p.terminate(), p.join()),
+                             daemon=True)
+        t.start()
+        t.join(support.SHORT_TIMEOUT)
+        self.assertFalse(t.is_alive(), "terminate() hung on a busy worker")
+
+    def test_systemexit_in_threadpool_task(self):
+        from multiprocess.pool import ThreadPool
+        with ThreadPool(2) as p:
+            res = p.map_async(raising_systemexit, range(3))
+            with self.assertRaises(SystemExit):
+                res.get(timeout=support.SHORT_TIMEOUT)
+            res = p.map_async(sqr, range(5))
+            self.assertEqual(res.get(timeout=support.SHORT_TIMEOUT),
+                             [sqr(i) for i in range(5)])
 
 class _TestPoolWorkerLifetime(BaseTestCase):
     ALLOWED_TYPES = ('processes', )

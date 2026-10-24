@@ -2121,3 +2121,190 @@ diff Python-3.15.0b4/Lib/test/test_multiprocessing_forkserver/__init__.py Python
 diff Python-3.15.0rc1/Lib/test/_test_multiprocessing.py Python-3.15.0rc2/Lib/test/_test_multiprocessing.py 
 1596a1597
 >         p.join()
+# ----------------------------------------------------------------------
+diff Python-3.15.0rc2/Lib/multiprocessing/context.py Python-3.15.1/Lib/multiprocessing/context.py
+0a1
+> import functools
+242,243c243,245
+<     def __init__(self, context):
+<         self._default_context = context
+---
+>     def __init__(self, context=None):
+>         if context is not None:
+>             self._default_context = context
+245a248,255
+>     # The platform default is only determined when first needed, as doing
+>     # so can be costly; importing multiprocessing must stay cheap.
+>     # A cached_property rather than a property so that the attribute can
+>     # still be assigned, deleted and patched like a plain one.
+>     @functools.cached_property
+>     def _default_context(self):
+>         return _get_platform_default_context()
+> 
+331,337d340
+<     # bpo-33725: running arbitrary code after fork() is no longer reliable
+<     # on macOS since macOS 10.14 (Mojave). Use spawn by default instead.
+<     # gh-84559: We changed everyones default to a thread safeish one in 3.14.
+<     if reduction.HAVE_SEND_HANDLE and sys.platform != 'darwin':
+<         _default_context = DefaultContext(_concrete_contexts['forkserver'])
+<     else:
+<         _default_context = DefaultContext(_concrete_contexts['spawn'])
+338a342,357
+>     def _get_platform_default_context():
+>         # bpo-33725: running arbitrary code after fork() is no longer reliable
+>         # on macOS since macOS 10.14 (Mojave). Use spawn by default instead.
+>         # gh-84559: We changed everyones default to a thread safeish one in 3.14.
+>         if reduction.HAVE_SEND_HANDLE and sys.platform != 'darwin':
+>             # gh-155717: forkserver requires to write temporary files.
+>             #
+>             # Imported here rather than at the top level as util is costly
+>             # to import and is not otherwise needed to import this module.
+>             from . import util
+>             if util._has_writeable_tempdir():
+>                 return _concrete_contexts['forkserver']
+>         return _concrete_contexts['spawn']
+> 
+>     _default_context = DefaultContext()
+> 
+360c379,382
+<     _default_context = DefaultContext(_concrete_contexts['spawn'])
+---
+>     def _get_platform_default_context():
+>         return _concrete_contexts['spawn']
+> 
+>     _default_context = DefaultContext()
+diff Python-3.15.0rc2/Lib/multiprocessing/util.py Python-3.15.1/Lib/multiprocessing/util.py
+145a146
+> 
+154a156
+> 
+210a213
+> 
+214a218
+>         # Deferred until first use to keep importing this module cheap.
+224a229,256
+> 
+> 
+> def _has_writeable_tempdir():
+>     # 'forkserver' requires writeable temporary files. This function is
+>     # called to determine the default context's start method.
+>     #
+>     # See: https://github.com/python/cpython/issues/155717.
+> 
+>     # Deferred until first use to keep importing this module cheap.
+>     import tempfile
+> 
+>     try:
+>         path = _get_base_temp_dir(tempfile)
+>     except OSError:
+>         # No usable temporary directory at all.
+>         return False
+>     if path is None:
+>         return False
+> 
+>     # os.access() is advisory and racy. It can lie on read-only filesystems,
+>     # NFS/network mounts, containers, and immutable-flag files, so we simply
+>     # try to create a file to check if this works and delete it otherwise.
+>     try:
+>         with tempfile.NamedTemporaryFile(dir=path):
+>             return True
+>     except OSError:
+>         return False
+> 
+diff Python-3.15.0rc2/Lib/test/_test_multiprocessing.py Python-3.15.1/Lib/test/_test_multiprocessing.py 
+28a29
+> import pathlib
+6191a6193,6248
+> 
+>     @unittest.skipIf(os.name == "nt", "requires POSIX")
+>     @support.requires_non_root_user
+>     @support.subTests("mode", [
+>         os.R_OK,  # read-only directory
+>         os.R_OK | os.X_OK, # read-only directory
+>         os.W_OK # write-only directory _without_ permissions for creating files
+>     ])
+>     def test_forkserver_requires_writeable_tempdir(self, mode):
+>         # Regression test to ensure that the defualt start method is
+>         # not 'forkserver' when the temporary directory is not writeable.
+>         #
+>         # See https://github.com/python/cpython/issues/155717.
+> 
+>         cmd = '''if 1:
+>             import os, tempfile
+>             # We fake the read-onlyiness of /tmp (which is a fallback when
+>             # the user-defined TMPDIR is not acceptable) by hardcoding the
+>             # temporary directory for this specific test.
+>             tempfile.tempdir = os.environ["TMPDIR"]
+> 
+>             # Imported after patching 'tempfile' so that the default start
+>             # method is deduced according to the permissions of TMPDIR.
+>             import multiprocessing
+>             if __name__ == "__main__":
+>                 print(multiprocessing.get_start_method())
+>         '''
+> 
+>         with support.os_helper.temp_dir() as root:
+>             TMPDIR = pathlib.Path(root, "TMPDIR")
+>             TMPDIR.mkdir(mode=mode)
+>             file = pathlib.Path(TMPDIR, "file")
+>             self.assertRaises(OSError, file.touch)
+>             _, out, err = script_helper.assert_python_ok('-c', cmd, TMPDIR=TMPDIR)
+>         self.assertEqual(out.decode().strip(), "spawn")
+> 
+>     @unittest.skipIf(os.name == "nt", "requires POSIX")
+>     @support.requires_non_root_user
+>     def test_default_start_method_without_usable_tempdir(self):
+>         # Neither importing multiprocessing nor determining the default
+>         # start method may fail when tempfile finds no usable temporary
+>         # directory at all, and the default start method must be 'spawn'.
+>         #
+>         # See https://github.com/python/cpython/issues/155717.
+> 
+>         cmd = '''if 1:
+>             import os, tempfile
+>             # Make TMPDIR the only candidate, so that tempfile.gettempdir()
+>             # raises FileNotFoundError instead of falling back to /tmp.
+>             tempfile._candidate_tempdir_list = lambda: [os.environ["TMPDIR"]]
+>             try:
+>                 tempfile.gettempdir()
+>             except FileNotFoundError:
+>                 pass
+>             else:
+>                 raise AssertionError("TMPDIR is usable")
+6192a6250,6254
+>             import multiprocessing
+>             if __name__ == "__main__":
+>                 print(multiprocessing.get_start_method(),
+>                       multiprocessing.get_all_start_methods()[0])
+>         '''
+6193a6256,6285
+>         with support.os_helper.temp_dir() as root:
+>             TMPDIR = pathlib.Path(root, "TMPDIR")
+>             TMPDIR.mkdir(mode=os.R_OK | os.X_OK)
+>             _, out, err = script_helper.assert_python_ok('-c', cmd, TMPDIR=TMPDIR)
+>         self.assertEqual(out.decode().split(), ["spawn", "spawn"])
+> 
+>     def test_import_does_not_determine_default_start_method(self):
+>         # Determining the default start method requires checking that the
+>         # temporary directory is writeable. That must not happen, nor may
+>         # the modules it needs be loaded, when importing multiprocessing.
+>         import_helper.ensure_lazy_imports(
+>             "multiprocessing", {"tempfile", "shutil", "subprocess"})
+> 
+>         cmd = '''if 1:
+>             import sys
+>             import multiprocessing
+>             print(multiprocessing.get_start_method(allow_none=True),
+>                   "tempfile" in sys.modules,
+>                   multiprocessing.get_start_method(),
+>                   multiprocessing.get_all_start_methods()[0])
+>         '''
+>         # -S: site customizations could import tempfile themselves.
+>         _, out, err = script_helper.assert_python_ok('-S', '-c', cmd)
+>         unset, probed, method, first = out.decode().split()
+>         self.assertEqual(unset, "None")
+>         self.assertEqual(probed, "False")
+>         self.assertEqual(method, first)
+>         self.assertIn(method, multiprocessing.get_all_start_methods())
+> 
+> 

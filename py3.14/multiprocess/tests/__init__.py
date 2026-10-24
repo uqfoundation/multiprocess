@@ -6066,7 +6066,7 @@ class TestStartMethod(unittest.TestCase):
         self.assertSetEqual(set(results), set([2, 1]))
 
     @unittest.skipIf(os.name == "nt", "requires POSIX")
-    @support.requires_non_root_user
+    @getattr(support, 'requires_non_root_user', unittest.skipIf(True, "skip"))
     @support.subTests("mode", [
         os.R_OK,  # read-only directory
         os.R_OK | os.X_OK, # read-only directory
@@ -6102,7 +6102,7 @@ class TestStartMethod(unittest.TestCase):
         self.assertEqual(out.decode().strip(), spawn)
 
     @unittest.skipIf(os.name == "nt", "requires POSIX")
-    @support.requires_non_root_user
+    @getattr(support, 'requires_non_root_user', unittest.skipIf(True, "skip"))
     def test_default_start_method_without_usable_tempdir(self):
         # Neither importing multiprocessing nor determining the default
         # start method may fail when tempfile finds no usable temporary
